@@ -9,23 +9,22 @@
   document.body.appendChild(container);
 
   const iframe = document.createElement('iframe');
-  // Load the CLEAN widget page
-  iframe.src = `${VERCEL_URL}/widget`; 
+  // Pass the position as a query parameter so the internal page knows where to align
+  iframe.src = `${VERCEL_URL}/widget?pos=${position}`; 
   iframe.style.position = 'fixed';
-  iframe.style.bottom = '0px';
+  iframe.style.bottom = '20px'; // Give it a little breathing room from the edge
   
   if (position === 'left') {
-    iframe.style.left = '0px';
+    iframe.style.left = '20px';
   } else {
-    iframe.style.right = '0px';
+    iframe.style.right = '20px';
   }
 
-  // Adjust size to fit only the bubble/chat
   iframe.style.width = '450px';
   iframe.style.height = '700px';
   iframe.style.border = 'none';
   iframe.style.zIndex = '999999';
-  iframe.style.background = 'transparent'; // Make it transparent
+  iframe.style.background = 'transparent';
   iframe.allow = 'microphone';
 
   container.appendChild(iframe);
