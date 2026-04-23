@@ -9,7 +9,20 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aws-sdk/client-rds": "^3.1036.0",
+    "@aws-sdk/client-s3": "^3.1036.0",
+    "@aws-sdk/lib-storage": "^3.1036.0",
+    "@elevenlabs/elevenlabs-js": "^2.44.0",
+    "@mendable/firecrawl-js": "^1.21.1",
+    "axios": "^1.15.2",
+    "cheerio": "^1.2.0",
+    "dotenv": "^17.4.2",
+    "firebase": "^12.12.1",
+    "firebase-admin": "^13.8.0",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^1.9.0",
     "next": "16.2.4",
+    "openai": "^6.34.0",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
