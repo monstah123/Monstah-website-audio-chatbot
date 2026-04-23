@@ -1,39 +1,35 @@
 (function() {
-  // Use the actual Vercel URL
   const VERCEL_URL = "https://monstah-website-audio-chatbot.vercel.app";
   
-  // Get the script element to read data attributes
   const currentScript = document.currentScript;
   const position = currentScript?.getAttribute('data-position') === 'left' ? 'left' : 'right';
   
-  // Create the container for the chatbot
   const container = document.createElement('div');
   container.id = 'monstah-ai-widget-root';
   document.body.appendChild(container);
 
-  // Inject the iframe
   const iframe = document.createElement('iframe');
-  iframe.src = VERCEL_URL; 
+  // Load the CLEAN widget page
+  iframe.src = `${VERCEL_URL}/widget`; 
   iframe.style.position = 'fixed';
-  iframe.style.bottom = '20px';
+  iframe.style.bottom = '0px';
   
-  // Dynamic positioning
   if (position === 'left') {
-    iframe.style.left = '20px';
+    iframe.style.left = '0px';
   } else {
-    iframe.style.right = '20px';
+    iframe.style.right = '0px';
   }
 
+  // Adjust size to fit only the bubble/chat
   iframe.style.width = '450px';
   iframe.style.height = '700px';
   iframe.style.border = 'none';
   iframe.style.zIndex = '999999';
-  iframe.style.colorScheme = 'none';
-  iframe.allow = 'microphone'; // Required for voice chat
+  iframe.style.background = 'transparent'; // Make it transparent
+  iframe.allow = 'microphone';
 
   container.appendChild(iframe);
 
-  // Handle messages (e.g. closing or resizing)
   window.addEventListener('message', (event) => {
     if (event.origin !== VERCEL_URL) return;
     if (event.data === 'close-chatbot') {
