@@ -31,7 +31,7 @@ async function ingestWebsite(url: string) {
     console.log(`✅ Crawl completed. Found ${crawlResponse.data.length} pages.`);
     
     for (const page of crawlResponse.data) {
-      console.log(`🧠 Processing: ${page.metadata.title || page.url}`);
+      console.log(`🧠 Processing: ${page.metadata?.title || page.url}`);
       
       const content = page.markdown || "";
       if (content.length < 100) continue; // Skip empty pages
@@ -48,7 +48,7 @@ async function ingestWebsite(url: string) {
       await db.collection("knowledge").add({
         type: "web_page",
         url: page.url,
-        title: page.metadata.title || "Untitled",
+        title: page.metadata?.title || "Untitled",
         content: content.substring(0, 5000), // Snippet for context
         embedding: vector,
         updatedAt: new Date(),
