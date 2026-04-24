@@ -412,11 +412,10 @@ export default function VoiceChat() {
 
         .chat-messages-container {
           position: relative;
-          height: 100%;
-          min-height: 0;
+          min-height: 0; /* THE SECRET: allows row to shrink */
           overflow: hidden;
           background: #0d0d0f;
-          z-index: 1; /* BACK OF THE LINE */
+          z-index: 1;
         }
 
         .history-sidebar {
@@ -426,7 +425,7 @@ export default function VoiceChat() {
           width: 100%;
           height: 100%;
           background: #161618;
-          z-index: 500; /* MIDDLE GROUND */
+          z-index: 500;
           border-right: 1px solid rgba(255, 255, 255, 0.1);
           display: flex;
           flex-direction: column;
@@ -480,13 +479,13 @@ export default function VoiceChat() {
         .chat-input-area {
           height: 75px;
           padding: 0 15px;
-          background: #161618;
-          border-top: 1px solid rgba(255, 255, 255, 0.15);
+          background: #1c1c1f; /* LIGHTER GREY TO STAND OUT */
+          border-top: 1px solid rgba(255, 255, 255, 0.2);
           display: flex;
           align-items: center;
           gap: 10px;
           position: relative;
-          z-index: 1000; /* FRONT OF THE LINE */
+          z-index: 1000;
         }
 
         .message {
