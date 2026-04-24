@@ -4,18 +4,22 @@
   const currentScript = document.currentScript;
   const position = currentScript?.getAttribute('data-position') === 'left' ? 'left' : 'right';
   
+  // The Ghost Overlay: Covers everything but is invisible to clicks
   const wrapper = document.createElement('div');
-  wrapper.id = 'monstah-ai-widget-container';
+  wrapper.id = 'monstah-ai-ghost-overlay';
   wrapper.style.cssText = `
     position: fixed !important;
-    bottom: 0 !important;
-    ${position}: 0 !important;
-    width: 450px !important;
-    height: 750px !important; /* Keep it large but invisible */
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
     z-index: 2147483647 !important;
     pointer-events: none !important;
     display: block !important;
     background: transparent !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
   `;
   
   (document.documentElement || document.body).appendChild(wrapper);
@@ -27,13 +31,17 @@
     height: 100% !important;
     border: none !important;
     background: transparent !important;
-    pointer-events: auto !important;
+    pointer-events: none !important; /* Internal content will re-enable this */
     display: block !important;
   `;
   iframe.allow = 'microphone';
 
   wrapper.appendChild(iframe);
 
-  // We no longer need to resize the wrapper, so no 'toggle-chat' listener needed here
-  // The internal page will handle the sliding animation
+  window.addEventListener('message', (event) => {
+    if (event.origin !== VERCEL_URL) return;
+    if (event.data === 'close-chatbot') {
+      wrapper.style.display = 'none';
+    }
+  });
 })();
