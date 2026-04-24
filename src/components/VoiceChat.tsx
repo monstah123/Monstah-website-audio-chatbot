@@ -242,49 +242,64 @@ export default function VoiceChat() {
 
         .chat-window {
           width: 360px;
-          height: 500px;
+          height: 520px;
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          background: #0d0d0f !important; /* Solid background for readability */
-          border: 1px solid rgba(255, 255, 255, 0.15);
+          background: linear-gradient(180deg, #161618 0%, #0d0d0f 100%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 24px;
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 255, 128, 0.05);
           margin-bottom: 20px;
         }
 
         .chat-header {
           padding: 15px 20px;
-          background: rgba(255, 255, 255, 0.03);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.02);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
           display: flex;
           justify-content: space-between;
           align-items: center;
         }
 
         .clear-btn {
-          background: transparent;
-          border: none;
-          color: var(--text-secondary);
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: var(--primary); /* Use primary color to make it pop */
           cursor: pointer;
-          padding: 5px;
-          border-radius: 6px;
+          padding: 6px;
+          border-radius: 10px;
           transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .clear-btn:hover {
-          background: rgba(255, 255, 255, 0.05);
-          color: var(--primary);
+          background: var(--primary);
+          color: #000;
+          transform: rotate(-30deg);
         }
 
         .chat-messages {
           flex: 1;
-          padding: 15px;
+          padding: 20px;
           overflow-y: auto;
           display: flex;
           flex-direction: column;
-          gap: 10px;
-          background: #0d0d0f;
+          gap: 12px;
+          /* Custom Scrollbar */
+          scrollbar-width: thin;
+          scrollbar-color: var(--primary) transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+          width: 5px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+          background: var(--primary);
+          border-radius: 10px;
         }
 
         .message {
