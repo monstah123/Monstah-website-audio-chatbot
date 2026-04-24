@@ -8,7 +8,19 @@ export default function VoiceChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const initialGreeting = { role: "assistant", content: "Hi, I'm Peterson. How can I help you today?" };
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([initialGreeting]);
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("monstah_chat_history");
+      return saved ? JSON.parse(saved) : [initialGreeting];
+    }
+    return [initialGreeting];
+  });
+
+  // Save to localStorage whenever messages change
+  useEffect(() => {
+    localStorage.setItem("monstah_chat_history", JSON.stringify(messages));
+  }, [messages]);
+
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
@@ -43,6 +55,7 @@ export default function VoiceChat() {
   // ---- Clear Chat ----
   const clearChat = () => {
     setMessages([initialGreeting]);
+    localStorage.removeItem("monstah_chat_history");
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
