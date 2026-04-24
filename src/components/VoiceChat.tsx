@@ -387,24 +387,30 @@ export default function VoiceChat() {
 
         .chat-window {
           display: grid;
-          grid-template-rows: auto 1fr auto;
+          grid-template-rows: 60px 1fr 80px; /* RIGID ANCHORS: Header, Middle, Footer */
+          width: 100%;
+          height: 100%;
           background: #0d0d0f !important;
           border: 2px solid rgba(255, 255, 255, 0.15);
           border-radius: 28px;
           overflow: hidden;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
 
         .chat-header {
-          padding: 15px 25px;
+          height: 60px;
+          padding: 0 25px;
           background: #161618;
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           display: flex;
           justify-content: space-between;
           align-items: center;
+          z-index: 10;
         }
 
         .chat-messages-container {
           position: relative;
+          height: 100%;
           min-height: 0;
           overflow: hidden;
         }
