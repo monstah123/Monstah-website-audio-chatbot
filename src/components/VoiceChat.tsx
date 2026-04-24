@@ -106,21 +106,14 @@ export default function VoiceChat() {
       window.parent.postMessage({ type: 'toggle-chat', isOpen }, "*");
     }
     
-    // Greet audibly and start listening when opened for the first time
+    // Greet audibly when opened
     if (isOpen && messages.length === 1 && messages[0].content === initialGreeting.content) {
-      // Small delay to let animation finish
       setTimeout(async () => {
-        // Unlock audio
         if (audioRef.current) {
           audioRef.current.play().catch(() => {});
           audioRef.current.pause();
         }
         await speak(initialGreeting.content);
-        
-        // Auto-start listening after greeting
-        setIsListening(true);
-        isListeningRef.current = true;
-        try { recognitionRef.current?.start(); } catch {}
       }, 800);
     }
   }, [isOpen]);
@@ -177,7 +170,24 @@ export default function VoiceChat() {
       setIsListening(true);
       isListeningRef.current = true;
       startIdleTimer();
-      try { recognitionRef.current?.start(); } catch {}
+      try { 
+        recognitionRef.current?.start(); 
+      } catch (e) {
+        console.error("Mic start error:", e);
+      }
+    }
+  };
+
+  const handleCTAOpen = () => {
+    setIsOpen(true);
+    // INSTANT ARM FOR CHROME
+    setIsListening(true);
+    isListeningRef.current = true;
+    startIdleTimer();
+    try { 
+      recognitionRef.current?.start(); 
+    } catch (e) {
+      console.error("CTA Mic start error:", e);
     }
   };
 
@@ -380,7 +390,7 @@ export default function VoiceChat() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 100, opacity: 0 }}
             whileHover={{ scale: 1.02 }}
-            onClick={() => setIsOpen(true)}
+            onClick={handleCTAOpen}
             className="savage-cta-container"
             style={{ 
               position: 'fixed',
