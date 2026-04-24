@@ -312,14 +312,14 @@ export default function VoiceChat() {
         .chat-messages {
           flex: 1;
           padding: 20px 25px;
-          overflow-y: scroll; /* Force Scroll */
+          overflow-y: scroll;
           display: flex;
           flex-direction: column;
           gap: 15px;
           background: #0d0d0f;
-          overscroll-behavior: contain;
-          touch-action: pan-y; /* Enable Touch Scroll */
-          -webkit-overflow-scrolling: touch; /* iOS Smooth Scroll */
+          /* Removed overscroll-behavior for legacy compatibility */
+          touch-action: pan-y;
+          -webkit-overflow-scrolling: touch;
         }
 
         .message {
