@@ -8,14 +8,14 @@
   wrapper.id = 'monstah-ai-widget-container';
   wrapper.style.cssText = `
     position: fixed !important;
-    bottom: 20px !important;
-    ${position}: 20px !important;
-    width: 80px !important; /* Small by default */
-    height: 80px !important; /* Small by default */
+    bottom: 0 !important;
+    ${position}: 0 !important;
+    width: 450px !important;
+    height: 750px !important; /* Keep it large but invisible */
     z-index: 2147483647 !important;
     pointer-events: none !important;
     display: block !important;
-    transition: all 0.3s ease-in-out !important;
+    background: transparent !important;
   `;
   
   (document.documentElement || document.body).appendChild(wrapper);
@@ -28,24 +28,12 @@
     border: none !important;
     background: transparent !important;
     pointer-events: auto !important;
+    display: block !important;
   `;
   iframe.allow = 'microphone';
 
   wrapper.appendChild(iframe);
 
-  window.addEventListener('message', (event) => {
-    if (event.origin !== VERCEL_URL) return;
-    
-    if (event.data.type === 'toggle-chat') {
-      if (event.data.isOpen) {
-        // Expand when open
-        wrapper.style.setProperty('width', '400px', 'important');
-        wrapper.style.setProperty('height', '700px', 'important');
-      } else {
-        // Shrink when closed
-        wrapper.style.setProperty('width', '80px', 'important');
-        wrapper.style.setProperty('height', '80px', 'important');
-      }
-    }
-  });
+  // We no longer need to resize the wrapper, so no 'toggle-chat' listener needed here
+  // The internal page will handle the sliding animation
 })();
