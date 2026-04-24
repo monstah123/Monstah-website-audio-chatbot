@@ -10,14 +10,14 @@
     position: fixed !important;
     bottom: 20px !important;
     ${position}: 20px !important;
-    width: 400px !important;
-    height: 600px !important;
+    width: 80px !important;
+    height: 80px !important;
     z-index: 2147483647 !important;
     background: transparent !important;
     pointer-events: none !important;
-    display: block !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    transition: all 0.3s ease-in-out;
+    border-radius: 50%;
+    overflow: hidden;
   `;
   
   (document.documentElement || document.body).appendChild(wrapper);
@@ -30,16 +30,24 @@
     border: none !important;
     background: transparent !important;
     pointer-events: auto !important;
-    display: block !important;
   `;
   iframe.allow = 'microphone';
-
   wrapper.appendChild(iframe);
 
   window.addEventListener('message', (event) => {
     if (event.origin !== VERCEL_URL) return;
-    if (event.data === 'close-chatbot') {
-      wrapper.style.display = 'none';
+    
+    if (event.data.type === 'toggle-chat') {
+      if (event.data.isOpen) {
+        const isMobile = window.innerWidth < 600;
+        wrapper.style.width = isMobile ? 'calc(100vw - 40px)' : '400px';
+        wrapper.style.height = isMobile ? '80vh' : '650px';
+        wrapper.style.borderRadius = '28px';
+      } else {
+        wrapper.style.width = '80px';
+        wrapper.style.height = '80px';
+        wrapper.style.borderRadius = '50%';
+      }
     }
   });
 })();
