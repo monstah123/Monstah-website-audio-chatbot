@@ -368,7 +368,8 @@ export default function VoiceChat() {
               <button onClick={() => handleSend(input)} className="send-btn">
                 <Send size={18} />
               </button>
-              </motion.div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 

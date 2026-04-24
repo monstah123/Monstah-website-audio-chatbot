@@ -25,15 +25,20 @@ export async function POST(req: Request) {
     });
     const queryVector = embeddingResponse.data[0].embedding;
 
-    // 2. Search Firestore for context (Fetch more for better understanding)
-    const knowledgeRef = db.collection("knowledge");
-    const snapshot = await knowledgeRef.limit(15).get(); // Increased from 5 to 15
-
     let context = "";
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      context += `\nContent: ${data.content}\n---\n`;
-    });
+    try {
+      // 2. Search Firestore for context (Fetch more for better understanding)
+      const knowledgeRef = db.collection("knowledge");
+      const snapshot = await knowledgeRef.limit(10).get(); 
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        context += `\nContent: ${data.content}\n---\n`;
+      });
+    } catch (e) {
+      console.warn("Knowledge search failed, using hardcoded memory only.");
+      context = "No additional context available. Use hardcoded product data.";
+    }
 
     // 3. Generate the AI response
     const aiClient = deepseek || openai;
@@ -88,11 +93,18 @@ export async function POST(req: Request) {
 
     const stream = new ReadableStream({
       async start(controller) {
-        for await (const chunk of response) {
-          const content = (chunk as any).choices[0]?.delta?.content || "";
-          controller.enqueue(new TextEncoder().encode(content));
+        try {
+          for await (const chunk of response) {
+            const content = (chunk as any).choices[0]?.delta?.content || "";
+            if (content) {
+              controller.enqueue(new TextEncoder().encode(content));
+            }
+          }
+        } catch (err) {
+          console.error("Stream processing error:", err);
+        } finally {
+          controller.close();
         }
-        controller.close();
       },
     });
 
