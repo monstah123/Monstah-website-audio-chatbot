@@ -263,16 +263,17 @@ export default function VoiceChat() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ x: "100%", opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: "100%", opacity: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="chat-window"
             style={{ 
-              position: 'absolute',
-              bottom: '0px',
-              right: '0px', // SHIFT TO RIGHT
-              width: '100%',
-              height: '100%',
+              position: 'fixed',
+              bottom: '20px',
+              right: '20px',
+              width: '400px', // Managed by widget.js but safe here
+              height: '650px',
               zIndex: 999999
             }}
           >
@@ -289,6 +290,9 @@ export default function VoiceChat() {
                 </button>
                 <button onClick={clearChat} className="clear-btn" title="Clear Conversation">
                   <RotateCcw size={16} />
+                </button>
+                <button onClick={() => setIsOpen(false)} className="close-header-btn" title="Close Chat">
+                  <X size={18} />
                 </button>
               </div>
             </div>
@@ -362,21 +366,28 @@ export default function VoiceChat() {
         )}
       </AnimatePresence>
 
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setIsOpen(!isOpen)}
-        className="floating-trigger"
-        style={{ 
-          position: 'absolute',
-          bottom: '20px',
-          right: '20px', // SHIFT TO RIGHT
-          zIndex: 999999,
-          pointerEvents: 'auto'
-        }}
-      >
-        {isOpen ? <X /> : <Mic />}
-      </motion.button>
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setIsOpen(true)}
+            className="floating-trigger"
+            style={{ 
+              position: 'fixed',
+              bottom: '20px',
+              right: '20px',
+              zIndex: 999999,
+              pointerEvents: 'auto'
+            }}
+          >
+            <Mic />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <style jsx>{`
         .floating-trigger {
@@ -541,7 +552,7 @@ export default function VoiceChat() {
         }
         input::placeholder { color: #888; }
 
-        .mic-btn, .send-btn, .clear-btn, .history-btn {
+        .mic-btn, .send-btn, .clear-btn, .history-btn, .close-header-btn {
           background: #252529;
           border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 12px;
@@ -552,6 +563,15 @@ export default function VoiceChat() {
           justify-content: center;
           color: var(--primary);
           cursor: pointer;
+        }
+
+        .close-header-btn {
+          background: rgba(255, 0, 0, 0.1);
+          color: #ff4444;
+          border-color: rgba(255, 0, 0, 0.2);
+        }
+        .close-header-btn:hover {
+          background: rgba(255, 0, 0, 0.2);
         }
 
         .mic-btn.active {
