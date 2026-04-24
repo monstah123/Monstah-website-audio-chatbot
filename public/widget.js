@@ -14,7 +14,7 @@
     height: 80px !important;
     z-index: 2147483647 !important;
     background: transparent !important;
-    pointer-events: none !important;
+    pointer-events: auto !important; /* ENABLE TOUCH */
     transition: all 0.3s ease-in-out;
     border-radius: 50%;
     overflow: hidden;
