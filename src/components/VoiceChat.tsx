@@ -387,14 +387,14 @@ export default function VoiceChat() {
 
         .chat-window {
           display: grid;
-          grid-template-rows: 60px 1fr 70px; /* RIGID ROWS */
+          grid-template-rows: 60px 1fr 75px; /* RIGID GRID */
           width: 100%;
           height: 100%;
-          background: #0d0d0f !important; /* NO TRANSPARENCY */
+          background: #0d0d0f !important;
           border: 2px solid rgba(255, 255, 255, 0.15);
           border-radius: 28px;
           overflow: hidden;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+          box-shadow: 0 20px 50px rgba(0,0,0,1);
           position: relative;
         }
 
@@ -406,7 +406,8 @@ export default function VoiceChat() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          z-index: 101;
+          position: relative;
+          z-index: 1000; /* FRONT OF THE LINE */
         }
 
         .chat-messages-container {
@@ -415,6 +416,7 @@ export default function VoiceChat() {
           min-height: 0;
           overflow: hidden;
           background: #0d0d0f;
+          z-index: 1; /* BACK OF THE LINE */
         }
 
         .history-sidebar {
@@ -424,7 +426,7 @@ export default function VoiceChat() {
           width: 100%;
           height: 100%;
           background: #161618;
-          z-index: 100;
+          z-index: 500; /* MIDDLE GROUND */
           border-right: 1px solid rgba(255, 255, 255, 0.1);
           display: flex;
           flex-direction: column;
@@ -476,14 +478,15 @@ export default function VoiceChat() {
         }
 
         .chat-input-area {
-          height: 70px;
+          height: 75px;
           padding: 0 15px;
           background: #161618;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          border-top: 1px solid rgba(255, 255, 255, 0.15);
           display: flex;
           align-items: center;
-          gap: 8px;
-          z-index: 101;
+          gap: 10px;
+          position: relative;
+          z-index: 1000; /* FRONT OF THE LINE */
         }
 
         .message {
@@ -522,21 +525,21 @@ export default function VoiceChat() {
         input {
           flex: 1;
           background: #0d0d0f;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 12px;
-          padding: 10px 15px;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 14px;
+          padding: 12px 15px;
           color: white;
           outline: none;
           font-size: 1rem;
         }
-        input::placeholder { color: #666; }
+        input::placeholder { color: #888; }
 
         .mic-btn, .send-btn, .clear-btn, .history-btn {
           background: #252529;
-          border: 1px solid rgba(255, 255, 255, 0.15);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 12px;
-          width: 38px;
-          height: 38px;
+          width: 42px;
+          height: 42px;
           display: flex;
           align-items: center;
           justify-content: center;
