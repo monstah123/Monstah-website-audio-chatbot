@@ -13,6 +13,13 @@ export default function VoiceChat() {
   
   const recognitionRef = useRef<any>(null);
 
+  // Notify parent window of size changes
+  useEffect(() => {
+    if (window.parent) {
+      window.parent.postMessage({ type: 'toggle-chat', isOpen }, "*");
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window)) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -168,38 +175,36 @@ export default function VoiceChat() {
 
       <style jsx>{`
         .floating-trigger {
-          position: fixed;
-          bottom: 30px;
-          right: 30px;
-          width: 64px;
-          height: 64px;
+          width: 60px;
+          height: 60px;
           border-radius: 50%;
           background: var(--primary);
           color: var(--bg-dark);
-          border: none;
+          border: 4px solid rgba(255, 255, 255, 0.1);
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: var(--glow-shadow);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), var(--glow-shadow);
           cursor: pointer;
-          z-index: 1000;
         }
 
         .chat-window {
-          position: fixed;
-          bottom: 110px;
-          right: 30px;
-          width: 400px;
-          height: 600px;
+          width: 360px;
+          height: 500px;
           display: flex;
           flex-direction: column;
-          z-index: 1000;
           overflow: hidden;
+          background: #0d0d0f !important; /* Solid background for readability */
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 24px;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+          margin-bottom: 20px;
         }
 
         .chat-header {
-          padding: 20px;
-          border-bottom: 1px solid var(--glass-border);
+          padding: 15px 20px;
+          background: rgba(255, 255, 255, 0.03);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -207,60 +212,73 @@ export default function VoiceChat() {
 
         .chat-messages {
           flex: 1;
-          padding: 20px;
+          padding: 15px;
           overflow-y: auto;
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 10px;
+          background: #0d0d0f;
         }
 
         .message {
-          padding: 12px 16px;
-          border-radius: 16px;
+          padding: 10px 14px;
+          border-radius: 18px;
           max-width: 85%;
-          font-size: 0.95rem;
+          font-size: 0.9rem;
           line-height: 1.4;
         }
 
         .user {
           align-self: flex-end;
           background: var(--primary);
-          color: var(--bg-dark);
+          color: #000;
+          font-weight: 500;
+          border-bottom-right-radius: 4px;
         }
 
         .assistant {
           align-self: flex-start;
-          background: rgba(255, 255, 255, 0.05);
-          color: var(--text-primary);
-          border: 1px solid var(--glass-border);
+          background: rgba(255, 255, 255, 0.08);
+          color: #fff;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-bottom-left-radius: 4px;
         }
 
         .chat-input-area {
-          padding: 20px;
+          padding: 15px;
           display: flex;
-          gap: 10px;
-          background: rgba(0,0,0,0.2);
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.03);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         input {
           flex: 1;
-          background: transparent;
-          border: none;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+          padding: 8px 15px;
           color: white;
           outline: none;
-          font-size: 0.95rem;
+          font-size: 0.9rem;
         }
 
         .mic-btn, .send-btn {
-          background: transparent;
-          border: none;
-          color: var(--text-secondary);
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 12px;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--primary);
           cursor: pointer;
-          transition: color 0.2s;
+          transition: all 0.2s;
         }
 
         .mic-btn.active {
-          color: var(--accent);
+          background: var(--accent);
+          color: white;
           animation: pulse-glow 1.5s infinite;
         }
 

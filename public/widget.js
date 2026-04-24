@@ -4,24 +4,20 @@
   const currentScript = document.currentScript;
   const position = currentScript?.getAttribute('data-position') === 'left' ? 'left' : 'right';
   
-  // Pin directly to the HTML root to bypass Body transforms
   const wrapper = document.createElement('div');
   wrapper.id = 'monstah-ai-widget-container';
   wrapper.style.cssText = `
     position: fixed !important;
     bottom: 20px !important;
     ${position}: 20px !important;
-    top: auto !important;
-    width: 450px !important;
-    height: 700px !important;
+    width: 80px !important; /* Small by default */
+    height: 80px !important; /* Small by default */
     z-index: 2147483647 !important;
     pointer-events: none !important;
     display: block !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    transition: all 0.3s ease-in-out !important;
   `;
   
-  // Inject at the very highest level possible
   (document.documentElement || document.body).appendChild(wrapper);
 
   const iframe = document.createElement('iframe');
@@ -32,7 +28,6 @@
     border: none !important;
     background: transparent !important;
     pointer-events: auto !important;
-    display: block !important;
   `;
   iframe.allow = 'microphone';
 
@@ -40,8 +35,17 @@
 
   window.addEventListener('message', (event) => {
     if (event.origin !== VERCEL_URL) return;
-    if (event.data === 'close-chatbot') {
-      wrapper.style.display = 'none';
+    
+    if (event.data.type === 'toggle-chat') {
+      if (event.data.isOpen) {
+        // Expand when open
+        wrapper.style.setProperty('width', '400px', 'important');
+        wrapper.style.setProperty('height', '700px', 'important');
+      } else {
+        // Shrink when closed
+        wrapper.style.setProperty('width', '80px', 'important');
+        wrapper.style.setProperty('height', '80px', 'important');
+      }
     }
   });
 })();
