@@ -2,19 +2,35 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, Send, X, Volume2, Loader2 } from "lucide-react";
+import { Mic, Send, X, Volume2, Loader2, RotateCcw } from "lucide-react";
 
 export default function VoiceChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([
-    { role: "assistant", content: "Hi, I'm Peterson. How can I help you today?" }
-  ]);
+  const initialGreeting = { role: "assistant", content: "Hi, I'm Peterson. How can I help you today?" };
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>([initialGreeting]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
   const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const clearChat = () => {
+    setMessages([initialGreeting]);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+  };
 
   // Notify parent window of size changes
   useEffect(() => {
@@ -149,8 +165,13 @@ export default function VoiceChat() {
             }}
           >
             <div className="chat-header">
-              <h3>Monstah Assistant</h3>
-              <Volume2 size={18} className="text-secondary" />
+              <div className="flex items-center gap-2">
+                <Volume2 size={18} className="text-secondary" />
+                <h3>Monstah Assistant</h3>
+              </div>
+              <button onClick={clearChat} className="clear-btn" title="Clear Conversation">
+                <RotateCcw size={16} />
+              </button>
             </div>
 
             <div className="chat-messages">
@@ -164,6 +185,7 @@ export default function VoiceChat() {
                   <Loader2 className="animate-spin" size={16} />
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
 
             <div className="chat-input-area">
@@ -238,6 +260,21 @@ export default function VoiceChat() {
           display: flex;
           justify-content: space-between;
           align-items: center;
+        }
+
+        .clear-btn {
+          background: transparent;
+          border: none;
+          color: var(--text-secondary);
+          cursor: pointer;
+          padding: 5px;
+          border-radius: 6px;
+          transition: all 0.2s;
+        }
+
+        .clear-btn:hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--primary);
         }
 
         .chat-messages {
