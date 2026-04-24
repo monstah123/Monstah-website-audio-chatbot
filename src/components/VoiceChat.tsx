@@ -195,6 +195,9 @@ export default function VoiceChat() {
   const handleSend = async (text: string) => {
     if (!text.trim()) return;
     
+    // Pause idle timer while AI thinks/speaks
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+
     const newMessages = [...messages, { role: "user", content: text }];
     setMessages(newMessages);
     setInput("");
@@ -262,7 +265,8 @@ export default function VoiceChat() {
               console.error("Auto-restart error:", e);
             }
           }
-          resetIdleTimer();
+          // Restart the 15s countdown for the user to speak
+          startIdleTimer();
         };
         await audioRef.current.play();
       } else {
