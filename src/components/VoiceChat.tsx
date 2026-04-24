@@ -16,92 +16,107 @@ export default function VoiceChat() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isSpeakingRef = useRef(false);
+  const isListeningRef = useRef(false);
 
+  // ---- Idle Timer (15s) ----
   const startIdleTimer = () => {
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     idleTimerRef.current = setTimeout(() => {
-      if (isListening) {
-        recognitionRef.current?.stop();
-        setIsListening(false);
-      }
-    }, 15000); // 15 seconds
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      isListeningRef.current = false;
+    }, 15000);
   };
 
   const resetIdleTimer = () => {
-    if (isListening) startIdleTimer();
+    if (isListeningRef.current) startIdleTimer();
   };
 
-  useEffect(() => {
-    if (isListening) {
-      startIdleTimer();
-    } else {
-      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-    }
-    return () => {
-      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-    };
-  }, [isListening]);
-
+  // ---- Scroll ----
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  useEffect(() => { scrollToBottom(); }, [messages]);
 
+  // ---- Clear Chat ----
   const clearChat = () => {
     setMessages([initialGreeting]);
     if (audioRef.current) {
       audioRef.current.pause();
-      audioRef.current = null;
+      audioRef.current.src = "";
     }
+    recognitionRef.current?.stop();
+    setIsListening(false);
+    isListeningRef.current = false;
+    isSpeakingRef.current = false;
   };
 
-  // Notify parent window of size changes
+  // ---- Notify parent iframe of open/close ----
   useEffect(() => {
     if (window.parent) {
       window.parent.postMessage({ type: 'toggle-chat', isOpen }, "*");
     }
   }, [isOpen]);
 
+  // ---- Speech Recognition Setup ----
   useEffect(() => {
-    if (typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window)) {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
+    if (typeof window === "undefined") return;
+    if (!("SpeechRecognition" in window || "webkitSpeechRecognition" in window)) return;
 
-      recognitionRef.current.onresult = (event: any) => {
-        resetIdleTimer(); // Reset timer on speech
-        const transcript = event.results[0][0].transcript;
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SR();
+    recognition.continuous = true;       // STAY ALIVE between utterances
+    recognition.interimResults = false;
+
+    recognition.onresult = (event: any) => {
+      if (isSpeakingRef.current) return; // ignore while AI speaks
+      const last = event.results[event.results.length - 1];
+      if (last.isFinal) {
+        resetIdleTimer();
+        const transcript = last[0].transcript;
         setInput(transcript);
         handleSend(transcript);
-      };
+      }
+    };
 
-      recognitionRef.current.onend = () => {
+    recognition.onend = () => {
+      // Auto-restart if we're supposed to be listening
+      if (isListeningRef.current) {
+        try { recognition.start(); } catch { 
+          setIsListening(false);
+          isListeningRef.current = false;
+        }
+      } else {
         setIsListening(false);
-      };
-    }
+      }
+    };
+
+    recognitionRef.current = recognition;
   }, []);
 
+  // ---- Mic Toggle ----
   const toggleListening = () => {
-    // UNLOCK AUDIO ON FIRST INTERACTION (Crucial for iOS)
-    if (!audioRef.current) {
-      audioRef.current = new Audio();
+    // Unlock audio on iOS
+    if (audioRef.current) {
+      audioRef.current.play().catch(() => {});
+      audioRef.current.pause();
     }
-    // "Wake up" the audio element with a user gesture
-    audioRef.current.play().catch(() => {});
-    audioRef.current.pause();
 
     if (isListening) {
       recognitionRef.current?.stop();
+      setIsListening(false);
+      isListeningRef.current = false;
     } else {
       setIsListening(true);
-      recognitionRef.current?.start();
+      isListeningRef.current = true;
+      startIdleTimer();
+      try { recognitionRef.current?.start(); } catch {}
     }
   };
 
+  // ---- Send Message ----
   const handleSend = async (text: string) => {
     if (!text.trim()) return;
     
@@ -134,9 +149,7 @@ export default function VoiceChat() {
         });
       }
 
-      // Generate and play audio response using OpenAI TTS
       await speak(aiResponse);
-
     } catch (error) {
       console.error("Chat Error:", error);
     } finally {
@@ -144,8 +157,11 @@ export default function VoiceChat() {
     }
   };
 
+  // ---- TTS Playback ----
   const speak = async (text: string) => {
     try {
+      isSpeakingRef.current = true;
+
       const response = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -159,27 +175,23 @@ export default function VoiceChat() {
       
       if (audioRef.current) {
         audioRef.current.src = audioUrl;
-        await audioRef.current.play();
-        
-        // Auto-listening after AI finishes speaking
         audioRef.current.onended = () => {
-          setIsListening(true);
-          try {
-            recognitionRef.current?.start();
-          } catch (e) {
-            console.error("Recognition start error:", e);
-          }
+          isSpeakingRef.current = false;
           URL.revokeObjectURL(audioUrl);
+          resetIdleTimer();
         };
+        await audioRef.current.play();
+      } else {
+        isSpeakingRef.current = false;
       }
     } catch (error) {
+      isSpeakingRef.current = false;
       console.error("Playback error:", error);
     }
   };
 
   return (
     <>
-
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -199,9 +211,9 @@ export default function VoiceChat() {
             <audio ref={audioRef} style={{ display: 'none' }} playsInline />
             
             <div className="chat-header">
-              <div className="flex items-center gap-2">
-                <Volume2 size={18} className="text-secondary" />
-                <h3>Monstah Assistant</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Volume2 size={18} color="var(--primary)" />
+                <h3 style={{ margin: 0 }}>Monstah Assistant</h3>
               </div>
               <button onClick={clearChat} className="clear-btn" title="Clear Conversation">
                 <RotateCcw size={16} />
@@ -215,8 +227,8 @@ export default function VoiceChat() {
                 </div>
               ))}
               {isLoading && (
-                <div className="message assistant loading">
-                  <Loader2 className="animate-spin" size={16} />
+                <div className="message assistant">
+                  <Loader2 className="spin" size={16} />
                 </div>
               )}
               <div ref={messagesEndRef} />
@@ -276,14 +288,11 @@ export default function VoiceChat() {
 
         .chat-window {
           display: grid;
-          grid-template-rows: auto 1fr auto; /* FIXED HEADER/FOOTER, FLEXIBLE MIDDLE */
-          width: 100%;
-          height: 100%;
+          grid-template-rows: auto 1fr auto;
           background: #0d0d0f !important;
           border: 2px solid rgba(255, 255, 255, 0.15);
           border-radius: 28px;
           overflow: hidden;
-          pointer-events: auto;
         }
 
         .chat-header {
@@ -296,12 +305,13 @@ export default function VoiceChat() {
         }
 
         .chat-messages {
+          min-height: 0;       /* THE FIX: allows grid item to shrink & scroll */
           padding: 20px 25px;
           overflow-y: auto;
-          background: #0d0d0f;
           display: flex;
           flex-direction: column;
           gap: 15px;
+          background: #0d0d0f;
           -webkit-overflow-scrolling: touch;
         }
 
@@ -319,6 +329,7 @@ export default function VoiceChat() {
           max-width: 90%;
           font-size: 1rem;
           line-height: 1.5;
+          word-wrap: break-word;
         }
 
         .user {
@@ -337,18 +348,29 @@ export default function VoiceChat() {
           border-bottom-left-radius: 4px;
         }
 
+        .chat-messages::-webkit-scrollbar {
+          width: 6px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+          background: #333;
+          border-radius: 10px;
+        }
+
         input {
           flex: 1;
           background: #0d0d0f;
           border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 12px;
-          padding: 8px 15px;
+          padding: 10px 15px;
           color: white;
           outline: none;
+          font-size: 1rem;
         }
+        input::placeholder { color: #666; }
 
         .mic-btn, .send-btn, .clear-btn {
           background: #252529;
+          border: 1px solid rgba(255, 255, 255, 0.15);
           border-radius: 12px;
           width: 40px;
           height: 40px;
@@ -363,6 +385,14 @@ export default function VoiceChat() {
           background: var(--accent);
           color: white;
           animation: pulse-glow 1.5s infinite;
+        }
+
+        .spin {
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </>
