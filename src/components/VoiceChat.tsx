@@ -240,10 +240,17 @@ export default function VoiceChat() {
     try {
       isSpeakingRef.current = true;
 
+      // TEMPORARILY SUSPEND LISTENING SO OS DOES NOT DUCK VOLUME
+      const wasListening = isListeningRef.current;
+      if (wasListening) {
+        isListeningRef.current = false;
+        try { recognitionRef.current?.stop(); } catch (e) {}
+      }
+
       const response = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, voice: "onyx" }),
       });
 
       if (!response.ok) throw new Error("TTS failed");
@@ -258,7 +265,8 @@ export default function VoiceChat() {
           URL.revokeObjectURL(audioUrl);
           
           // RE-ARM MIC AUTOMATICALLY IF WE WERE LISTENING
-          if (isListeningRef.current) {
+          if (wasListening) {
+            isListeningRef.current = true;
             try {
               recognitionRef.current?.start();
             } catch (e) {
