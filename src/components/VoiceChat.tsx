@@ -111,23 +111,20 @@ export default function VoiceChat() {
 
   return (
     <>
-      {/* Floating Toggle Button */}
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setIsOpen(!isOpen)}
-        className="floating-trigger"
-      >
-        {isOpen ? <X /> : <Mic />}
-      </motion.button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="chat-window glass"
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="chat-window"
+            style={{ 
+              position: 'absolute',
+              bottom: '90px',
+              left: '20px',
+              zIndex: 999999
+            }}
           >
             <div className="chat-header">
               <h3>Monstah Assistant</h3>
@@ -172,6 +169,22 @@ export default function VoiceChat() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating Toggle Button */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setIsOpen(!isOpen)}
+        className="floating-trigger"
+        style={{ 
+          position: 'absolute',
+          bottom: '20px',
+          left: '20px',
+          zIndex: 999999
+        }}
+      >
+        {isOpen ? <X /> : <Mic />}
+      </motion.button>
 
       <style jsx>{`
         .floating-trigger {
