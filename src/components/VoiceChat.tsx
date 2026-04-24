@@ -196,6 +196,8 @@ export default function VoiceChat() {
               zIndex: 999999
             }}
           >
+            <audio ref={audioRef} style={{ display: 'none' }} playsInline />
+            
             <div className="chat-header">
               <div className="flex items-center gap-2">
                 <Volume2 size={18} className="text-secondary" />
@@ -241,7 +243,6 @@ export default function VoiceChat() {
         )}
       </AnimatePresence>
 
-      {/* Floating Toggle Button */}
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
@@ -251,7 +252,8 @@ export default function VoiceChat() {
           position: 'absolute',
           bottom: '20px',
           left: '20px',
-          zIndex: 999999
+          zIndex: 999999,
+          pointerEvents: 'auto'
         }}
       >
         {isOpen ? <X /> : <Mic />}
@@ -273,65 +275,50 @@ export default function VoiceChat() {
         }
 
         .chat-window {
+          display: grid;
+          grid-template-rows: auto 1fr auto; /* FIXED HEADER/FOOTER, FLEXIBLE MIDDLE */
           width: 100%;
           height: 100%;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
           background: #0d0d0f !important;
           border: 2px solid rgba(255, 255, 255, 0.15);
           border-radius: 28px;
-          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9);
+          overflow: hidden;
           pointer-events: auto;
         }
 
         .chat-header {
-          padding: 18px 25px;
-          background: #161618; /* Solid Header */
+          padding: 15px 25px;
+          background: #161618;
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           display: flex;
           justify-content: space-between;
           align-items: center;
         }
 
-        .clear-btn {
-          background: #252529;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          color: var(--primary);
-          cursor: pointer;
-          padding: 8px;
-          border-radius: 12px;
-          transition: all 0.2s;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .clear-btn:hover {
-          background: var(--primary);
-          color: #000;
-        }
-
         .chat-messages {
-          flex: 1 1 0%;
-          min-height: 0; /* CRITICAL for flex-scrolling on mobile */
           padding: 20px 25px;
-          overflow-y: scroll;
+          overflow-y: auto;
+          background: #0d0d0f;
           display: flex;
           flex-direction: column;
           gap: 15px;
-          background: #0d0d0f;
-          touch-action: pan-y;
           -webkit-overflow-scrolling: touch;
         }
 
+        .chat-input-area {
+          padding: 15px 20px;
+          background: #161618;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          display: flex;
+          gap: 10px;
+        }
+
         .message {
-          padding: 12px 18px; /* Roomy padding */
+          padding: 12px 18px;
           border-radius: 20px;
           max-width: 90%;
           font-size: 1rem;
           line-height: 1.5;
-          word-wrap: break-word;
         }
 
         .user {
@@ -344,28 +331,10 @@ export default function VoiceChat() {
 
         .assistant {
           align-self: flex-start;
-          background: #1c1c1f; /* Solid Grey */
+          background: #1c1c1f;
           color: #fff;
           border: 1px solid rgba(255, 255, 255, 0.1);
           border-bottom-left-radius: 4px;
-        }
-
-        .chat-messages::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-          background: #333;
-          border-radius: 10px;
-        }
-
-        .chat-input-area {
-          flex-shrink: 0; /* Don't squash the input */
-          padding: 20px 25px;
-          display: flex;
-          gap: 10px;
-          background: #161618;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         input {
@@ -373,18 +342,13 @@ export default function VoiceChat() {
           background: #0d0d0f;
           border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 12px;
-          padding: 10px 15px;
+          padding: 8px 15px;
           color: white;
           outline: none;
-          font-size: 1rem;
         }
 
-        input::placeholder {
-          color: #666;
-        }
-
-        .mic-btn, .send-btn {
-          background: rgba(255, 255, 255, 0.05);
+        .mic-btn, .send-btn, .clear-btn {
+          background: #252529;
           border-radius: 12px;
           width: 40px;
           height: 40px;
@@ -393,26 +357,12 @@ export default function VoiceChat() {
           justify-content: center;
           color: var(--primary);
           cursor: pointer;
-          transition: all 0.2s;
         }
 
         .mic-btn.active {
           background: var(--accent);
           color: white;
           animation: pulse-glow 1.5s infinite;
-        }
-
-        .mic-btn:hover, .send-btn:hover {
-          color: var(--primary);
-        }
-
-        .animate-spin {
-          animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
         }
       `}</style>
     </>
