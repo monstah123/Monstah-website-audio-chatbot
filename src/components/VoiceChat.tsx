@@ -191,6 +191,15 @@ export default function VoiceChat() {
         audioRef.current.onended = () => {
           isSpeakingRef.current = false;
           URL.revokeObjectURL(audioUrl);
+          
+          // RE-ARM MIC AUTOMATICALLY IF WE WERE LISTENING
+          if (isListeningRef.current) {
+            try {
+              recognitionRef.current?.start();
+            } catch (e) {
+              console.error("Auto-restart error:", e);
+            }
+          }
           resetIdleTimer();
         };
         await audioRef.current.play();
