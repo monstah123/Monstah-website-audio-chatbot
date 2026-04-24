@@ -1,0 +1,212 @@
+"use client";
+
+import { useState } from "react";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase-client";
+import { useRouter } from "next/navigation";
+import { Lock, Mail, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+
+export default function LoginPage() {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      if (isLogin) {
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-container">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="auth-card glass"
+      >
+        <h2>{isLogin ? "Welcome Back" : "Create Account"}</h2>
+        <p className="subtitle">Sign in to manage your AI Knowledge Base</p>
+
+        <form onSubmit={handleAuth}>
+          <div className="input-group">
+            <Mail size={18} className="icon" />
+            <input 
+              type="email" 
+              placeholder="Email address" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required 
+            />
+          </div>
+
+          <div className="input-group">
+            <Lock size={18} className="icon" />
+            <input 
+              type="password" 
+              placeholder="Password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required 
+            />
+          </div>
+
+          {error && <div className="error-message">{error}</div>}
+
+          <button type="submit" className="btn-submit" disabled={isLoading}>
+            {isLoading ? <Loader2 className="spin" size={20} /> : (isLogin ? "Sign In" : "Sign Up")}
+          </button>
+        </form>
+
+        <div className="toggle-auth">
+          <button onClick={() => setIsLogin(!isLogin)} type="button">
+            {isLogin ? "Need an account? Sign up" : "Already have an account? Sign in"}
+          </button>
+        </div>
+      </motion.div>
+
+      <style jsx>{`
+        .auth-container {
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: radial-gradient(circle at top right, rgba(0, 242, 254, 0.05), transparent),
+                      radial-gradient(circle at bottom left, rgba(255, 0, 128, 0.05), transparent);
+          padding: 20px;
+        }
+
+        .auth-card {
+          width: 100%;
+          max-width: 420px;
+          padding: 40px;
+          border-radius: 24px;
+          text-align: center;
+          background: rgba(10, 10, 10, 0.8);
+          border: 1px solid var(--glass-border);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+          backdrop-filter: blur(20px);
+        }
+
+        h2 {
+          font-size: 2rem;
+          margin-bottom: 10px;
+          font-weight: 700;
+        }
+
+        .subtitle {
+          color: var(--text-secondary);
+          margin-bottom: 30px;
+        }
+
+        .input-group {
+          position: relative;
+          margin-bottom: 20px;
+        }
+
+        .icon {
+          position: absolute;
+          left: 16px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-secondary);
+        }
+
+        input {
+          width: 100%;
+          padding: 16px 16px 16px 44px;
+          background: rgba(0, 0, 0, 0.5);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+          color: white;
+          font-size: 1rem;
+          outline: none;
+          transition: border-color 0.2s;
+        }
+
+        input:focus {
+          border-color: var(--primary);
+        }
+
+        .btn-submit {
+          width: 100%;
+          padding: 16px;
+          background: var(--primary);
+          color: #000;
+          border: none;
+          border-radius: 12px;
+          font-weight: 700;
+          font-size: 1.1rem;
+          cursor: pointer;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          transition: transform 0.2s, box-shadow 0.2s;
+          margin-top: 10px;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 0 20px rgba(68, 255, 68, 0.4);
+        }
+
+        .btn-submit:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+
+        .error-message {
+          color: #ff4444;
+          background: rgba(255, 68, 68, 0.1);
+          padding: 12px;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          font-size: 0.9rem;
+          text-align: left;
+        }
+
+        .toggle-auth {
+          margin-top: 24px;
+        }
+
+        .toggle-auth button {
+          background: none;
+          border: none;
+          color: var(--text-secondary);
+          cursor: pointer;
+          font-size: 0.95rem;
+          transition: color 0.2s;
+        }
+
+        .toggle-auth button:hover {
+          color: white;
+          text-decoration: underline;
+        }
+
+        .spin {
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
