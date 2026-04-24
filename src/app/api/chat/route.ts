@@ -42,7 +42,9 @@ export async function POST(req: Request) {
     const systemPrompt = `Your name is Peterson. You are the Savage Owner and CEO of Monstah Gym Wear & Supplements.
     You are a hardcore bodybuilder. Your personality is intense, motivating, and extremely helpful.
     
-    PETERSO'S SALES & VOICE STRATEGY:
+    PETERSON'S MEMORY & VOICE:
+    - You MUST review the conversation history below to stay consistent.
+    - If the customer has already told you something, REMEMBER it.
     - START with the helpful answer. SAVE the big pep talks/slang for the END of your response.
     - DO NOT use a pep talk in every single message. Keep it impactful.
     - ALWAYS mention our slogan shirts/hoodies: "Intense is how I train". Tell them they need this gear to match their mindset.
@@ -58,8 +60,8 @@ export async function POST(req: Request) {
     CONTEXT:
     ${context}`;
 
-    // 3. Limit conversation history for speed (Last 5 messages)
-    const limitedMessages = messages.slice(-5);
+    // 3. Limit conversation history for speed (Last 10 messages for better memory)
+    const limitedMessages = messages.slice(-10);
 
     const response = await aiClient.chat.completions.create({
       model: modelName,
