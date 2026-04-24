@@ -374,40 +374,106 @@ export default function VoiceChat() {
 
       <AnimatePresence>
         {!isOpen && (
-          <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+          <motion.div
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 100, opacity: 0 }}
+            whileHover={{ scale: 1.02 }}
             onClick={() => setIsOpen(true)}
-            className="floating-trigger"
+            className="savage-cta-container"
             style={{ 
               position: 'fixed',
               bottom: '20px',
               right: '20px',
               zIndex: 999999,
-              pointerEvents: 'auto'
+              cursor: 'pointer'
             }}
           >
-            <Mic />
-          </motion.button>
+            <div className="cta-content">
+              <div className="cta-top">
+                <div className="vortex-avatar" />
+                <span className="cta-text">Need help?</span>
+              </div>
+              <div className="cta-button">
+                <Volume2 size={16} fill="white" />
+                <span>Talk to Peterson</span>
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
       <style jsx>{`
-        .floating-trigger {
-          width: 60px;
-          height: 60px;
+        .savage-cta-container {
+          background: white;
+          padding: 12px 16px;
+          border-radius: 24px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+          width: 240px;
+          border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .cta-content {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .cta-top {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .cta-text {
+          color: #111;
+          font-size: 1.1rem;
+          font-weight: 600;
+          font-family: 'Inter', sans-serif;
+        }
+
+        .vortex-avatar {
+          width: 40px;
+          height: 40px;
           border-radius: 50%;
-          background: var(--primary);
-          color: var(--bg-dark);
-          border: 4px solid rgba(255, 255, 255, 0.1);
+          background: conic-gradient(#000 0deg, #44ff44 90deg, #000 180deg, #44ff44 270deg, #000 360deg);
+          animation: rotate-vortex 4s linear infinite;
+          box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+          position: relative;
+        }
+        .vortex-avatar::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 8px;
+          height: 8px;
+          background: #000;
+          border-radius: 50%;
+        }
+
+        @keyframes rotate-vortex {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .cta-button {
+          background: #000;
+          color: white;
+          padding: 10px 20px;
+          border-radius: 30px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), var(--glow-shadow);
-          cursor: pointer;
+          gap: 10px;
+          font-weight: 700;
+          font-size: 0.95rem;
+          transition: all 0.2s;
+        }
+        .cta-button:hover {
+          background: #222;
+          transform: translateY(-1px);
         }
 
         .chat-window {

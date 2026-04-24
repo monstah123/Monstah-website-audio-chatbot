@@ -10,8 +10,8 @@
     position: fixed !important;
     bottom: 20px !important;
     ${position}: 20px !important;
-    width: 80px !important;
-    height: 80px !important;
+    width: 260px !important;
+    height: 120px !important;
     z-index: 2147483647 !important;
     background: transparent !important;
     pointer-events: auto !important;
@@ -44,9 +44,9 @@
         wrapper.style.height = isMobile ? '80vh' : '650px';
         wrapper.style.borderRadius = '28px';
       } else {
-        wrapper.style.width = '80px';
-        wrapper.style.height = '80px';
-        wrapper.style.borderRadius = '50%';
+        wrapper.style.width = '260px'; // ACCOMMODATE CTA
+        wrapper.style.height = '120px';
+        wrapper.style.borderRadius = '24px';
       }
     }
   });
