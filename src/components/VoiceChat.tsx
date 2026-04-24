@@ -140,8 +140,8 @@ export default function VoiceChat() {
 
             <div className="chat-messages">
               {messages.length === 0 && (
-                <div className="empty-state">
-                  <p>How can I help you today?</p>
+                <div className="message assistant">
+                  Hi, I'm Peterson. How can I help you today?
                 </div>
               )}
               {messages.map((m, i) => (
