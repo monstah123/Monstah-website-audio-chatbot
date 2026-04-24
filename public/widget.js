@@ -41,7 +41,8 @@
       if (event.data.isOpen) {
         const isMobile = window.innerWidth < 600;
         wrapper.style.width = isMobile ? 'calc(100vw - 40px)' : '400px';
-        wrapper.style.height = isMobile ? '80vh' : '650px';
+        wrapper.style.height = isMobile ? '80vh' : 'calc(100vh - 40px)';
+        wrapper.style.maxHeight = '650px';
         wrapper.style.borderRadius = '28px';
       } else {
         wrapper.style.width = '260px'; // ACCOMMODATE CTA

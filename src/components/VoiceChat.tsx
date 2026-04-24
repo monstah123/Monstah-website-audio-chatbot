@@ -278,8 +278,9 @@ export default function VoiceChat() {
               position: 'fixed',
               bottom: '20px',
               right: '20px',
-              width: '400px', // Managed by widget.js but safe here
-              height: '650px',
+              width: '400px', 
+              height: 'calc(100vh - 40px)', // DYNAMIC FIT
+              maxHeight: '650px',
               zIndex: 999999
             }}
           >
