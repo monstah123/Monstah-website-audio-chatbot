@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Mic, Zap, Shield, MessageSquare } from "lucide-react";
 import VoiceChat from "@/components/VoiceChat";
+import KnowledgeManager from "@/components/KnowledgeManager";
 
 export default function Home() {
   return (
@@ -24,7 +25,7 @@ export default function Home() {
           </p>
           
           <div className="cta-group">
-            <button className="btn-primary">Get Started</button>
+            <button className="btn-primary" onClick={() => window.scrollTo({ top: 800, behavior: 'smooth' })}>Train Your AI</button>
             <button className="btn-secondary">View Demo</button>
           </div>
         </motion.div>
@@ -47,6 +48,9 @@ export default function Home() {
           />
         </div>
       </section>
+
+      {/* Admin Dashboard: Knowledge Manager */}
+      <KnowledgeManager />
 
       {/* Floating Chatbot Widget */}
       <VoiceChat />
