@@ -109,6 +109,14 @@ export default function VoiceChat() {
     if (window.parent) {
       window.parent.postMessage({ type: 'toggle-chat', isOpen }, "*");
     }
+    
+    // Greet audibly when opened for the first time in a session
+    if (isOpen && messages.length === 1 && messages[0].content === initialGreeting.content) {
+      // Small delay to let animation finish
+      setTimeout(() => {
+        speak(initialGreeting.content);
+      }, 500);
+    }
   }, [isOpen]);
 
   // ---- Speech Recognition Setup ----
