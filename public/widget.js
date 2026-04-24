@@ -8,15 +8,13 @@
   wrapper.id = 'monstah-ai-final-anchor';
   wrapper.style.cssText = `
     position: fixed !important;
-    bottom: 20px !important;
-    ${position}: 20px !important;
-    width: 260px !important;
-    height: 120px !important;
+    bottom: 0 !important;
+    ${position}: 0 !important;
+    width: 280px !important;
+    height: 140px !important;
     z-index: 2147483647 !important;
     background: transparent !important;
     pointer-events: auto !important;
-    border-radius: 50%;
-    overflow: hidden;
     cursor: pointer !important;
   `;
   
@@ -40,14 +38,11 @@
     if (event.data.type === 'toggle-chat') {
       if (event.data.isOpen) {
         const isMobile = window.innerWidth < 600;
-        wrapper.style.width = isMobile ? 'calc(100vw - 40px)' : '400px';
-        wrapper.style.height = isMobile ? '80vh' : 'calc(100vh - 40px)';
-        wrapper.style.maxHeight = '650px';
-        wrapper.style.borderRadius = '28px';
+        wrapper.style.width = isMobile ? '100vw' : '440px';
+        wrapper.style.height = isMobile ? '80vh' : '690px';
       } else {
-        wrapper.style.width = '260px'; // ACCOMMODATE CTA
-        wrapper.style.height = '120px';
-        wrapper.style.borderRadius = '24px';
+        wrapper.style.width = '280px'; 
+        wrapper.style.height = '140px';
       }
     }
   });

@@ -268,21 +268,34 @@ export default function VoiceChat() {
     <>
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ x: "100%", opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: "100%", opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="chat-window neon-pulse"
+          <div 
             style={{ 
-              position: 'absolute',
+              position: 'fixed',
               bottom: '0',
               right: '0',
-              width: '100%', 
-              height: '100%',
+              width: '440px', // Wider to account for glow padding
+              height: '690px', // Taller to account for glow padding
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'flex-end',
+              padding: '20px', // ROOM FOR NEON GLOW
+              pointerEvents: 'none',
               zIndex: 999999
             }}
           >
+            <motion.div
+              initial={{ x: "100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="chat-window neon-pulse"
+              style={{ 
+                width: '100%', 
+                height: '100%',
+                maxHeight: '650px',
+                pointerEvents: 'auto'
+              }}
+            >
             <audio ref={audioRef} style={{ display: 'none' }} playsInline />
             
             <div className="chat-header">
@@ -369,6 +382,7 @@ export default function VoiceChat() {
               </button>
             </div>
           </motion.div>
+        </div>
         )}
       </AnimatePresence>
 
