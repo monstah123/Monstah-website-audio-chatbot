@@ -315,6 +315,7 @@ export default function VoiceChat() {
           flex-direction: column;
           gap: 15px;
           background: #0d0d0f; /* Solid Background */
+          overscroll-behavior: contain;
         }
 
         .message {
@@ -352,22 +353,26 @@ export default function VoiceChat() {
         }
 
         .chat-input-area {
-          padding: 15px;
+          padding: 20px 25px;
           display: flex;
-          gap: 8px;
-          background: rgba(255, 255, 255, 0.03);
+          gap: 10px;
+          background: #161618;
           border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         input {
           flex: 1;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: #0d0d0f;
+          border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 12px;
-          padding: 8px 15px;
+          padding: 10px 15px;
           color: white;
           outline: none;
-          font-size: 0.9rem;
+          font-size: 1rem;
+        }
+
+        input::placeholder {
+          color: #666;
         }
 
         .mic-btn, .send-btn {
