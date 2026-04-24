@@ -292,8 +292,10 @@ export default function VoiceChat() {
                 position: 'fixed',
                 bottom: '20px',
                 right: '20px',
-                width: '400px', 
-                height: '650px',
+                width: 'calc(100vw - 40px)',
+                maxWidth: '400px',
+                height: 'calc(100vh - 40px)',
+                maxHeight: '650px',
                 pointerEvents: 'auto',
                 zIndex: 2147483647
               }}
