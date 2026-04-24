@@ -11,28 +11,34 @@
   const iframe = document.createElement('iframe');
   iframe.src = `${VERCEL_URL}/widget?pos=${position}&v=${Date.now()}`; 
   
-  // Use !important on everything to override WordPress theme CSS
-  iframe.style.setProperty('position', 'fixed', 'important');
-  iframe.style.setProperty('bottom', '20px', 'important');
-  iframe.style.setProperty('top', 'auto', 'important');
-  
+  // ULTRA STUBBORN STYLING
+  const styles = {
+    'position': 'fixed',
+    'bottom': '0',
+    'top': 'auto',
+    'width': '450px',
+    'height': '700px',
+    'border': 'none',
+    'z-index': '2147483647', // Maximum possible z-index
+    'background': 'transparent',
+    'display': 'block',
+    'visibility': 'visible',
+    'color-scheme': 'none'
+  };
+
   if (position === 'left') {
-    iframe.style.setProperty('left', '20px', 'important');
-    iframe.style.setProperty('right', 'auto', 'important');
+    styles['left'] = '0';
+    styles['right'] = 'auto';
   } else {
-    iframe.style.setProperty('right', '20px', 'important');
-    iframe.style.setProperty('left', 'auto', 'important');
+    styles['right'] = '0';
+    styles['left'] = 'auto';
   }
 
-  iframe.style.setProperty('width', '450px', 'important');
-  iframe.style.setProperty('height', '700px', 'important');
-  iframe.style.setProperty('border', 'none', 'important');
-  iframe.style.setProperty('z-index', '999999999', 'important');
-  iframe.style.setProperty('background', 'transparent', 'important');
-  iframe.style.setProperty('display', 'block', 'important');
-  iframe.style.setProperty('visibility', 'visible', 'important');
-  iframe.allow = 'microphone';
+  for (let prop in styles) {
+    iframe.style.setProperty(prop, styles[prop], 'important');
+  }
 
+  iframe.allow = 'microphone';
   container.appendChild(iframe);
 
   window.addEventListener('message', (event) => {
