@@ -86,12 +86,13 @@ export default function VoiceChat() {
   }, []);
 
   const toggleListening = () => {
-    // Prime audio on first interaction to unlock mobile audio
+    // UNLOCK AUDIO ON FIRST INTERACTION (Crucial for iOS)
     if (!audioRef.current) {
-      const silentAudio = new Audio();
-      silentAudio.play().catch(() => {});
-      audioRef.current = silentAudio;
+      audioRef.current = new Audio();
     }
+    // "Wake up" the audio element with a user gesture
+    audioRef.current.play().catch(() => {});
+    audioRef.current.pause();
 
     if (isListening) {
       recognitionRef.current?.stop();
@@ -157,25 +158,20 @@ export default function VoiceChat() {
       const audioUrl = URL.createObjectURL(audioBlob);
       
       if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
+        audioRef.current.src = audioUrl;
+        await audioRef.current.play();
+        
+        // Auto-listening after AI finishes speaking
+        audioRef.current.onended = () => {
+          setIsListening(true);
+          try {
+            recognitionRef.current?.start();
+          } catch (e) {
+            console.error("Recognition start error:", e);
+          }
+          URL.revokeObjectURL(audioUrl);
+        };
       }
-
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-      
-      // Auto-listening after AI finishes speaking
-      audio.onended = () => {
-        setIsListening(true);
-        try {
-          recognitionRef.current?.start();
-        } catch (e) {
-          console.error("Recognition start error:", e);
-        }
-        URL.revokeObjectURL(audioUrl);
-      };
-
-      await audio.play();
     } catch (error) {
       console.error("Playback error:", error);
     }
@@ -317,8 +313,8 @@ export default function VoiceChat() {
         }
 
         .chat-messages {
-          flex: 1;
-          min-height: 0; /* CRITICAL for flex-scrolling */
+          flex: 1 1 0%;
+          min-height: 0; /* CRITICAL for flex-scrolling on mobile */
           padding: 20px 25px;
           overflow-y: scroll;
           display: flex;
