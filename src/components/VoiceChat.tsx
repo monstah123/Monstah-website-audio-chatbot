@@ -241,34 +241,34 @@ export default function VoiceChat() {
         }
 
         .chat-window {
-          width: 360px;
-          height: 520px;
+          width: 380px;
+          height: 550px;
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          background: linear-gradient(180deg, #161618 0%, #0d0d0f 100%) !important;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 24px;
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 255, 128, 0.05);
+          background: #0d0d0f !important; /* Total Solid Black */
+          border: 2px solid rgba(255, 255, 255, 0.15);
+          border-radius: 28px;
+          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9);
           margin-bottom: 20px;
         }
 
         .chat-header {
-          padding: 15px 20px;
-          background: rgba(255, 255, 255, 0.02);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          padding: 18px 25px;
+          background: #161618; /* Solid Header */
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           display: flex;
           justify-content: space-between;
           align-items: center;
         }
 
         .clear-btn {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: var(--primary); /* Use primary color to make it pop */
+          background: #252529;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          color: var(--primary);
           cursor: pointer;
-          padding: 6px;
-          border-radius: 10px;
+          padding: 8px;
+          border-radius: 12px;
           transition: all 0.2s;
           display: flex;
           align-items: center;
@@ -278,52 +278,50 @@ export default function VoiceChat() {
         .clear-btn:hover {
           background: var(--primary);
           color: #000;
-          transform: rotate(-30deg);
         }
 
         .chat-messages {
           flex: 1;
-          padding: 20px;
+          padding: 20px 25px; /* Extra padding to stop cutoff */
           overflow-y: auto;
           display: flex;
           flex-direction: column;
-          gap: 12px;
-          /* Custom Scrollbar */
-          scrollbar-width: thin;
-          scrollbar-color: var(--primary) transparent;
-        }
-
-        .chat-messages::-webkit-scrollbar {
-          width: 5px;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-          background: var(--primary);
-          border-radius: 10px;
+          gap: 15px;
+          background: #0d0d0f; /* Solid Background */
         }
 
         .message {
-          padding: 10px 14px;
-          border-radius: 18px;
-          max-width: 85%;
-          font-size: 0.9rem;
-          line-height: 1.4;
+          padding: 12px 18px; /* Roomy padding */
+          border-radius: 20px;
+          max-width: 90%;
+          font-size: 1rem;
+          line-height: 1.5;
+          word-wrap: break-word;
         }
 
         .user {
           align-self: flex-end;
           background: var(--primary);
           color: #000;
-          font-weight: 500;
+          font-weight: 600;
           border-bottom-right-radius: 4px;
         }
 
         .assistant {
           align-self: flex-start;
-          background: rgba(255, 255, 255, 0.08);
+          background: #1c1c1f; /* Solid Grey */
           color: #fff;
           border: 1px solid rgba(255, 255, 255, 0.1);
           border-bottom-left-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+          background: #333;
+          border-radius: 10px;
         }
 
         .chat-input-area {
