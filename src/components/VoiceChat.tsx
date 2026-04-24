@@ -2,12 +2,23 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, Send, X, Volume2, Loader2, RotateCcw } from "lucide-react";
+import { Mic, Send, X, Volume2, Loader2, RotateCcw, History } from "lucide-react";
 
 export default function VoiceChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const initialGreeting = { role: "assistant", content: "Hi, I'm Peterson. How can I help you today?" };
+  const [showHistory, setShowHistory] = useState(false);
+  const [sessions, setSessions] = useState<{ id: string; timestamp: string; messages: any[] }[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("monstah_sessions");
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+
   const [messages, setMessages] = useState<{ role: string; content: string }[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("monstah_chat_history");
@@ -19,6 +30,26 @@ export default function VoiceChat() {
   // Save to localStorage whenever messages change
   useEffect(() => {
     localStorage.setItem("monstah_chat_history", JSON.stringify(messages));
+    
+    // Update or create session in sessions list
+    if (messages.length > 1) {
+      setSessions(prev => {
+        const now = new Date().toLocaleString();
+        const updated = [...prev];
+        const existingIdx = updated.findIndex(s => s.id === currentSessionId);
+        
+        if (existingIdx >= 0) {
+          updated[existingIdx].messages = messages;
+        } else {
+          const newId = Date.now().toString();
+          setCurrentSessionId(newId);
+          updated.unshift({ id: newId, timestamp: now, messages });
+        }
+        
+        localStorage.setItem("monstah_sessions", JSON.stringify(updated.slice(0, 20))); // Limit to 20
+        return updated;
+      });
+    }
   }, [messages]);
 
   const [input, setInput] = useState("");
@@ -55,6 +86,7 @@ export default function VoiceChat() {
   // ---- Clear Chat ----
   const clearChat = () => {
     setMessages([initialGreeting]);
+    setCurrentSessionId(null);
     localStorage.removeItem("monstah_chat_history");
     if (audioRef.current) {
       audioRef.current.pause();
@@ -64,6 +96,12 @@ export default function VoiceChat() {
     setIsListening(false);
     isListeningRef.current = false;
     isSpeakingRef.current = false;
+  };
+
+  const loadSession = (session: any) => {
+    setMessages(session.messages);
+    setCurrentSessionId(session.id);
+    setShowHistory(false);
   };
 
   // ---- Notify parent iframe of open/close ----
@@ -237,23 +275,62 @@ export default function VoiceChat() {
                 <Volume2 size={18} color="var(--primary)" />
                 <h3 style={{ margin: 0 }}>Monstah Assistant</h3>
               </div>
-              <button onClick={clearChat} className="clear-btn" title="Clear Conversation">
-                <RotateCcw size={16} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setShowHistory(!showHistory)} className="history-btn" title="Convo History">
+                  <History size={16} />
+                </button>
+                <button onClick={clearChat} className="clear-btn" title="Clear Conversation">
+                  <RotateCcw size={16} />
+                </button>
+              </div>
             </div>
 
-            <div className="chat-messages">
-              {messages.map((m, i) => (
-                <div key={i} className={`message ${m.role}`}>
-                  {m.content}
-                </div>
-              ))}
-              {isLoading && (
-                <div className="message assistant">
-                  <Loader2 className="spin" size={16} />
-                </div>
-              )}
-              <div ref={messagesEndRef} />
+            <div className="chat-messages-container">
+              <AnimatePresence>
+                {showHistory && (
+                  <motion.div 
+                    initial={{ x: -300 }}
+                    animate={{ x: 0 }}
+                    exit={{ x: -300 }}
+                    className="history-sidebar"
+                  >
+                    <div className="history-header">
+                      <h4>Archive of Gains</h4>
+                      <button onClick={() => setShowHistory(false)}><X size={16}/></button>
+                    </div>
+                    <div className="history-list">
+                      {sessions.length === 0 ? (
+                        <p className="p-4 text-center text-gray-500">No past sessions yet.</p>
+                      ) : (
+                        sessions.map(s => (
+                          <div 
+                            key={s.id} 
+                            onClick={() => loadSession(s)}
+                            className={`history-item ${s.id === currentSessionId ? 'active' : ''}`}
+                          >
+                            <span className="text-xs opacity-50">{s.timestamp}</span>
+                            <p className="truncate text-sm">{s.messages[1]?.content || 'Empty Chat'}</p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="chat-messages">
+                {messages.map((m, i) => (
+                  <div key={i} className={`message ${m.role}`}>
+                    {m.content}
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="message assistant">
+                    <Loader2 className="spin" size={16} />
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
             </div>
 
             <div className="chat-input-area">
@@ -326,8 +403,60 @@ export default function VoiceChat() {
           align-items: center;
         }
 
+        .chat-messages-container {
+          position: relative;
+          min-height: 0;
+          overflow: hidden;
+        }
+
+        .history-sidebar {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: #161618;
+          z-index: 100;
+          border-right: 1px solid rgba(255, 255, 255, 0.1);
+          display: flex;
+          flex-direction: column;
+        }
+
+        .history-header {
+          padding: 15px 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .history-list {
+          flex: 1;
+          overflow-y: auto;
+          padding: 10px;
+        }
+
+        .history-item {
+          padding: 12px;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+          border: 1px solid transparent;
+          margin-bottom: 8px;
+        }
+
+        .history-item:hover {
+          background: rgba(255, 255, 255, 0.05);
+          border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .history-item.active {
+          background: rgba(var(--primary-rgb), 0.1);
+          border-color: var(--primary);
+        }
+
         .chat-messages {
-          min-height: 0;       /* THE FIX: allows grid item to shrink & scroll */
+          height: 100%;
           padding: 20px 25px;
           overflow-y: auto;
           display: flex;
@@ -390,7 +519,7 @@ export default function VoiceChat() {
         }
         input::placeholder { color: #666; }
 
-        .mic-btn, .send-btn, .clear-btn {
+        .mic-btn, .send-btn, .clear-btn, .history-btn {
           background: #252529;
           border: 1px solid rgba(255, 255, 255, 0.15);
           border-radius: 12px;
