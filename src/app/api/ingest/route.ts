@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { db } from "@/lib/firebase-admin";
 import * as cheerio from "cheerio";
-import pdfParse from "pdf-parse";
+
+// Workaround for Turbopack CommonJS default export issue
+const pdfParse = require("pdf-parse");
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
