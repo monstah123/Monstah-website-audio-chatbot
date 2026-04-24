@@ -270,7 +270,7 @@ export default function VoiceChat() {
             style={{ 
               position: 'absolute',
               bottom: '0px',
-              left: '0px',
+              right: '0px', // SHIFT TO RIGHT
               width: '100%',
               height: '100%',
               zIndex: 999999
@@ -370,7 +370,7 @@ export default function VoiceChat() {
         style={{ 
           position: 'absolute',
           bottom: '20px',
-          left: '20px',
+          right: '20px', // SHIFT TO RIGHT
           zIndex: 999999,
           pointerEvents: 'auto'
         }}

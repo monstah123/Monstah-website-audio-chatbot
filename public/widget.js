@@ -2,7 +2,7 @@
   const VERCEL_URL = "https://monstah-website-audio-chatbot.vercel.app";
   
   const currentScript = document.currentScript;
-  const position = currentScript?.getAttribute('data-position') === 'left' ? 'left' : 'right';
+  const position = 'right'; // FORCE TO RIGHT SIDE
   
   const wrapper = document.createElement('div');
   wrapper.id = 'monstah-ai-final-anchor';
