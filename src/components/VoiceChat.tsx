@@ -270,14 +270,16 @@ export default function VoiceChat() {
         .chat-window {
           width: 380px;
           height: 550px;
+          max-height: 80vh; /* Don't exceed viewport */
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          background: #0d0d0f !important; /* Total Solid Black */
+          background: #0d0d0f !important;
           border: 2px solid rgba(255, 255, 255, 0.15);
           border-radius: 28px;
           box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9);
           margin-bottom: 20px;
+          pointer-events: auto; /* CRITICAL: Ensure clicks work */
         }
 
         .chat-header {
