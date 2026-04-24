@@ -268,21 +268,6 @@ export default function VoiceChat() {
     <>
       <AnimatePresence>
         {isOpen && (
-          <div 
-            style={{ 
-              position: 'fixed',
-              bottom: '0',
-              right: '0',
-              width: '440px', // Wider to account for glow padding
-              height: '690px', // Taller to account for glow padding
-              display: 'flex',
-              alignItems: 'flex-end',
-              justifyContent: 'flex-end',
-              padding: '20px', // ROOM FOR NEON GLOW
-              pointerEvents: 'none',
-              zIndex: 999999
-            }}
-          >
             <motion.div
               initial={{ x: "100%", opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -290,10 +275,13 @@ export default function VoiceChat() {
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="chat-window neon-pulse"
               style={{ 
-                width: '100%', 
-                height: '100%',
-                maxHeight: '650px',
-                pointerEvents: 'auto'
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                width: '400px', 
+                height: '650px',
+                pointerEvents: 'auto',
+                zIndex: 2147483647
               }}
             >
             <audio ref={audioRef} style={{ display: 'none' }} playsInline />
@@ -380,9 +368,7 @@ export default function VoiceChat() {
               <button onClick={() => handleSend(input)} className="send-btn">
                 <Send size={18} />
               </button>
-            </div>
-          </motion.div>
-        </div>
+              </motion.div>
         )}
       </AnimatePresence>
 
@@ -496,21 +482,21 @@ export default function VoiceChat() {
           width: 100%;
           height: 100%;
           background: #0d0d0f !important;
-          border: 2px solid #44ff44; /* NEON BASE */
-          border-radius: 28px;
-          overflow: hidden;
-          box-shadow: 0 0 15px rgba(68, 255, 68, 0.3);
+          border: 2px solid #44ff44 !important; /* NEON LOCKDOWN */
+          border-radius: 28px !important;
+          overflow: hidden !important;
+          box-shadow: 0 0 20px rgba(68, 255, 68, 0.4) !important;
           position: relative;
         }
 
         .neon-pulse {
-          animation: neon-breathe 3s ease-in-out infinite;
+          animation: neon-breathe 3s ease-in-out infinite !important;
         }
 
         @keyframes neon-breathe {
-          0% { border-color: #44ff44; box-shadow: 0 0 15px rgba(68, 255, 68, 0.2); }
-          50% { border-color: #77ff77; box-shadow: 0 0 25px rgba(68, 255, 68, 0.5); }
-          100% { border-color: #44ff44; box-shadow: 0 0 15px rgba(68, 255, 68, 0.2); }
+          0% { border-color: #44ff44 !important; box-shadow: 0 0 15px rgba(68, 255, 68, 0.2) !important; }
+          50% { border-color: #77ff77 !important; box-shadow: 0 0 30px rgba(68, 255, 68, 0.6) !important; }
+          100% { border-color: #44ff44 !important; box-shadow: 0 0 15px rgba(68, 255, 68, 0.2) !important; }
         }
 
         .chat-header {
