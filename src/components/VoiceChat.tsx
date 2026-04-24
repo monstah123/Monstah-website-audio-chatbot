@@ -7,11 +7,14 @@ import { Mic, Send, X, Volume2, Loader2 } from "lucide-react";
 export default function VoiceChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>([
+    { role: "assistant", content: "Hi, I'm Peterson. How can I help you today?" }
+  ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
   const recognitionRef = useRef<any>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Notify parent window of size changes
   useEffect(() => {
@@ -102,12 +105,24 @@ export default function VoiceChat() {
 
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
+      
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+
       const audio = new Audio(audioUrl);
+      audioRef.current = audio;
       
       // Auto-listening after AI finishes speaking
       audio.onended = () => {
         setIsListening(true);
-        recognitionRef.current?.start();
+        try {
+          recognitionRef.current?.start();
+        } catch (e) {
+          console.error("Recognition start error:", e);
+        }
+        URL.revokeObjectURL(audioUrl);
       };
 
       await audio.play();
@@ -139,11 +154,6 @@ export default function VoiceChat() {
             </div>
 
             <div className="chat-messages">
-              {messages.length === 0 && (
-                <div className="message assistant">
-                  Hi, I'm Peterson. How can I help you today?
-                </div>
-              )}
               {messages.map((m, i) => (
                 <div key={i} className={`message ${m.role}`}>
                   {m.content}
