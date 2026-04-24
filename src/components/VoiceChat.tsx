@@ -280,19 +280,19 @@ export default function VoiceChat() {
             <audio ref={audioRef} style={{ display: 'none' }} playsInline />
             
             <div className="chat-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Volume2 size={18} color="var(--primary)" />
-                <h3 style={{ margin: 0 }}>Monstah Assistant</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="status-dot" />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>MONSTAH AI</h3>
               </div>
-              <div className="flex items-center gap-2">
-                <button onClick={() => setShowHistory(!showHistory)} className="history-btn" title="Convo History">
-                  <History size={16} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button onClick={() => setShowHistory(!showHistory)} className="header-icon-btn" title="History">
+                  <History size={18} />
                 </button>
-                <button onClick={clearChat} className="clear-btn" title="Clear Conversation">
-                  <RotateCcw size={16} />
+                <button onClick={clearChat} className="header-icon-btn" title="Reset">
+                  <RotateCcw size={18} />
                 </button>
-                <button onClick={() => setIsOpen(false)} className="close-header-btn" title="Close Chat">
-                  <X size={18} />
+                <button onClick={() => setIsOpen(false)} className="header-icon-btn close-btn" title="Close">
+                  <X size={20} />
                 </button>
               </div>
             </div>
@@ -550,9 +550,48 @@ export default function VoiceChat() {
           outline: none;
           font-size: 1rem;
         }
-        input::placeholder { color: #888; }
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          background: #44ff44;
+          border-radius: 50%;
+          box-shadow: 0 0 10px #44ff44;
+          animation: pulse 2s infinite;
+        }
 
-        .mic-btn, .send-btn, .clear-btn, .history-btn, .close-header-btn {
+        @keyframes pulse {
+          0% { opacity: 0.4; }
+          50% { opacity: 1; }
+          100% { opacity: 0.4; }
+        }
+
+        .header-icon-btn {
+          background: #252529;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #fff;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .header-icon-btn:hover {
+          background: #323238;
+          border-color: var(--primary);
+          color: var(--primary);
+        }
+        .header-icon-btn.close-btn {
+          color: #ff4444;
+        }
+        .header-icon-btn.close-btn:hover {
+          background: rgba(255, 0, 0, 0.1);
+          border-color: #ff4444;
+        }
+
+        .mic-btn, .send-btn {
           background: #252529;
           border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 12px;
@@ -563,15 +602,6 @@ export default function VoiceChat() {
           justify-content: center;
           color: var(--primary);
           cursor: pointer;
-        }
-
-        .close-header-btn {
-          background: rgba(255, 0, 0, 0.1);
-          color: #ff4444;
-          border-color: rgba(255, 0, 0, 0.2);
-        }
-        .close-header-btn:hover {
-          background: rgba(255, 0, 0, 0.2);
         }
 
         .mic-btn.active {
