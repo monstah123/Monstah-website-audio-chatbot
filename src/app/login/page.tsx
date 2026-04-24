@@ -20,6 +20,12 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
+    if (!auth) {
+      setError("System Offline: Firebase API keys missing.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);

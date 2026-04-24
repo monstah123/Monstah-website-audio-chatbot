@@ -15,6 +15,12 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
+    if (!auth) {
+      console.warn("Firebase Auth not initialized. Missing API keys.");
+      setLoading(false);
+      return;
+    }
+    
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
