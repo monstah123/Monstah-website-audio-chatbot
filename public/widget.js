@@ -9,22 +9,27 @@
   document.body.appendChild(container);
 
   const iframe = document.createElement('iframe');
-  // Pass the position as a query parameter so the internal page knows where to align
-  iframe.src = `${VERCEL_URL}/widget?pos=${position}`; 
-  iframe.style.position = 'fixed';
-  iframe.style.bottom = '20px'; // Give it a little breathing room from the edge
+  // Add a timestamp to bypass any browser cache
+  iframe.src = `${VERCEL_URL}/widget?pos=${position}&v=${Date.now()}`; 
+  
+  // Use !important for everything to fight WordPress CSS
+  iframe.style.setProperty('position', 'fixed', 'important');
+  iframe.style.setProperty('bottom', '20px', 'important');
+  iframe.style.setProperty('top', 'auto', 'important');
   
   if (position === 'left') {
-    iframe.style.left = '20px';
+    iframe.style.setProperty('left', '20px', 'important');
+    iframe.style.setProperty('right', 'auto', 'important');
   } else {
-    iframe.style.right = '20px';
+    iframe.style.setProperty('right', '20px', 'important');
+    iframe.style.setProperty('left', 'auto', 'important');
   }
 
-  iframe.style.width = '450px';
-  iframe.style.height = '700px';
-  iframe.style.border = 'none';
-  iframe.style.zIndex = '999999';
-  iframe.style.background = 'transparent';
+  iframe.style.setProperty('width', '450px', 'important');
+  iframe.style.setProperty('height', '700px', 'important');
+  iframe.style.setProperty('border', 'none', 'important');
+  iframe.style.setProperty('z-index', '999999999', 'important');
+  iframe.style.setProperty('background', 'transparent', 'important');
   iframe.allow = 'microphone';
 
   container.appendChild(iframe);
