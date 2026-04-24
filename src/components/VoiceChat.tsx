@@ -103,6 +103,13 @@ export default function VoiceChat() {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
+      
+      // Auto-listening after AI finishes speaking
+      audio.onended = () => {
+        setIsListening(true);
+        recognitionRef.current?.start();
+      };
+
       await audio.play();
     } catch (error) {
       console.error("Playback error:", error);

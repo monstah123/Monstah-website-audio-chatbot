@@ -57,6 +57,9 @@ export async function POST(req: Request) {
     CONTEXT:
     ${context}`;
 
+    // 3. Limit conversation history for speed (Last 5 messages)
+    const limitedMessages = messages.slice(-5);
+
     const response = await aiClient.chat.completions.create({
       model: modelName,
       messages: [
@@ -64,7 +67,7 @@ export async function POST(req: Request) {
           role: "system",
           content: systemPrompt,
         },
-        ...messages,
+        ...limitedMessages,
       ],
       stream: true,
     });
