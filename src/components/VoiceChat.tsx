@@ -15,6 +15,32 @@ export default function VoiceChat() {
   const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startIdleTimer = () => {
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = setTimeout(() => {
+      if (isListening) {
+        recognitionRef.current?.stop();
+        setIsListening(false);
+      }
+    }, 15000); // 15 seconds
+  };
+
+  const resetIdleTimer = () => {
+    if (isListening) startIdleTimer();
+  };
+
+  useEffect(() => {
+    if (isListening) {
+      startIdleTimer();
+    } else {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    }
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, [isListening]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -47,6 +73,7 @@ export default function VoiceChat() {
       recognitionRef.current.interimResults = false;
 
       recognitionRef.current.onresult = (event: any) => {
+        resetIdleTimer(); // Reset timer on speech
         const transcript = event.results[0][0].transcript;
         setInput(transcript);
         handleSend(transcript);
