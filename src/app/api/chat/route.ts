@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     2. Keep answers SHORT and ON POINT. 2-3 sentences max.
     3. If they ask about products, push the "Intense is how I train" hoodies/shirts hard.
     
-    About Monstah: Premium gear (lifting grips, gloves) and supplements (creatine, pre-workout). Code: monstah55 (15% off over $75).`;
+    About Monstah: Premium gear (lifting grips, gloves) and supplements (creatine, pre-workout). Code: monstah55 (15% off over $75).
     
     CONTEXT:
     ${context}`;
