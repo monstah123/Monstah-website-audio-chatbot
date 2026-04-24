@@ -19,17 +19,13 @@ export default function VoiceChat() {
 
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("monstah_chat_history");
-      return saved ? JSON.parse(saved) : [initialGreeting];
-    }
-    return [initialGreeting];
-  });
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>([initialGreeting]);
 
   // Save to localStorage whenever messages change
   useEffect(() => {
-    localStorage.setItem("monstah_chat_history", JSON.stringify(messages));
+    if (messages.length > 1) {
+      localStorage.setItem("monstah_chat_history", JSON.stringify(messages));
+    }
     
     // Update or create session in sessions list
     if (messages.length > 1) {
@@ -110,12 +106,22 @@ export default function VoiceChat() {
       window.parent.postMessage({ type: 'toggle-chat', isOpen }, "*");
     }
     
-    // Greet audibly when opened for the first time in a session
+    // Greet audibly and start listening when opened for the first time
     if (isOpen && messages.length === 1 && messages[0].content === initialGreeting.content) {
       // Small delay to let animation finish
-      setTimeout(() => {
-        speak(initialGreeting.content);
-      }, 500);
+      setTimeout(async () => {
+        // Unlock audio
+        if (audioRef.current) {
+          audioRef.current.play().catch(() => {});
+          audioRef.current.pause();
+        }
+        await speak(initialGreeting.content);
+        
+        // Auto-start listening after greeting
+        setIsListening(true);
+        isListeningRef.current = true;
+        try { recognitionRef.current?.start(); } catch {}
+      }, 800);
     }
   }, [isOpen]);
 
