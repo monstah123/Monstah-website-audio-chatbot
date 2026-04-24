@@ -86,6 +86,13 @@ export default function VoiceChat() {
   }, []);
 
   const toggleListening = () => {
+    // Prime audio on first interaction to unlock mobile audio
+    if (!audioRef.current) {
+      const silentAudio = new Audio();
+      silentAudio.play().catch(() => {});
+      audioRef.current = silentAudio;
+    }
+
     if (isListening) {
       recognitionRef.current?.stop();
     } else {
@@ -311,13 +318,13 @@ export default function VoiceChat() {
 
         .chat-messages {
           flex: 1;
+          min-height: 0; /* CRITICAL for flex-scrolling */
           padding: 20px 25px;
           overflow-y: scroll;
           display: flex;
           flex-direction: column;
           gap: 15px;
           background: #0d0d0f;
-          /* Removed overscroll-behavior for legacy compatibility */
           touch-action: pan-y;
           -webkit-overflow-scrolling: touch;
         }
@@ -357,6 +364,7 @@ export default function VoiceChat() {
         }
 
         .chat-input-area {
+          flex-shrink: 0; /* Don't squash the input */
           padding: 20px 25px;
           display: flex;
           gap: 10px;
