@@ -273,14 +273,13 @@ export default function VoiceChat() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="chat-window"
+            className="chat-window neon-pulse"
             style={{ 
-              position: 'fixed',
-              bottom: '20px',
-              right: '20px',
-              width: '400px', 
-              height: 'calc(100vh - 40px)', // DYNAMIC FIT
-              maxHeight: '650px',
+              position: 'absolute',
+              bottom: '0',
+              right: '0',
+              width: '100%', 
+              height: '100%',
               zIndex: 999999
             }}
           >
@@ -483,11 +482,21 @@ export default function VoiceChat() {
           width: 100%;
           height: 100%;
           background: #0d0d0f !important;
-          border: 2px solid rgba(255, 255, 255, 0.15);
+          border: 2px solid #44ff44; /* NEON BASE */
           border-radius: 28px;
           overflow: hidden;
-          box-shadow: 0 20px 50px rgba(0,0,0,1);
+          box-shadow: 0 0 15px rgba(68, 255, 68, 0.3);
           position: relative;
+        }
+
+        .neon-pulse {
+          animation: neon-breathe 3s ease-in-out infinite;
+        }
+
+        @keyframes neon-breathe {
+          0% { border-color: #44ff44; box-shadow: 0 0 15px rgba(68, 255, 68, 0.2); }
+          50% { border-color: #77ff77; box-shadow: 0 0 25px rgba(68, 255, 68, 0.5); }
+          100% { border-color: #44ff44; box-shadow: 0 0 15px rgba(68, 255, 68, 0.2); }
         }
 
         .chat-header {
