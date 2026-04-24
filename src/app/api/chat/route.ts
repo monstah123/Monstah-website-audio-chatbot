@@ -73,6 +73,12 @@ export async function POST(req: Request) {
     2. Use code: monstah55 (15% off over $75).
     3. Always prioritize gym gear even if the transcript is messy.
     
+    NAVIGATION INSTRUCTIONS:
+    - If the user explicitly asks to "see it", "show me", or "send me the link" for a product, YOU MUST append a special link at the end of your response.
+    - Format the link EXACTLY like this: [NAVIGATE: https://monstahgymwear.com/?s=SEARCH_TERM&post_type=product]
+    - Replace SEARCH_TERM with the product name formatted for a URL (e.g., Knee+Wraps, Pre-Workout, Hoodie).
+    - DO NOT use this tag unless they explicitly ask to see it, show it, or get a link.
+    
     CONTEXT:
     ${context}`;
 

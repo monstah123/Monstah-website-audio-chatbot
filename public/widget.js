@@ -44,6 +44,8 @@
         wrapper.style.width = '280px'; 
         wrapper.style.height = '140px';
       }
+    } else if (event.data.type === 'redirect') {
+      window.location.href = event.data.url;
     }
   });
 })();

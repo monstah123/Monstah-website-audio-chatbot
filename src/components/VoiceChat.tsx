@@ -221,10 +221,26 @@ export default function VoiceChat() {
         if (done) break;
         const chunk = new TextDecoder().decode(value);
         aiResponse += chunk;
+        
+        // Hide the navigation tag from the UI while streaming
+        const displayResponse = aiResponse.replace(/\[NAVIGATE:.*?\]/g, "").trim();
+        
         setMessages(prev => {
           const last = prev[prev.length - 1];
-          return [...prev.slice(0, -1), { ...last, content: aiResponse }];
+          return [...prev.slice(0, -1), { ...last, content: displayResponse }];
         });
+      }
+
+      // Check for navigation command after stream is complete
+      const navMatch = aiResponse.match(/\[NAVIGATE:\s*(https?:\/\/[^\]]+)\]/);
+      if (navMatch) {
+        const url = navMatch[1];
+        aiResponse = aiResponse.replace(navMatch[0], "").trim();
+        
+        // Trigger redirect in parent window
+        if (window.parent) {
+          window.parent.postMessage({ type: 'redirect', url }, "*");
+        }
       }
 
       await speak(aiResponse);
