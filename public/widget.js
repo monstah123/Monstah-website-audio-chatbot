@@ -9,10 +9,9 @@
   document.body.appendChild(container);
 
   const iframe = document.createElement('iframe');
-  // Add a timestamp to bypass any browser cache
   iframe.src = `${VERCEL_URL}/widget?pos=${position}&v=${Date.now()}`; 
   
-  // Use !important for everything to fight WordPress CSS
+  // Use !important on everything to override WordPress theme CSS
   iframe.style.setProperty('position', 'fixed', 'important');
   iframe.style.setProperty('bottom', '20px', 'important');
   iframe.style.setProperty('top', 'auto', 'important');
@@ -30,6 +29,8 @@
   iframe.style.setProperty('border', 'none', 'important');
   iframe.style.setProperty('z-index', '999999999', 'important');
   iframe.style.setProperty('background', 'transparent', 'important');
+  iframe.style.setProperty('display', 'block', 'important');
+  iframe.style.setProperty('visibility', 'visible', 'important');
   iframe.allow = 'microphone';
 
   container.appendChild(iframe);
