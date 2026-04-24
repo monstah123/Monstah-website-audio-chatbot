@@ -3,9 +3,6 @@ import { OpenAI } from "openai";
 import { db } from "@/lib/firebase-admin";
 import * as cheerio from "cheerio";
 
-// Workaround for Turbopack CommonJS default export issue
-const pdfParse = require("pdf-parse");
-
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -36,6 +33,7 @@ export async function POST(req: Request) {
       const buffer = Buffer.from(await file.arrayBuffer());
       
       if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+        const pdfParse = require("pdf-parse");
         const pdfData = await pdfParse(buffer);
         content = pdfData.text;
       } else {
