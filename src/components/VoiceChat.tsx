@@ -232,18 +232,19 @@ export default function VoiceChat() {
       }
 
       // Check for navigation command after stream is complete
+      let urlToRedirect = "";
       const navMatch = aiResponse.match(/\[NAVIGATE:\s*(https?:\/\/[^\]]+)\]/);
       if (navMatch) {
-        const url = navMatch[1];
+        urlToRedirect = navMatch[1];
         aiResponse = aiResponse.replace(navMatch[0], "").trim();
-        
-        // Trigger redirect in parent window
-        if (window.parent) {
-          window.parent.postMessage({ type: 'redirect', url }, "*");
-        }
       }
 
       await speak(aiResponse);
+
+      // Trigger redirect in parent window ONLY AFTER speaking finishes
+      if (urlToRedirect && window.parent) {
+        window.parent.postMessage({ type: 'redirect', url: urlToRedirect }, "*");
+      }
     } catch (error) {
       console.error("Chat Error:", error);
     } finally {
@@ -252,54 +253,59 @@ export default function VoiceChat() {
   };
 
   // ---- TTS Playback ----
-  const speak = async (text: string) => {
-    try {
-      isSpeakingRef.current = true;
+  const speak = (text: string): Promise<void> => {
+    return new Promise(async (resolve) => {
+      try {
+        isSpeakingRef.current = true;
 
-      // TEMPORARILY SUSPEND LISTENING SO OS DOES NOT DUCK VOLUME
-      const wasListening = isListeningRef.current;
-      if (wasListening) {
-        isListeningRef.current = false;
-        try { recognitionRef.current?.stop(); } catch (e) {}
-      }
+        // TEMPORARILY SUSPEND LISTENING SO OS DOES NOT DUCK VOLUME
+        const wasListening = isListeningRef.current;
+        if (wasListening) {
+          isListeningRef.current = false;
+          try { recognitionRef.current?.stop(); } catch (e) {}
+        }
 
-      const response = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, voice: "onyx" }),
-      });
+        const response = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, voice: "onyx" }),
+        });
 
-      if (!response.ok) throw new Error("TTS failed");
+        if (!response.ok) throw new Error("TTS failed");
 
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      
-      if (audioRef.current) {
-        audioRef.current.src = audioUrl;
-        audioRef.current.onended = () => {
-          isSpeakingRef.current = false;
-          URL.revokeObjectURL(audioUrl);
-          
-          // RE-ARM MIC AUTOMATICALLY IF WE WERE LISTENING
-          if (wasListening) {
-            isListeningRef.current = true;
-            try {
-              recognitionRef.current?.start();
-            } catch (e) {
-              console.error("Auto-restart error:", e);
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        if (audioRef.current) {
+          audioRef.current.src = audioUrl;
+          audioRef.current.onended = () => {
+            isSpeakingRef.current = false;
+            URL.revokeObjectURL(audioUrl);
+            
+            // RE-ARM MIC AUTOMATICALLY IF WE WERE LISTENING
+            if (wasListening) {
+              isListeningRef.current = true;
+              try {
+                recognitionRef.current?.start();
+              } catch (e) {
+                console.error("Auto-restart error:", e);
+              }
             }
-          }
-          // Restart the 15s countdown for the user to speak
-          startIdleTimer();
-        };
-        await audioRef.current.play();
-      } else {
+            // Restart the 15s countdown for the user to speak
+            startIdleTimer();
+            resolve();
+          };
+          await audioRef.current.play();
+        } else {
+          isSpeakingRef.current = false;
+          resolve();
+        }
+      } catch (error) {
         isSpeakingRef.current = false;
+        console.error("Playback error:", error);
+        resolve();
       }
-    } catch (error) {
-      isSpeakingRef.current = false;
-      console.error("Playback error:", error);
-    }
+    });
   };
 
   return (
