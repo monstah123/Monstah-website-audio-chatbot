@@ -387,25 +387,26 @@ export default function VoiceChat() {
 
         .chat-window {
           display: grid;
-          grid-template-rows: 60px 1fr 80px; /* RIGID ANCHORS: Header, Middle, Footer */
+          grid-template-rows: 60px 1fr 70px; /* RIGID ROWS */
           width: 100%;
           height: 100%;
-          background: #0d0d0f !important;
+          background: #0d0d0f !important; /* NO TRANSPARENCY */
           border: 2px solid rgba(255, 255, 255, 0.15);
           border-radius: 28px;
           overflow: hidden;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+          box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+          position: relative;
         }
 
         .chat-header {
           height: 60px;
-          padding: 0 25px;
+          padding: 0 20px;
           background: #161618;
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           display: flex;
           justify-content: space-between;
           align-items: center;
-          z-index: 10;
+          z-index: 101;
         }
 
         .chat-messages-container {
@@ -413,6 +414,7 @@ export default function VoiceChat() {
           height: 100%;
           min-height: 0;
           overflow: hidden;
+          background: #0d0d0f;
         }
 
         .history-sidebar {
@@ -447,23 +449,24 @@ export default function VoiceChat() {
           border-radius: 12px;
           cursor: pointer;
           transition: all 0.2s;
-          border: 1px solid transparent;
+          border: 1px solid rgba(255, 255, 255, 0.05);
           margin-bottom: 8px;
+          background: #0d0d0f;
         }
 
         .history-item:hover {
-          background: rgba(255, 255, 255, 0.05);
-          border-color: rgba(255, 255, 255, 0.1);
+          background: #1c1c1f;
+          border-color: var(--primary);
         }
 
         .history-item.active {
-          background: rgba(var(--primary-rgb), 0.1);
           border-color: var(--primary);
+          background: rgba(var(--primary-rgb), 0.1);
         }
 
         .chat-messages {
           height: 100%;
-          padding: 20px 25px;
+          padding: 20px;
           overflow-y: auto;
           display: flex;
           flex-direction: column;
@@ -473,18 +476,21 @@ export default function VoiceChat() {
         }
 
         .chat-input-area {
-          padding: 15px 20px;
+          height: 70px;
+          padding: 0 15px;
           background: #161618;
           border-top: 1px solid rgba(255, 255, 255, 0.1);
           display: flex;
-          gap: 10px;
+          align-items: center;
+          gap: 8px;
+          z-index: 101;
         }
 
         .message {
           padding: 12px 18px;
           border-radius: 20px;
           max-width: 90%;
-          font-size: 1rem;
+          font-size: 0.95rem;
           line-height: 1.5;
           word-wrap: break-word;
         }
@@ -529,8 +535,8 @@ export default function VoiceChat() {
           background: #252529;
           border: 1px solid rgba(255, 255, 255, 0.15);
           border-radius: 12px;
-          width: 40px;
-          height: 40px;
+          width: 38px;
+          height: 38px;
           display: flex;
           align-items: center;
           justify-content: center;
