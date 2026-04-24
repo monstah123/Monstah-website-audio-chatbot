@@ -4,19 +4,25 @@
   const currentScript = document.currentScript;
   const position = currentScript?.getAttribute('data-position') === 'left' ? 'left' : 'right';
   
-  // Create a high-level wrapper
+  // Pin directly to the HTML root to bypass Body transforms
   const wrapper = document.createElement('div');
+  wrapper.id = 'monstah-ai-widget-container';
   wrapper.style.cssText = `
     position: fixed !important;
-    bottom: 0 !important;
-    ${position}: 0 !important;
+    bottom: 20px !important;
+    ${position}: 20px !important;
+    top: auto !important;
     width: 450px !important;
     height: 700px !important;
     z-index: 2147483647 !important;
     pointer-events: none !important;
     display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
   `;
-  document.body.appendChild(wrapper);
+  
+  // Inject at the very highest level possible
+  (document.documentElement || document.body).appendChild(wrapper);
 
   const iframe = document.createElement('iframe');
   iframe.src = `${VERCEL_URL}/widget?pos=${position}&v=${Date.now()}`; 
@@ -26,6 +32,7 @@
     border: none !important;
     background: transparent !important;
     pointer-events: auto !important;
+    display: block !important;
   `;
   iframe.allow = 'microphone';
 
