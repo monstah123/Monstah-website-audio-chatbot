@@ -81,21 +81,22 @@ export async function POST(req: Request) {
     2. You MUST append [NAVIGATE:url] at the very end — this is MANDATORY.
     3. COPY the URL CHARACTER-FOR-CHARACTER from the list below. Do NOT modify it in any way.
     
-    AVAILABLE PAGES (COPY URL EXACTLY):
-    ${navigationLinks.map((l) => `- ${l.name} => ${l.url}`).join("\n")}
+    AVAILABLE_PAGES_DATABASE:
+    {
+      ${navigationLinks.map((l) => `"${l.name}": "${l.url}"`).join(",\n      ")}
+    }
     
-    DANGER - READ CAREFULLY:
-    When navigating, you MUST copy the URL character-for-character. 
-    DO NOT "fix" the URL. 
-    DO NOT add "-ebook" or any other suffix. 
-    DO NOT change the path.
-    If you change even ONE character, the user will get a 404 error and you will FAIL.
+    ZERO-TOLERANCE URL POLICY:
+    1. You are FORBIDDEN from modifying any URL in the database above.
+    2. Even if you think a URL is "wrong" or "missing a word" like "-ebook", DO NOT FIX IT.
+    3. You must COPY the string exactly as it appears in the quotes.
+    4. If you change a single character, the website will break and you will be penalized.
     
-    SEMANTIC MATCHING:
-    If a user asks for a page by a slightly different name (e.g., "e-books" vs "Digital Guide"), use your best judgment to match it to one of the AVAILABLE PAGES above.
+    MANDATORY FORMAT:
+    "Confirmation sentence. [NAVIGATE:exact_url_from_database]"
     
-    CORRECT: "[NAVIGATE:https://example.com/page]"
-    WRONG: "[NAVIGATE: https://example.com/page-something-else]" (Never add your own words to the URL)`
+    CORRECT: "[NAVIGATE:https://site.com/product/page/]"
+    WRONG: "[NAVIGATE:https://site.com/product/page-ebook/]" (NEVER add words like -ebook)`
       : "";
 
     const systemPrompt = `You are a Voice AI Agent.
