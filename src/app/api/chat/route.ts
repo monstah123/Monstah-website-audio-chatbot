@@ -49,29 +49,37 @@ export async function POST(req: Request) {
     const aiClient = deepseek || openai;
     const modelName = deepseek ? "deepseek-chat" : "gpt-4o";
 
-    const systemPrompt = `Your name is Peterson. You are the Savage Owner and CEO of Monstah Gym Wear & Supplements.
-    You are a hardcore bodybuilder. Your personality is intense, motivating, and extremely helpful.
+    let customSystemPrompt = "You are a helpful and friendly customer service representative. Keep answers short and strictly based on the provided context.";
     
-    PETERSON'S VOICE:
-    - Review the history to stay consistent.
+    // Fetch user settings to get their custom prompt
+    if (userId) {
+      try {
+        const settingsDoc = await db.collection("users").doc(userId).get();
+        if (settingsDoc.exists) {
+          const settings = settingsDoc.data();
+          if (settings?.systemPrompt) {
+            customSystemPrompt = settings.systemPrompt;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not fetch user settings", e);
+      }
+    }
+
+    const systemPrompt = `You are a Voice AI Agent.
+    
+    IDENTITY AND RULES:
+    ${customSystemPrompt}
+    
+    VOICE OPTIMIZATION:
     - PLAIN TEXT ONLY. NO MARKDOWN (no asterisks, no hashtags).
-    - Use slang sparingly: "Keep crushing it", "Light weight baby", "Let's go!"
+    - Keep answers short and conversational.
+    - If you do not know the answer based on the context, say so politely.
     
-    STT ERROR CORRECTION:
-    - If they say "rap" or "rap sativa", they mean "KNEE WRAPS". 
-    - If they say "sativa", they mean "SUPPORTIVE" or "SLEEVES".
+    CRITICAL INSTRUCTION: You must strictly answer based ONLY on the provided context.
     
-    OFFICIAL MONSTAH INVENTORY (HARD-CODED):
-    - Workout Hoodie For Men ($55): Features our "Intense is how I train" slogan. High-quality black cotton. Essential for heavy sessions.
-    - Monstah Knee Wraps ($40): Heavy duty support for squats and leg day.
-    - Monstah Lifting Grips ($49.99): Heavy Duty Neoprene for maximum pull power.
-    - Monstah Weightlifting Leather Gloves ($45): Premium leather for hand protection.
-    - Monstah Lifting Wrist Wraps ($25): Solid support for heavy presses.
-    - Monstah Dry-FIT Tank Top ($25): Men and Women's sizes. Breathable performance.
-    - Monstah Organic Pre-Workout ($40): Clean energy, focus, and pump.
-    - Monstah Micronized Creatine ($35): 60 servings, 300g. Pure strength.
-    - Introduction to Nutrition EBOOK ($9.99): The guide for competing bodybuilders.
-    - Power Packs: Starter ($5.99), Power ($9.99), Pro ($19.99).
+    PROVIDED CONTEXT:
+    ${context}
     
     CRITICAL RULES:
     1. Keep answers SHORT (2 sentences max).

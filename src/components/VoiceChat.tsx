@@ -7,7 +7,41 @@ import { Mic, Send, X, Volume2, Loader2, RotateCcw, History } from "lucide-react
 export default function VoiceChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const initialGreeting = { role: "assistant", content: "Hi, I'm Peterson. How can I help you today?" };
+  
+  const [firstMessage, setFirstMessage] = useState("Hi! How can I help you today?");
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
+
+  useEffect(() => {
+    // Fetch custom first message based on the widget uid
+    const fetchSettings = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const widgetUid = urlParams.get('uid');
+      if (widgetUid) {
+        try {
+          const res = await fetch(`/api/settings?uid=${widgetUid}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.firstMessage) {
+              setFirstMessage(data.firstMessage);
+            }
+          }
+        } catch (e) {
+          console.error("Failed to load widget settings", e);
+        }
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  // Set initial greeting only if we have no messages yet, or if firstMessage updates
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([{ role: "assistant", content: firstMessage }]);
+    } else if (messages.length === 1 && messages[0].role === "assistant") {
+      setMessages([{ role: "assistant", content: firstMessage }]);
+    }
+  }, [firstMessage]);
+
   const [showHistory, setShowHistory] = useState(false);
   const [sessions, setSessions] = useState<{ id: string; timestamp: string; messages: any[] }[]>(() => {
     if (typeof window !== "undefined") {
@@ -18,8 +52,6 @@ export default function VoiceChat() {
   });
 
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([initialGreeting]);
 
   // Save to localStorage whenever messages change
   useEffect(() => {

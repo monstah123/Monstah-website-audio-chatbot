@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase-client";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import KnowledgeManager from "@/components/KnowledgeManager";
+import AgentSettings from "@/components/AgentSettings";
 import { LogOut, Copy, CheckCircle2, LayoutDashboard, Code } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -80,7 +81,7 @@ export default function DashboardPage() {
             <KnowledgeManager />
           </div>
 
-          {/* Right Column: Installation Snippet */}
+          {/* Right Column: Installation Snippet & Settings */}
           <div className="grid-item">
             <div className="snippet-card glass">
               <div className="snippet-header">
@@ -96,6 +97,9 @@ export default function DashboardPage() {
                 </button>
               </div>
             </div>
+
+            {/* AI Agent Settings Panel */}
+            <AgentSettings />
           </div>
         </div>
       </main>
