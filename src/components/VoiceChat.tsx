@@ -16,6 +16,7 @@ export default function VoiceChat({ uid }: { uid?: string }) {
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [micError, setMicError] = useState<string | null>(null);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [navigationLinks, setNavigationLinks] = useState<any[]>([]);
 
   useEffect(() => {
     // Fetch custom first message and agent name based on the widget uid
@@ -41,6 +42,9 @@ export default function VoiceChat({ uid }: { uid?: string }) {
             }
             if (data.brandName) {
               setBrandName(data.brandName);
+            }
+            if (data.navigationLinks) {
+              setNavigationLinks(data.navigationLinks);
             }
           }
         } catch (e) {
