@@ -52,24 +52,6 @@ export async function POST(req: Request) {
       themeColor,
       idleTimeout,
       trainingSchedule,
-      brandName,
-      navigationLinks,   // expected as array: [{ name, url }]
-    } = await req.json();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Missing User ID" }, { status: 401 });
-    }
-
-    // Validate navigationLinks is an array and filter out empty rows
-    const cleanLinks: { name: string; url: string }[] = Array.isArray(navigationLinks)
-      ? navigationLinks.filter((l: any) => l.name?.trim() && l.url?.trim())
-      : [];
-
-    await db.collection("users").doc(userId).set({
-      agentName,
-      systemPrompt,
-      idleTimeout,
-      trainingSchedule,
       lastTrainedUrl,
       brandName,
       navigationLinks,   // expected as array: [{ name, url }]
