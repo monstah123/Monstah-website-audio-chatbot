@@ -334,18 +334,21 @@ export default function VoiceChat() {
             isSpeakingRef.current = false;
             URL.revokeObjectURL(audioUrl);
             
-            // RE-ARM MIC AUTOMATICALLY IF WE WERE LISTENING
-            if (wasListening) {
-              isListeningRef.current = true;
-              try {
-                recognitionRef.current?.start();
-              } catch (e) {
-                console.error("Auto-restart error:", e);
+            // RE-ARM MIC — use setTimeout to give iOS time to release audio session
+            // iOS Safari rejects mic.start() if called in the same tick as audio.onended
+            setTimeout(() => {
+              if (wasListening) {
+                isListeningRef.current = true;
+                try {
+                  recognitionRef.current?.start();
+                } catch (e) {
+                  console.error("Auto-restart error:", e);
+                }
               }
-            }
-            // Restart the 15s countdown for the user to speak
-            startIdleTimer();
-            resolve();
+              // Restart the idle countdown
+              startIdleTimer();
+              resolve();
+            }, 350); // 350ms gives iOS time to fully release the audio session
           };
           await audioRef.current.play();
         } else {

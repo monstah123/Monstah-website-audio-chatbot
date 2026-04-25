@@ -20,7 +20,8 @@ export async function GET(req: Request) {
         firstMessage: "Hi! How can I help you today?",
         themeColor: "green",
         idleTimeout: 15,
-        brandName: "Monstah AI"
+        brandName: "Monstah AI",
+        navigationLinks: {}
       });
     }
 
@@ -32,7 +33,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { userId, agentName, systemPrompt, firstMessage, themeColor, idleTimeout, brandName } = await req.json();
+    const { userId, agentName, systemPrompt, firstMessage, themeColor, idleTimeout, brandName, navigationLinks } = await req.json();
 
     if (!userId) {
       return NextResponse.json({ error: "Missing User ID" }, { status: 401 });
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
       themeColor,
       idleTimeout: idleTimeout ?? 15,
       brandName: brandName || "Monstah AI",
+      navigationLinks: navigationLinks || {},
       updatedAt: new Date().toISOString(),
     }, { merge: true });
 

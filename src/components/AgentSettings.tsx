@@ -13,6 +13,7 @@ export default function AgentSettings() {
   const [brandName, setBrandName] = useState("Monstah AI");
   const [unlockCode, setUnlockCode] = useState("");
   const [isBrandingUnlocked, setIsBrandingUnlocked] = useState(false);
+  const [navigationLinks, setNavigationLinks] = useState<{ name: string; url: string }[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -31,6 +32,12 @@ export default function AgentSettings() {
           setThemeColor(data.themeColor || "green");
           setIdleTimeout(data.idleTimeout ?? 15);
           setBrandName(data.brandName || "Monstah AI");
+          // Convert the saved {name: url} map back to array for the UI
+          if (data.navigationLinks) {
+            setNavigationLinks(
+              Object.entries(data.navigationLinks).map(([name, url]) => ({ name, url: url as string }))
+            );
+          }
         }
       } catch (e) {
         console.error("Failed to load settings", e);
@@ -61,6 +68,8 @@ export default function AgentSettings() {
           themeColor,
           idleTimeout,
           brandName,
+          // Convert array back to {name: url} map for Firestore
+          navigationLinks: Object.fromEntries(navigationLinks.map(l => [l.name, l.url])),
         }),
       });
 
@@ -211,6 +220,48 @@ export default function AgentSettings() {
           onChange={(e) => setFirstMessage(e.target.value)}
           placeholder="Hi! How can I help you today?"
         />
+      </div>
+
+      {/* ---- Navigation Links ---- */}
+      <div className="input-group">
+        <label><MessageSquare size={16} /> Page Navigation Links</label>
+        <p className="help-text">Add pages users can be sent to. The AI will navigate users there when they ask (e.g. "Take me to the products page").</p>
+        
+        {navigationLinks.map((link, i) => (
+          <div key={i} className="nav-link-row">
+            <input
+              type="text"
+              value={link.name}
+              onChange={(e) => {
+                const updated = [...navigationLinks];
+                updated[i].name = e.target.value;
+                setNavigationLinks(updated);
+              }}
+              placeholder="Page name (e.g. Products)"
+              className="nav-input"
+            />
+            <input
+              type="text"
+              value={link.url}
+              onChange={(e) => {
+                const updated = [...navigationLinks];
+                updated[i].url = e.target.value;
+                setNavigationLinks(updated);
+              }}
+              placeholder="https://yoursite.com/products"
+              className="nav-input"
+            />
+            <button
+              className="btn-remove-nav"
+              onClick={() => setNavigationLinks(navigationLinks.filter((_, idx) => idx !== i))}
+            >✕</button>
+          </div>
+        ))}
+
+        <button
+          className="btn-add-nav"
+          onClick={() => setNavigationLinks([...navigationLinks, { name: "", url: "" }])}
+        >+ Add Page Link</button>
       </div>
 
       {status && (
@@ -414,6 +465,55 @@ export default function AgentSettings() {
         .btn-unlock:hover {
           transform: translateY(-2px);
           box-shadow: 0 0 20px rgba(255, 153, 0, 0.4);
+        }
+
+        .nav-link-row {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 10px;
+          align-items: center;
+        }
+
+        .nav-input {
+          flex: 1;
+        }
+
+        .btn-remove-nav {
+          background: rgba(255, 68, 68, 0.15);
+          border: 1px solid rgba(255, 68, 68, 0.3);
+          border-radius: 8px;
+          color: #ff4444;
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 1rem;
+          flex-shrink: 0;
+          transition: all 0.2s;
+        }
+
+        .btn-remove-nav:hover {
+          background: rgba(255, 68, 68, 0.3);
+        }
+
+        .btn-add-nav {
+          width: 100%;
+          padding: 12px;
+          background: rgba(68, 255, 68, 0.08);
+          border: 1px dashed rgba(68, 255, 68, 0.3);
+          border-radius: 12px;
+          color: var(--primary);
+          font-weight: 600;
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: all 0.2s;
+          margin-top: 4px;
+        }
+
+        .btn-add-nav:hover {
+          background: rgba(68, 255, 68, 0.15);
         }
 
         @keyframes spin {

@@ -28,21 +28,17 @@ export async function POST(req: Request) {
     let context = "";
     try {
       // 2. Search Firestore for context, SCOPED TO THIS USER
-      let knowledgeRef = db.collection("knowledge") as any;
-      
+      // Only query if we have a userId — enforces multi-tenant isolation
       if (userId) {
-        knowledgeRef = knowledgeRef.where("userId", "==", userId);
+        const knowledgeRef = db.collection("knowledge").where("userId", "==", userId);
+        const snapshot = await knowledgeRef.limit(15).get();
+        snapshot.forEach((doc: any) => {
+          const data = doc.data();
+          context += `\nContent: ${data.content}\n---\n`;
+        });
       }
-      
-      const snapshot = await knowledgeRef.limit(10).get(); 
-
-      snapshot.forEach((doc: any) => {
-        const data = doc.data();
-        context += `\nContent: ${data.content}\n---\n`;
-      });
     } catch (e) {
-      console.warn("Knowledge search failed, using hardcoded memory only.");
-      context = "No additional context available. Use hardcoded product data.";
+      console.warn("Knowledge search failed:", e);
     }
 
     // 3. Generate the AI response
@@ -50,8 +46,9 @@ export async function POST(req: Request) {
     const modelName = deepseek ? "deepseek-chat" : "gpt-4o";
 
     let customSystemPrompt = "You are a helpful and friendly customer service representative. Keep answers short and strictly based on the provided context.";
+    let navigationLinks: Record<string, string> = {};
     
-    // Fetch user settings to get their custom prompt
+    // Fetch user settings to get their custom prompt and navigation links
     if (userId) {
       try {
         const settingsDoc = await db.collection("users").doc(userId).get();
@@ -60,16 +57,32 @@ export async function POST(req: Request) {
           if (settings?.systemPrompt) {
             customSystemPrompt = settings.systemPrompt;
           }
+          if (settings?.navigationLinks) {
+            navigationLinks = settings.navigationLinks;
+          }
         }
       } catch (e) {
         console.warn("Could not fetch user settings", e);
       }
     }
 
+    // Build navigation instructions if the tenant configured any links
+    const navInstructions = Object.keys(navigationLinks).length > 0
+      ? `
+    NAVIGATION INSTRUCTIONS:
+    You can navigate users to specific pages on this website. When a user asks to go to a page, 
+    respond naturally AND append a [NAVIGATE:url] tag at the very end of your response.
+    Available pages:
+    ${Object.entries(navigationLinks).map(([name, url]) => `- ${name}: ${url}`).join("\n")}
+    Example: "Sure! Taking you to the products page now! [NAVIGATE:https://example.com/products]"
+    Only use navigation URLs from the list above.`
+      : "";
+
     const systemPrompt = `You are a Voice AI Agent.
     
     IDENTITY AND RULES:
     ${customSystemPrompt}
+    ${navInstructions}
     
     VOICE OPTIMIZATION:
     - PLAIN TEXT ONLY. NO MARKDOWN (no asterisks, no hashtags).
@@ -83,10 +96,7 @@ export async function POST(req: Request) {
     
     CRITICAL RULES:
     1. Keep answers SHORT (2 sentences max).
-    2. Be extremely helpful and direct.
-    
-    CONTEXT:
-    ${context}`;
+    2. Be extremely helpful and direct.`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);
