@@ -104,12 +104,13 @@ export async function POST(req: Request) {
     3. MANDATORY TAG: If you confirm a redirect to a page in the database, you MUST output the [NAVIGATE:LINK_ID] tag on a NEW LINE at the end of your message.
     
     EXAMPLE EXACT OUTPUT:
-    Sure, I'll take you to the Workout Hoodie For Men page right now.
-    [NAVIGATE:PAGE_WORKOUT_HOODIE_1]
+    Sure, I'll take you to the requested page right now.
+    [NAVIGATE:PAGE_YOUR_DATABASE_MATCH_INDEX]
     
     FINAL RULES:
     1. Speak naturally but keep it to 1-2 short sentences.
-    2. The [NAVIGATE:LINK_ID] tag DOES NOT count as a sentence. You MUST include it on a new line if a redirect is happening.`;
+    2. The [NAVIGATE:LINK_ID] tag DOES NOT count as a sentence. You MUST include it on a new line if a redirect is happening.
+    3. The example tag above is just a placeholder! You MUST use the EXACT LINK_ID exactly as it appears in the AVAILABLE_PAGES_DATABASE!`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);

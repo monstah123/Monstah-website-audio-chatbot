@@ -355,6 +355,7 @@ export default function VoiceChat({ uid }: { uid?: string }) {
             urlToRedirect = navigationLinks[index].url;
           } else {
             console.error("Unknown Navigation ID:", navId);
+            aiResponse += `\n\n*(System Error: AI generated invalid link ID: ${navId})*`;
           }
         } else {
           // SAFETY SHIELD: AI sent a raw string. Check if it matches a known URL exactly.
@@ -363,21 +364,29 @@ export default function VoiceChat({ uid }: { uid?: string }) {
             urlToRedirect = matchedLink.url;
           } else {
             console.error("Blocked hallucinated navigation:", navId);
-            // Optionally tell the user
-            // aiResponse += "\n\n*(System Note: Blocked a potentially hallucinated link)*";
+            aiResponse += `\n\n*(System Shield: Blocked hallucinated link: ${navId})*`;
           }
         }
 
         if (urlToRedirect) {
           console.log("🚀 Redirecting to:", urlToRedirect);
           // Visual feedback in the chat window
-          setMessages(prev => {
-            const last = prev[prev.length - 1];
-            return [...prev.slice(0, -1), { ...last, content: last.content + `\n\n*(Redirecting to: ${urlToRedirect})*` }];
-          });
+          aiResponse += `\n\n*(Redirecting to: ${urlToRedirect})*`;
         } else {
           console.warn("⚠️ Navigation tag found but no valid URL resolved for ID:", navId);
         }
+
+        // Final UI update
+        setMessages(prev => {
+          const last = prev[prev.length - 1];
+          return [...prev.slice(0, -1), { ...last, content: last.content ? last.content : aiResponse }];
+        });
+      } else {
+        // No tag found at all, just update UI
+        setMessages(prev => {
+          const last = prev[prev.length - 1];
+          return [...prev.slice(0, -1), { ...last, content: last.content ? last.content : aiResponse }];
+        });
       }
 
       await speak(aiResponse);
