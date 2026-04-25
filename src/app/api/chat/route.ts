@@ -58,15 +58,32 @@ export async function POST(req: Request) {
 
     let context = "";
     try {
-      // 2. Search Firestore for context, SCOPED TO THIS USER
+      // 2. Search Firestore for context with Vector Similarity, SCOPED TO THIS USER
       if (userId) {
-        const knowledgeRef = db.collection("knowledge").where("userId", "==", userId);
-        const snapshot = await knowledgeRef.limit(15).get();
-        snapshot.forEach((doc: any) => {
-          const data = doc.data();
+        const knowledgeSnapshot = await db.collection("knowledge")
+          .where("userId", "==", userId)
+          .limit(200) // Fetch a larger candidate pool
+          .get();
+
+        const docs = knowledgeSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as any));
+
+        // Simple Cosine Similarity
+        const sortedDocs = docs.map(doc => {
+          if (!doc.vector || !queryVector) return { ...doc, similarity: 0 };
+          const dotProduct = doc.vector.reduce((sum: number, val: number, i: number) => sum + val * queryVector[i], 0);
+          const mag1 = Math.sqrt(doc.vector.reduce((sum: number, val: number) => sum + val * val, 0));
+          const mag2 = Math.sqrt(queryVector.reduce((sum: number, val: number) => sum + val * val, 0));
+          const similarity = dotProduct / (mag1 * mag2);
+          return { ...doc, similarity };
+        }).sort((a, b) => b.similarity - a.similarity).slice(0, 15);
+
+        sortedDocs.forEach((data) => {
           context += `\nSource: ${data.source}\nContent: ${data.content}\n---\n`;
           
-          // Auto-discover links from training data sources
+          // Auto-discover links from relevant sources
           if (data.source && data.source.startsWith('http')) {
             const alreadyExists = navigationLinks.some((l: any) => l.url === data.source);
             const alreadyDiscovered = discoveredLinks.some((l: any) => l.url === data.source);
