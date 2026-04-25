@@ -357,7 +357,7 @@ export default function VoiceChat({ uid }: { uid?: string }) {
             urlToRedirect = navigationLinks[index].url;
           } else {
             console.error("Unknown Navigation ID:", navId);
-            aiResponse += `\n\n*(System Error: AI generated invalid link ID: ${navId})*`;
+            aiResponse += `\n\n*(System Error: Invalid link ID: ${navId}. Valid IDs are LINK_0 to LINK_${navigationLinks.length - 1})*`;
           }
         } else {
           // SAFETY SHIELD: AI sent a raw string. Check if it matches a known URL exactly.

@@ -25,28 +25,12 @@ export async function POST(req: Request) {
     });
     const queryVector = embeddingResponse.data[0].embedding;
 
-    let context = "";
-    try {
-      // 2. Search Firestore for context, SCOPED TO THIS USER
-      // Only query if we have a userId — enforces multi-tenant isolation
-      if (userId) {
-        const knowledgeRef = db.collection("knowledge").where("userId", "==", userId);
-        const snapshot = await knowledgeRef.limit(15).get();
-        snapshot.forEach((doc: any) => {
-          const data = doc.data();
-          context += `\nContent: ${data.content}\n---\n`;
-        });
-      }
-    } catch (e) {
-      console.warn("Knowledge search failed:", e);
-    }
-
-    // 3. Generate the AI response
     const aiClient = deepseek || openai;
     const modelName = deepseek ? "deepseek-chat" : "gpt-4o";
 
     let customSystemPrompt = "You are a helpful and friendly customer service representative. Keep answers short and strictly based on the provided context.";
     let navigationLinks: { name: string; url: string }[] = [];
+    let discoveredLinks: { name: string; url: string }[] = [];
     
     // Fetch user settings to get their custom prompt and navigation links
     if (userId) {
@@ -71,6 +55,37 @@ export async function POST(req: Request) {
         console.warn("Could not fetch user settings", e);
       }
     }
+
+    let context = "";
+    try {
+      // 2. Search Firestore for context, SCOPED TO THIS USER
+      if (userId) {
+        const knowledgeRef = db.collection("knowledge").where("userId", "==", userId);
+        const snapshot = await knowledgeRef.limit(15).get();
+        snapshot.forEach((doc: any) => {
+          const data = doc.data();
+          context += `\nSource: ${data.source}\nContent: ${data.content}\n---\n`;
+          
+          // Auto-discover links from training data sources
+          if (data.source && data.source.startsWith('http')) {
+            const alreadyExists = navigationLinks.some(l => l.url === data.source);
+            const alreadyDiscovered = discoveredLinks.some(l => l.url === data.source);
+            
+            if (!alreadyExists && !alreadyDiscovered) {
+              const urlParts = data.source.split('/');
+              const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Trained Page";
+              const name = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+              discoveredLinks.push({ name, url: data.source });
+            }
+          }
+        });
+      }
+    } catch (e) {
+      console.warn("Knowledge search failed:", e);
+    }
+
+    // Combine manual and discovered links
+    navigationLinks = [...navigationLinks, ...discoveredLinks];
 
     console.log("Chat Request - Navigation Links:", navigationLinks);
     console.log("Chat Request - Context Length:", context?.length || 0);
