@@ -44,14 +44,14 @@ export async function GET(req: Request) {
         .limit(100) // Don't scan everything, just enough to find the main pages
         .get();
 
-      knowledgeSnapshot.forEach(doc => {
+      knowledgeSnapshot.forEach((doc: any) => {
         const kData = doc.data();
         if (kData.source && kData.source.startsWith("http")) {
-          const alreadyExists = navigationLinks.some(l => l.url === kData.source);
+          const alreadyExists = navigationLinks.some((l: any) => l.url === kData.source);
           if (!alreadyExists) {
             const urlParts = kData.source.split('/');
             const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Trained Page";
-            const name = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            const name = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
             navigationLinks.push({ name, url: kData.source });
           }
         }
