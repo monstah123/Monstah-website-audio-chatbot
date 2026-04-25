@@ -28,15 +28,42 @@ export async function GET(req: Request) {
     const data = doc.data()!;
 
     // Migrate legacy {name: url} object format → array format on the fly
+    let navigationLinks = [];
     if (data.navigationLinks && !Array.isArray(data.navigationLinks)) {
-      data.navigationLinks = Object.entries(data.navigationLinks).map(
-        ([name, url]) => ({ name, url })
+      navigationLinks = Object.entries(data.navigationLinks).map(
+        ([name, url]) => ({ name, url: url as string })
       );
-    } else if (!data.navigationLinks) {
-      data.navigationLinks = [];
+    } else if (Array.isArray(data.navigationLinks)) {
+      navigationLinks = data.navigationLinks;
     }
 
-    return NextResponse.json(data);
+    // DISCOVER LINKS FROM KNOWLEDGE BASE
+    try {
+      const knowledgeSnapshot = await db.collection("knowledge")
+        .where("userId", "==", userId)
+        .limit(100) // Don't scan everything, just enough to find the main pages
+        .get();
+
+      knowledgeSnapshot.forEach(doc => {
+        const kData = doc.data();
+        if (kData.source && kData.source.startsWith("http")) {
+          const alreadyExists = navigationLinks.some(l => l.url === kData.source);
+          if (!alreadyExists) {
+            const urlParts = kData.source.split('/');
+            const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Trained Page";
+            const name = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            navigationLinks.push({ name, url: kData.source });
+          }
+        }
+      });
+    } catch (e) {
+      console.warn("Link discovery failed in settings:", e);
+    }
+
+    return NextResponse.json({
+      ...data,
+      navigationLinks
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
