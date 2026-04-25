@@ -248,13 +248,20 @@ export default function AgentSettings() {
                 return;
               }
               try {
-                const res = await fetch('/api/train', {
+                const formData = new FormData();
+                formData.append("type", "url");
+                formData.append("url", websiteUrl);
+                formData.append("userId", auth.currentUser?.uid || "");
+
+                const res = await fetch('/api/ingest', {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ url: websiteUrl, userId: auth.currentUser?.uid }),
+                  body: formData,
                 });
                 if (res.ok) alert("Website re-scan started!");
-                else alert("Failed to start refresh.");
+                else {
+                  const err = await res.json();
+                  alert(`Failed: ${err.error || "Unknown error"}`);
+                }
               } catch (e) {
                 alert("Error starting refresh.");
               }
@@ -328,25 +335,52 @@ export default function AgentSettings() {
             <button
               className="btn-train-all"
               onClick={async () => {
+                const uid = auth.currentUser?.uid;
+                if (!uid) {
+                  alert("You must be logged in to train the AI!");
+                  return;
+                }
+
                 const validLinks = navigationLinks.filter(l => l.url.trim());
-                if (validLinks.length === 0) return;
+                if (validLinks.length === 0) {
+                  alert("No valid links found to train.");
+                  return;
+                }
                 
                 if (!confirm(`This will train the AI on all ${validLinks.length} pages. Continue?`)) return;
                 
                 let successCount = 0;
+                let failReasons = [];
+
                 for (const link of validLinks) {
                   try {
-                    const res = await fetch('/api/train', {
+                    const trimmedUrl = link.url.trim();
+                    const formData = new FormData();
+                    formData.append("type", "url");
+                    formData.append("url", trimmedUrl);
+                    formData.append("userId", uid);
+
+                    const res = await fetch('/api/ingest', {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ url: link.url, userId: auth.currentUser?.uid }),
+                      body: formData,
                     });
-                    if (res.ok) successCount++;
-                  } catch (e) {
-                    console.error("Training failed for", link.url);
+
+                    if (res.ok) {
+                      successCount++;
+                    } else {
+                      const err = await res.json();
+                      failReasons.push(`${link.name}: ${err.error || "API Error"}`);
+                    }
+                  } catch (e: any) {
+                    failReasons.push(`${link.name}: Network or URL error`);
                   }
                 }
-                alert(`Bulk training complete! ${successCount} of ${validLinks.length} links were successfully queued.`);
+
+                let msg = `Bulk training complete! ${successCount} of ${validLinks.length} links were successfully queued.`;
+                if (failReasons.length > 0) {
+                  msg += "\n\nErrors:\n" + failReasons.join("\n");
+                }
+                alert(msg);
               }}
               style={{ 
                 background: 'rgba(68, 255, 68, 0.1)', 
@@ -410,13 +444,21 @@ export default function AgentSettings() {
               onClick={async () => {
                 if (!link.url.trim()) return;
                 try {
-                  const res = await fetch('/api/train', {
+                  const trimmedUrl = link.url.trim();
+                  const formData = new FormData();
+                  formData.append("type", "url");
+                  formData.append("url", trimmedUrl);
+                  formData.append("userId", auth.currentUser?.uid || "");
+
+                  const res = await fetch('/api/ingest', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: link.url, userId: auth.currentUser?.uid }),
+                    body: formData,
                   });
                   if (res.ok) alert(`Training started for: ${link.name}`);
-                  else alert("Training failed to start.");
+                  else {
+                    const err = await res.json();
+                    alert(`Failed for ${link.name}: ${err.error || "Unknown error"}`);
+                  }
                 } catch (e) {
                   alert("Error starting training.");
                 }

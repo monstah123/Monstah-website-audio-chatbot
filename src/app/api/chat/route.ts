@@ -93,14 +93,15 @@ export async function POST(req: Request) {
     ${navigationLinks.map(l => `- NAME: "${l.name}" => URL: "${l.url}"`).join("\n")}
     
     CRITICAL RULES:
-    1. PROACTIVE LINKING: If you are talking about the "Introduction to Nutrition" guide, you MUST append the [NAVIGATE:] tag for it automatically.
-    2. KEYWORD MATCHING: "e-book", "guide", and "nutrition" all match the "Introduction to Nutrition" link.
-    3. EXACT COPY: Copy the URL exactly. Never change it.
+    1. PROACTIVE LINKING: If you mention a product, page, or category that exists in the AVAILABLE_PAGES_DATABASE, you MUST append the [NAVIGATE:] tag for it automatically.
+    2. FUZZY MATCHING: Be smart. "e-book" matches anything with "book" or "guide" in the name. "hoodie" matches "hoodies" or "clothing".
+    3. EXACT URL: Copy the URL exactly as shown in the database. DO NOT add suffixes or change characters.
+    4. NO HALLUCINATIONS: If a page is NOT in the database, do not use the [NAVIGATE:] tag.
     
     FINAL RULES:
     1. Respond in 1-2 short sentences maximum.
     2. Be helpful and enthusiastic.
-    3. If a match is found in the database, you MUST navigate. No excuses.`;
+    3. If you can help the user find a page from the database, do it immediately. No excuses.`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);
