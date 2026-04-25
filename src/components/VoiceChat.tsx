@@ -335,14 +335,27 @@ export default function VoiceChat({ uid }: { uid?: string }) {
       let urlToRedirect = "";
       const navMatch = aiResponse.match(/\[NAVIGATE:\s*([^\]\s]+)\s*\]/);
       if (navMatch) {
-        urlToRedirect = navMatch[1].trim();
+        const navId = navMatch[1].trim();
         aiResponse = aiResponse.replace(navMatch[0], "").trim();
         
-        // Visual feedback in the chat window
-        setMessages(prev => {
-          const last = prev[prev.length - 1];
-          return [...prev.slice(0, -1), { ...last, content: last.content + `\n\n*(Redirecting to: ${urlToRedirect})*` }];
-        });
+        // Resolve ID to URL (e.g. PAGE_0 -> navigationLinks[0].url)
+        if (navId.startsWith("PAGE_")) {
+          const index = parseInt(navId.replace("PAGE_", ""));
+          if (!isNaN(index) && navigationLinks[index]) {
+            urlToRedirect = navigationLinks[index].url;
+          }
+        } else {
+          // Fallback for raw URLs (legacy support)
+          urlToRedirect = navId;
+        }
+
+        if (urlToRedirect) {
+          // Visual feedback in the chat window
+          setMessages(prev => {
+            const last = prev[prev.length - 1];
+            return [...prev.slice(0, -1), { ...last, content: last.content + `\n\n*(Redirecting to: ${urlToRedirect})*` }];
+          });
+        }
       }
 
       await speak(aiResponse);

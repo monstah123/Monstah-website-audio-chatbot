@@ -78,25 +78,17 @@ export async function POST(req: Request) {
     NAVIGATION INSTRUCTIONS — HIGHEST PRIORITY:
     You can send users to specific pages. When asked to navigate, go to a page, or view something:
     1. Respond with ONE short sentence confirming the action.
-    2. You MUST append [NAVIGATE:url] at the very end — this is MANDATORY.
-    3. COPY the URL CHARACTER-FOR-CHARACTER from the list below. Do NOT modify it in any way.
+    NAVIGATION_MENU (SELECT ONE ID):
+    ${navigationLinks.map((l, i) => `- ID: [PAGE_${i}] => NAME: "${l.name}"`).join("\n")}
     
-    AVAILABLE_PAGES_DATABASE:
-    {
-      ${navigationLinks.map((l) => `"${l.name}": "${l.url}"`).join(",\n      ")}
-    }
+    CRITICAL NAVIGATION RULES:
+    1. If the user asks to go to a page, pick the best ID from the menu above.
+    2. You MUST respond with: "Confirmation. [NAVIGATE:PAGE_ID]"
+    3. DO NOT TYPE THE ACTUAL URL. THE SYSTEM HANDLES IT AUTOMATICALLY.
+    4. ONLY use the IDs listed above. If no match, do not use the tag.
     
-    ZERO-TOLERANCE URL POLICY:
-    1. You are FORBIDDEN from modifying any URL in the database above.
-    2. Even if you think a URL is "wrong" or "missing a word" like "-ebook", DO NOT FIX IT.
-    3. You must COPY the string exactly as it appears in the quotes.
-    4. If you change a single character, the website will break and you will be penalized.
-    
-    MANDATORY FORMAT:
-    "Confirmation sentence. [NAVIGATE:exact_url_from_database]"
-    
-    CORRECT: "[NAVIGATE:https://site.com/product/page/]"
-    WRONG: "[NAVIGATE:https://site.com/product/page-ebook/]" (NEVER add words like -ebook)`
+    Example: "Taking you to the guide now! [NAVIGATE:PAGE_0]"
+    Example: "Sure thing! [NAVIGATE:PAGE_1]"`
       : "";
 
     const systemPrompt = `You are a Voice AI Agent.
