@@ -105,26 +105,26 @@ export async function POST(req: Request) {
     NAVIGATION INSTRUCTIONS:
     You have access to a list of specific pages on the user's website.
     1. Respond with a short confirmation.
-    2. YOU MUST APPEND the EXACT LINK_ID at the END of your response using this exact syntax: REDIRECT_TO_ID: LINK_ID
+    2. YOU MUST APPEND the exact URL at the END of your response using this exact syntax: NAVIGATE_URL: [EXACT_URL_FROM_DATABASE]
     
     AVAILABLE_PAGES_DATABASE:
-    ${navigationLinks.map((l, i) => {
-      return `- LINK_ID: LINK_${i} => PAGE_NAME: "${l.name}"`;
+    ${navigationLinks.map((l) => {
+      return `- PAGE_NAME: "${l.name}" => URL: ${l.url}`;
     }).join("\n")}
     
     ULTIMATE COMMANDS (MANDATORY):
     1. DATABASE IS GOD: If the database says "Wrist Straps", you MUST call them "Wrist Straps". If the context or your brain says "Wraps", you MUST IGNORE IT and say "Straps".
     2. NO Hallucinations: If a product name in the database contains "Straps", you are FORBIDDEN from using the word "Wraps".
-    3. MANDATORY TAG: If you confirm a redirect to a page in the database, you MUST output the REDIRECT_TO_ID: LINK_ID tag on a NEW LINE at the end of your message.
+    3. MANDATORY TAG: If you confirm a redirect to a page in the database, you MUST output the NAVIGATE_URL: [URL] tag on a NEW LINE at the end of your message.
     
     EXAMPLE EXACT OUTPUT:
-    Sure, I'll take you to the requested page right now.
-    REDIRECT_TO_ID: LINK_1
+    Sure, I'll take you to that page right now.
+    NAVIGATE_URL: https://example.com/target-page
     
     FINAL RULES:
     1. Speak naturally but keep it to 1-2 short sentences.
-    2. The REDIRECT_TO_ID: tag DOES NOT count as a sentence. You MUST include it on a new line if a redirect is happening.
-    3. You MUST use the EXACT LINK_ID (e.g. LINK_0, LINK_1) exactly as it appears in the AVAILABLE_PAGES_DATABASE!`;
+    2. The NAVIGATE_URL: tag DOES NOT count as a sentence. You MUST include it on a new line if a redirect is happening.
+    3. You MUST use the EXACT URL from the AVAILABLE_PAGES_DATABASE!`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);

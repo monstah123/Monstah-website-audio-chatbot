@@ -331,7 +331,10 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         aiResponse += chunk;
         
         // Hide the navigation tag from the UI while streaming
-        const displayResponse = aiResponse.replace(/REDIRECT_TO_ID[^\w]*\S+/gi, "").trim();
+        const displayResponse = aiResponse
+          .replace(/NAVIGATE_URL[^\w]*\S+/gi, "")
+          .replace(/REDIRECT_TO_ID[^\w]*\S+/gi, "")
+          .trim();
         
         setMessages(prev => {
           const last = prev[prev.length - 1];
@@ -341,17 +344,20 @@ export default function VoiceChat({ uid }: { uid?: string }) {
 
       // Check for navigation command after stream is complete
       let urlToRedirect = "";
-      const navMatch = aiResponse.match(/REDIRECT_TO_ID[^\w]*(\S+)/i);
+      const navMatch = aiResponse.match(/NAVIGATE_URL[^\w]*(\S+)/i) || aiResponse.match(/REDIRECT_TO_ID[^\w]*(\S+)/i);
       if (navMatch) {
         let navId = navMatch[1].trim();
         // Clean up trailing punctuation just in case
-        navId = navId.replace(/[.,!?]+$/, "");
+        navId = navId.replace(/[.,!?\][ ]+$/, "");
         
         aiResponse = aiResponse.replace(navMatch[0], "").trim();
         
-        // Resolve Semantic ID to URL (e.g. LINK_2 -> navigationLinks[2].url)
-        if (navId.startsWith("LINK_")) {
-          const indexStr = navId.replace("LINK_", "");
+        if (navId.startsWith("http")) {
+          // DIRECT URL NAVIGATION (Most reliable)
+          urlToRedirect = navId;
+        } else if (navId.startsWith("LINK_") || navId.startsWith("PAGE_")) {
+          // INDEX-BASED NAVIGATION (Manual links)
+          const indexStr = navId.replace("LINK_", "").replace("PAGE_", "");
           const index = parseInt(indexStr);
           if (!isNaN(index) && navigationLinks[index]) {
             urlToRedirect = navigationLinks[index].url;
@@ -361,7 +367,7 @@ export default function VoiceChat({ uid }: { uid?: string }) {
           }
         } else {
           // SAFETY SHIELD: AI sent a raw string. Check if it matches a known URL exactly.
-          const matchedLink = navigationLinks.find(l => l.url === navId);
+          const matchedLink = navigationLinks.find((l: any) => l.url === navId);
           if (matchedLink) {
             urlToRedirect = matchedLink.url;
           } else {
