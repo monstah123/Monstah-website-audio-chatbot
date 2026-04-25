@@ -5,6 +5,7 @@ import { auth } from "@/lib/firebase-client";
 import { Save, Loader2, Bot, MessageSquare } from "lucide-react";
 
 export default function AgentSettings() {
+  const [agentName, setAgentName] = useState("");
   const [systemPrompt, setSystemPrompt] = useState("");
   const [firstMessage, setFirstMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -19,6 +20,7 @@ export default function AgentSettings() {
         const res = await fetch(`/api/settings?uid=${auth.currentUser.uid}`);
         if (res.ok) {
           const data = await res.json();
+          setAgentName(data.agentName || "Peterson");
           setSystemPrompt(data.systemPrompt || "");
           setFirstMessage(data.firstMessage || "");
         }
@@ -45,6 +47,7 @@ export default function AgentSettings() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: auth.currentUser.uid,
+          agentName,
           systemPrompt,
           firstMessage,
         }),
@@ -73,6 +76,17 @@ export default function AgentSettings() {
         <h2>Agent Identity</h2>
       </div>
       <p className="subtitle">Customize exactly how your AI behaves and talks to customers.</p>
+
+      <div className="input-group">
+        <label><Bot size={16} /> Agent Name</label>
+        <p className="help-text">This will be displayed on the chatbot button (e.g. "Talk to Sarah").</p>
+        <input 
+          type="text"
+          value={agentName}
+          onChange={(e) => setAgentName(e.target.value)}
+          placeholder="e.g. Sarah"
+        />
+      </div>
 
       <div className="input-group">
         <label><Bot size={16} /> System Prompt</label>

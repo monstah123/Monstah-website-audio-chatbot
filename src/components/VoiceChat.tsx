@@ -8,11 +8,12 @@ export default function VoiceChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   
+  const [agentName, setAgentName] = useState("Peterson");
   const [firstMessage, setFirstMessage] = useState("Hi! How can I help you today?");
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
 
   useEffect(() => {
-    // Fetch custom first message based on the widget uid
+    // Fetch custom first message and agent name based on the widget uid
     const fetchSettings = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const widgetUid = urlParams.get('uid');
@@ -23,6 +24,9 @@ export default function VoiceChat() {
             const data = await res.json();
             if (data.firstMessage) {
               setFirstMessage(data.firstMessage);
+            }
+            if (data.agentName) {
+              setAgentName(data.agentName);
             }
           }
         } catch (e) {
@@ -479,7 +483,7 @@ export default function VoiceChat() {
               </div>
               <div className="cta-button">
                 <Volume2 size={16} fill="white" />
-                <span>Talk to Peterson</span>
+                <span>Talk to {agentName}</span>
               </div>
             </div>
           </motion.div>
