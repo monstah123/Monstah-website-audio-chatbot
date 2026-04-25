@@ -34,9 +34,14 @@ export default function AgentSettings() {
           setBrandName(data.brandName || "Monstah AI");
           // Convert the saved {name: url} map back to array for the UI
           if (data.navigationLinks) {
-            setNavigationLinks(
-              Object.entries(data.navigationLinks).map(([name, url]) => ({ name, url: url as string }))
-            );
+            // Support both array format and legacy {name:url} object
+            if (Array.isArray(data.navigationLinks)) {
+              setNavigationLinks(data.navigationLinks);
+            } else {
+              setNavigationLinks(
+                Object.entries(data.navigationLinks).map(([name, url]) => ({ name, url: url as string }))
+              );
+            }
           }
         }
       } catch (e) {
@@ -68,8 +73,8 @@ export default function AgentSettings() {
           themeColor,
           idleTimeout,
           brandName,
-          // Convert array back to {name: url} map for Firestore
-          navigationLinks: Object.fromEntries(navigationLinks.map(l => [l.name, l.url])),
+          // Send as array directly — no conversion needed
+          navigationLinks: navigationLinks.filter(l => l.name.trim() && l.url.trim()),
         }),
       });
 
@@ -225,7 +230,10 @@ export default function AgentSettings() {
       {/* ---- Navigation Links ---- */}
       <div className="input-group">
         <label><MessageSquare size={16} /> Page Navigation Links</label>
-        <p className="help-text">Add pages users can be sent to. The AI will navigate users there when they ask (e.g. "Take me to the products page").</p>
+        <p className="help-text">
+          Add as many pages as you want. The AI will send users there when they ask 
+          (e.g. &ldquo;Take me to the hoodies page&rdquo;). URLs must be complete and exact — copy them directly from your browser.
+        </p>
         
         {navigationLinks.map((link, i) => (
           <div key={i} className="nav-link-row">
@@ -237,18 +245,18 @@ export default function AgentSettings() {
                 updated[i].name = e.target.value;
                 setNavigationLinks(updated);
               }}
-              placeholder="Page name (e.g. Products)"
+              placeholder={`Page name (e.g. Hoodies, Contact, Pricing)`}
               className="nav-input"
             />
             <input
-              type="text"
+              type="url"
               value={link.url}
               onChange={(e) => {
                 const updated = [...navigationLinks];
                 updated[i].url = e.target.value;
                 setNavigationLinks(updated);
               }}
-              placeholder="https://yoursite.com/products"
+              placeholder="https://yoursite.com/exact-page-path"
               className="nav-input"
             />
             <button
@@ -261,7 +269,13 @@ export default function AgentSettings() {
         <button
           className="btn-add-nav"
           onClick={() => setNavigationLinks([...navigationLinks, { name: "", url: "" }])}
-        >+ Add Page Link</button>
+        >+ Add Another Page Link</button>
+
+        {navigationLinks.length > 0 && (
+          <p className="help-text" style={{ marginTop: '10px', color: 'rgba(255,200,100,0.8)' }}>
+            ⚠️ Paste URLs exactly from your browser address bar. One wrong character = 404 error.
+          </p>
+        )}
       </div>
 
       {status && (

@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     const modelName = deepseek ? "deepseek-chat" : "gpt-4o";
 
     let customSystemPrompt = "You are a helpful and friendly customer service representative. Keep answers short and strictly based on the provided context.";
-    let navigationLinks: Record<string, string> = {};
+    let navigationLinks: { name: string; url: string }[] = [];
     
     // Fetch user settings to get their custom prompt and navigation links
     if (userId) {
@@ -57,8 +57,14 @@ export async function POST(req: Request) {
           if (settings?.systemPrompt) {
             customSystemPrompt = settings.systemPrompt;
           }
-          if (settings?.navigationLinks) {
+          // Support both array format and legacy {name:url} object format
+          if (Array.isArray(settings?.navigationLinks)) {
             navigationLinks = settings.navigationLinks;
+          } else if (settings?.navigationLinks && typeof settings.navigationLinks === 'object') {
+            // Migrate old format on-the-fly
+            navigationLinks = Object.entries(settings.navigationLinks).map(
+              ([name, url]) => ({ name, url: url as string })
+            );
           }
         }
       } catch (e) {
@@ -67,18 +73,20 @@ export async function POST(req: Request) {
     }
 
     // Build navigation instructions if the tenant configured any links
-    const navInstructions = Object.keys(navigationLinks).length > 0
+    const navInstructions = navigationLinks.length > 0
       ? `
     NAVIGATION INSTRUCTIONS — HIGHEST PRIORITY:
-    You have the ability to redirect the user to pages. When a user asks to go somewhere, 
-    view a product, or navigate anywhere:
-    1. Give a SHORT one-sentence confirmation (e.g. "Taking you there now!").
-    2. You MUST append [NAVIGATE:url] at the very end — this is non-negotiable.
-    Available pages:
-    ${Object.entries(navigationLinks).map(([name, url]) => `- ${name}: ${url}`).join("\n")}
-    CRITICAL: Always end your response with [NAVIGATE:url] when navigating. Never omit it.
-    Example output: "Taking you to the hoodie page now! [NAVIGATE:https://example.com/hoodies]"
-    Only use URLs from the list above. Do not make up URLs.`
+    You can send users to specific pages. When asked to navigate, go to a page, or view something:
+    1. Respond with ONE short sentence confirming the action.
+    2. You MUST append [NAVIGATE:url] at the very end — this is MANDATORY.
+    3. COPY the URL CHARACTER-FOR-CHARACTER from the list below. Do NOT modify it in any way.
+    
+    AVAILABLE PAGES (use EXACT URL, do not alter):
+    ${navigationLinks.map((l, i) => `[${i + 1}] ${l.name} → ${l.url}`).join("\n")}
+    
+    CRITICAL: The [NAVIGATE:url] tag must contain the URL exactly as listed above — no trailing slashes added, no path changes, no modifications whatsoever.
+    Example: "Taking you there now! [NAVIGATE:https://example.com/page]"
+    Only use URLs from this list.`
       : "";
 
     const systemPrompt = `You are a Voice AI Agent.

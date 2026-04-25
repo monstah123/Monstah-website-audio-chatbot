@@ -21,11 +21,22 @@ export async function GET(req: Request) {
         themeColor: "green",
         idleTimeout: 15,
         brandName: "Monstah AI",
-        navigationLinks: {}
+        navigationLinks: [],   // array format: [{ name, url }]
       });
     }
 
-    return NextResponse.json(doc.data());
+    const data = doc.data()!;
+
+    // Migrate legacy {name: url} object format → array format on the fly
+    if (data.navigationLinks && !Array.isArray(data.navigationLinks)) {
+      data.navigationLinks = Object.entries(data.navigationLinks).map(
+        ([name, url]) => ({ name, url })
+      );
+    } else if (!data.navigationLinks) {
+      data.navigationLinks = [];
+    }
+
+    return NextResponse.json(data);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -33,11 +44,25 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { userId, agentName, systemPrompt, firstMessage, themeColor, idleTimeout, brandName, navigationLinks } = await req.json();
+    const {
+      userId,
+      agentName,
+      systemPrompt,
+      firstMessage,
+      themeColor,
+      idleTimeout,
+      brandName,
+      navigationLinks,   // expected as array: [{ name, url }]
+    } = await req.json();
 
     if (!userId) {
       return NextResponse.json({ error: "Missing User ID" }, { status: 401 });
     }
+
+    // Validate navigationLinks is an array and filter out empty rows
+    const cleanLinks: { name: string; url: string }[] = Array.isArray(navigationLinks)
+      ? navigationLinks.filter((l: any) => l.name?.trim() && l.url?.trim())
+      : [];
 
     await db.collection("users").doc(userId).set({
       agentName,
@@ -46,7 +71,7 @@ export async function POST(req: Request) {
       themeColor,
       idleTimeout: idleTimeout ?? 15,
       brandName: brandName || "Monstah AI",
-      navigationLinks: navigationLinks || {},
+      navigationLinks: cleanLinks,
       updatedAt: new Date().toISOString(),
     }, { merge: true });
 
