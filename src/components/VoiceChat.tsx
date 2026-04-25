@@ -473,7 +473,12 @@ export default function VoiceChat() {
               bottom: '20px',
               right: '20px',
               zIndex: 999999,
-              cursor: 'pointer'
+              cursor: 'pointer',
+              background: '#ffffff',
+              borderRadius: '32px',
+              padding: '12px 18px',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.25)',
+              border: '1px solid rgba(0,0,0,0.05)'
             }}
           >
             <div className="cta-content">
@@ -491,26 +496,18 @@ export default function VoiceChat() {
       </AnimatePresence>
 
       <style jsx>{`
-        .savage-cta-container {
-          background: white;
-          padding: 14px 18px;
-          border-radius: 28px;
-          box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-          border: 1px solid rgba(0,0,0,0.05);
-        }
-
         .cta-content {
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 4px;
         }
 
         .cta-text {
           color: #333;
-          font-size: 0.85rem;
-          font-weight: 700;
+          font-size: 0.8rem;
+          font-weight: 800;
           font-family: 'Inter', sans-serif;
-          margin-left: 54px; /* Align text above the black button, past the avatar */
+          margin-left: 50px; /* Align text above the black button */
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
@@ -518,7 +515,7 @@ export default function VoiceChat() {
         .cta-bottom {
           display: flex;
           align-items: center;
-          gap: 14px;
+          gap: 8px; /* Pulled the avatar closer to the button */
         }
 
         .vortex-avatar {
