@@ -58,11 +58,34 @@ export async function POST(req: Request) {
 
     let context = "";
     try {
-      // 2. Search Firestore for context with Vector Similarity, SCOPED TO THIS USER
+      // 2. DISCOVER ALL UNIQUE LINKS (The "Site Map")
       if (userId) {
+        try {
+          // Fetch documents specifically to find unique URLs (up to 100 to find unique ones)
+          const allLinksSnapshot = await db.collection("knowledge")
+            .where("userId", "==", userId)
+            .where("source", ">=", "http")
+            .where("source", "<=", "http\uf8ff")
+            .limit(100)
+            .get();
+
+          allLinksSnapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.source && !navigationLinks.some(l => l.url === data.source) && !discoveredLinks.some(l => l.url === data.source)) {
+              const urlParts = data.source.split('/');
+              const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Page";
+              const name = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+              discoveredLinks.push({ name, url: data.source });
+            }
+          });
+        } catch (e) {
+          console.warn("Bulk link discovery failed:", e);
+        }
+
+        // 3. Search Firestore for CONTEXT (Vector Similarity)
         const knowledgeSnapshot = await db.collection("knowledge")
           .where("userId", "==", userId)
-          .limit(200) // Fetch a larger candidate pool
+          .limit(200)
           .get();
 
         const docs = knowledgeSnapshot.docs.map(doc => ({
@@ -70,7 +93,6 @@ export async function POST(req: Request) {
           ...doc.data()
         } as any));
 
-        // Simple Cosine Similarity
         const sortedDocs = docs.map(doc => {
           if (!doc.vector || !queryVector) return { ...doc, similarity: 0 };
           const dotProduct = doc.vector.reduce((sum: number, val: number, i: number) => sum + val * queryVector[i], 0);
@@ -83,14 +105,13 @@ export async function POST(req: Request) {
         sortedDocs.forEach((data) => {
           context += `\nSource: ${data.source}\nContent: ${data.content}\n---\n`;
           
-          // Auto-discover links from relevant sources
+          // Also add these to discovered links if they aren't there yet
           if (data.source && data.source.startsWith('http')) {
             const alreadyExists = navigationLinks.some((l: any) => l.url === data.source);
             const alreadyDiscovered = discoveredLinks.some((l: any) => l.url === data.source);
-            
             if (!alreadyExists && !alreadyDiscovered) {
               const urlParts = data.source.split('/');
-              const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Trained Page";
+              const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Page";
               const name = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
               discoveredLinks.push({ name, url: data.source });
             }
