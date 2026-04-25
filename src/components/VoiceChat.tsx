@@ -513,16 +513,46 @@ export default function VoiceChat({ uid }: { uid?: string }) {
                       {sessions.length === 0 ? (
                         <p className="p-4 text-center text-gray-500">No past sessions yet.</p>
                       ) : (
-                        sessions.map(s => (
-                          <div 
-                            key={s.id} 
-                            onClick={() => loadSession(s)}
-                            className={`history-item ${s.id === currentSessionId ? 'active' : ''}`}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <button 
+                            onClick={() => {
+                              if (confirm("Delete all chat history?")) {
+                                setSessions([]);
+                                localStorage.removeItem("monstah_sessions");
+                              }
+                            }}
+                            className="clear-all-btn"
                           >
-                            <span className="text-xs opacity-50">{s.timestamp}</span>
-                            <p className="truncate text-sm">{s.messages[1]?.content || 'Empty Chat'}</p>
-                          </div>
-                        ))
+                            Clear All History
+                          </button>
+                          {sessions.map(s => (
+                            <div 
+                              key={s.id} 
+                              className={`history-item-container ${s.id === currentSessionId ? 'active' : ''}`}
+                            >
+                              <div 
+                                onClick={() => loadSession(s)}
+                                className="history-item-content"
+                              >
+                                <span className="text-xs opacity-50">{s.timestamp}</span>
+                                <p className="truncate text-sm">{s.messages[1]?.content || 'Empty Chat'}</p>
+                              </div>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const updated = sessions.filter(sess => sess.id !== s.id);
+                                  setSessions(updated);
+                                  localStorage.setItem("monstah_sessions", JSON.stringify(updated));
+                                  if (s.id === currentSessionId) clearChat();
+                                }}
+                                className="delete-session-btn"
+                                title="Delete"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </motion.div>
@@ -798,25 +828,54 @@ export default function VoiceChat({ uid }: { uid?: string }) {
           padding: 10px;
         }
 
-        .history-item {
-          padding: 12px;
+        .history-item-container {
+          display: flex;
+          align-items: stretch;
           border-radius: 12px;
           cursor: pointer;
           transition: all 0.2s;
           border: 1px solid rgba(255, 255, 255, 0.05);
           margin-bottom: 8px;
           background: #0d0d0f;
+          overflow: hidden;
+        }
+        .history-item-container:hover { background: #1c1c1f; border-color: var(--primary); }
+        .history-item-container.active { border-color: var(--primary); background: rgba(var(--primary-rgb), 0.1); }
+        
+        .history-item-content {
+          flex: 1;
+          padding: 12px;
+          min-width: 0;
         }
 
-        .history-item:hover {
-          background: #1c1c1f;
-          border-color: var(--primary);
+        .delete-session-btn {
+          width: 40px;
+          background: rgba(255, 68, 68, 0.1);
+          border: none;
+          border-left: 1px solid rgba(255, 255, 255, 0.05);
+          color: #ff4444;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 0.2s;
         }
+        .delete-session-btn:hover { background: rgba(255, 68, 68, 0.3); }
 
-        .history-item.active {
-          border-color: var(--primary);
-          background: rgba(var(--primary-rgb), 0.1);
+        .clear-all-btn {
+          width: 100%;
+          padding: 10px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px dashed rgba(255, 255, 255, 0.2);
+          border-radius: 8px;
+          color: #888;
+          font-size: 0.8rem;
+          font-weight: 600;
+          cursor: pointer;
+          margin-bottom: 12px;
+          transition: all 0.2s;
         }
+        .clear-all-btn:hover { background: rgba(255, 68, 68, 0.1); color: #ff4444; border-color: rgba(255, 68, 68, 0.3); }
 
         .chat-messages {
           height: 100%;
