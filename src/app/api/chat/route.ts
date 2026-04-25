@@ -81,12 +81,18 @@ export async function POST(req: Request) {
     2. You MUST append [NAVIGATE:url] at the very end — this is MANDATORY.
     3. COPY the URL CHARACTER-FOR-CHARACTER from the list below. Do NOT modify it in any way.
     
-    AVAILABLE PAGES:
-    ${navigationLinks.map((l) => `${l.name} => ${l.url}`).join("\n")}
+    AVAILABLE PAGES (COPY URL EXACTLY):
+    ${navigationLinks.map((l) => `- ${l.name} => ${l.url}`).join("\n")}
     
-    CRITICAL: You must use the EXACT URL from the list above. Do not add or remove anything.
-    Example: "[NAVIGATE:${navigationLinks[0]?.url || 'https://site.com'}]"
-    If the user asks for a page not listed above, do not use the tag.`
+    DANGER - READ CAREFULLY:
+    When navigating, you MUST copy the URL character-for-character. 
+    DO NOT "fix" the URL. 
+    DO NOT add "-ebook" or any other suffix. 
+    DO NOT change the path.
+    If you change even ONE character, the user will get a 404 error and you will FAIL.
+    
+    CORRECT: "[NAVIGATE:https://example.com/page]"
+    WRONG: "[NAVIGATE: https://example.com/page-something-else]" (Never add your own words to the URL)`
       : "";
 
     const systemPrompt = `You are a Voice AI Agent.
