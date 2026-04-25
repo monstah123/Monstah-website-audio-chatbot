@@ -19,6 +19,7 @@ export default function AgentSettings() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [websiteUrl, setWebsiteUrl] = useState("");
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -38,16 +39,19 @@ export default function AgentSettings() {
           setIsBrandingUnlocked(!!data.brandName);
           setQuickLinks(data.quickLinks || []);
           // Convert the saved {name: url} map back to array for the UI
-          if (data.navigationLinks) {
-            // Support both array format and legacy {name:url} object
-            if (Array.isArray(data.navigationLinks)) {
-              setNavigationLinks(data.navigationLinks);
-            } else {
-              setNavigationLinks(
-                Object.entries(data.navigationLinks).map(([name, url]) => ({ name, url: url as string }))
-              );
+            if (data.navigationLinks) {
+              // Support both array format and legacy {name:url} object
+              if (Array.isArray(data.navigationLinks)) {
+                setNavigationLinks(data.navigationLinks);
+              } else {
+                setNavigationLinks(
+                  Object.entries(data.navigationLinks).map(([name, url]) => ({ name, url: url as string }))
+                );
+              }
             }
-          }
+            if (data.lastTrainedUrl) {
+              setWebsiteUrl(data.lastTrainedUrl);
+            }
         }
       } catch (e) {
         console.error("Failed to load settings", e);
@@ -247,7 +251,7 @@ export default function AgentSettings() {
                 const res = await fetch('/api/train', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ url: websiteUrl, userId: uid }),
+                  body: JSON.stringify({ url: websiteUrl, userId: auth.currentUser?.uid }),
                 });
                 if (res.ok) alert("Website re-scan started!");
                 else alert("Failed to start refresh.");
@@ -368,7 +372,7 @@ export default function AgentSettings() {
                   const res = await fetch('/api/train', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: link.url, userId: uid }),
+                    body: JSON.stringify({ url: link.url, userId: auth.currentUser?.uid }),
                   });
                   if (res.ok) alert(`Training started for: ${link.name}`);
                   else alert("Training failed to start.");
