@@ -113,7 +113,7 @@ export default function VoiceChat() {
 
   // ---- Clear Chat ----
   const clearChat = () => {
-    setMessages([initialGreeting]);
+    setMessages([{ role: "assistant", content: firstMessage }]);
     setCurrentSessionId(null);
     localStorage.removeItem("monstah_chat_history");
     if (audioRef.current) {
