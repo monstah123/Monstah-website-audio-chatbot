@@ -20,6 +20,8 @@ export default function AgentSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [websiteUrl, setWebsiteUrl] = useState("");
+  const [trainingStates, setTrainingStates] = useState<Record<number, boolean>>({});
+  const [isBulkTraining, setIsBulkTraining] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -334,6 +336,7 @@ export default function AgentSettings() {
             </span>
             <button
               className="btn-train-all"
+              disabled={isBulkTraining}
               onClick={async () => {
                 const uid = auth.currentUser?.uid;
                 if (!uid) {
@@ -349,10 +352,12 @@ export default function AgentSettings() {
                 
                 if (!confirm(`This will train the AI on all ${validLinks.length} pages. Continue?`)) return;
                 
+                setIsBulkTraining(true);
                 let successCount = 0;
                 let failReasons = [];
 
-                for (const link of validLinks) {
+                for (let i = 0; i < validLinks.length; i++) {
+                  const link = validLinks[i];
                   try {
                     const trimmedUrl = link.url.trim();
                     const formData = new FormData();
@@ -376,19 +381,20 @@ export default function AgentSettings() {
                   }
                 }
 
-                let msg = `Bulk training complete! ${successCount} of ${validLinks.length} links were successfully queued.`;
+                setIsBulkTraining(false);
+                let msg = `Bulk training complete! ${successCount} of ${validLinks.length} links were successfully updated in the AI brain.`;
                 if (failReasons.length > 0) {
                   msg += "\n\nErrors:\n" + failReasons.join("\n");
                 }
                 alert(msg);
               }}
               style={{ 
-                background: 'rgba(68, 255, 68, 0.1)', 
-                color: '#44ff44', 
+                background: isBulkTraining ? 'rgba(255, 255, 255, 0.1)' : 'rgba(68, 255, 68, 0.1)', 
+                color: isBulkTraining ? '#888' : '#44ff44', 
                 border: '1px solid rgba(68, 255, 68, 0.2)', 
                 padding: '4px 12px', 
                 borderRadius: '6px', 
-                cursor: 'pointer',
+                cursor: isBulkTraining ? 'not-allowed' : 'pointer',
                 fontSize: '12px',
                 fontWeight: 'bold',
                 display: 'flex',
@@ -396,7 +402,8 @@ export default function AgentSettings() {
                 gap: '5px'
               }}
             >
-              <RefreshCw size={12} /> Train All Links
+              {isBulkTraining ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+              {isBulkTraining ? 'Training AI...' : 'Train All Links'}
             </button>
           </div>
         </div>
@@ -439,10 +446,12 @@ export default function AgentSettings() {
               }}
             >🔗</button>
             <button
-              className="btn-train-nav"
+              className="btn-train-single"
               title="Train AI on this specific page"
+              disabled={trainingStates[i]}
               onClick={async () => {
                 if (!link.url.trim()) return;
+                setTrainingStates(prev => ({ ...prev, [i]: true }));
                 try {
                   const trimmedUrl = link.url.trim();
                   const formData = new FormData();
@@ -454,18 +463,32 @@ export default function AgentSettings() {
                     method: 'POST',
                     body: formData,
                   });
-                  if (res.ok) alert(`Training started for: ${link.name}`);
+                  if (res.ok) alert(`✅ Training Complete for: ${link.name}`);
                   else {
                     const err = await res.json();
-                    alert(`Failed for ${link.name}: ${err.error || "Unknown error"}`);
+                    alert(`❌ Failed for ${link.name}: ${err.error || "Unknown error"}`);
                   }
                 } catch (e) {
                   alert("Error starting training.");
+                } finally {
+                  setTrainingStates(prev => ({ ...prev, [i]: false }));
                 }
               }}
-              style={{ background: 'rgba(68, 255, 68, 0.1)', color: '#44ff44', border: '1px solid rgba(68, 255, 68, 0.2)', padding: '8px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{
+                background: trainingStates[i] ? 'rgba(255, 255, 255, 0.05)' : 'rgba(68, 255, 68, 0.05)',
+                color: trainingStates[i] ? '#666' : '#44ff44',
+                border: '1px solid rgba(68, 255, 68, 0.1)',
+                padding: '8px',
+                borderRadius: '8px',
+                cursor: trainingStates[i] ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px'
+              }}
             >
-              <RefreshCw size={14} />
+              {trainingStates[i] ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} />}
             </button>
             <button
               className="btn-remove-nav"
