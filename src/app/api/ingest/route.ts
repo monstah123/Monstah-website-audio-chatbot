@@ -11,8 +11,13 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const type = formData.get("type") as string;
+    const userId = formData.get("userId") as string;
     let content = "";
     let source = "";
+
+    if (!userId) {
+      return NextResponse.json({ error: "Missing User ID. You must be logged in to train the AI." }, { status: 401 });
+    }
 
     if (type === "url") {
       const url = formData.get("url") as string;
@@ -59,6 +64,7 @@ export async function POST(req: Request) {
       const vector = embeddingResponse.data[0].embedding;
 
       await db.collection("knowledge").add({
+        userId,
         source,
         content: chunk,
         vector,

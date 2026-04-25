@@ -203,10 +203,14 @@ export default function VoiceChat() {
     setInput("");
     setIsLoading(true);
 
+    // Get the tenant UID from the URL if this is an embedded widget
+    const urlParams = new URLSearchParams(window.location.search);
+    const widgetUid = urlParams.get('uid') || null;
+
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: newMessages, userId: widgetUid }),
       });
 
       if (!response.ok) throw new Error("Failed to fetch response");

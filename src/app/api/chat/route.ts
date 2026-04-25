@@ -15,7 +15,7 @@ const deepseek = process.env.DEEPSEEK_API_KEY
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
+    const { messages, userId } = await req.json();
     const lastMessage = messages[messages.length - 1].content;
 
     // 1. Convert the user's question into a vector (Always use OpenAI for embeddings)
@@ -27,11 +27,16 @@ export async function POST(req: Request) {
 
     let context = "";
     try {
-      // 2. Search Firestore for context (Fetch more for better understanding)
-      const knowledgeRef = db.collection("knowledge");
+      // 2. Search Firestore for context, SCOPED TO THIS USER
+      let knowledgeRef = db.collection("knowledge") as any;
+      
+      if (userId) {
+        knowledgeRef = knowledgeRef.where("userId", "==", userId);
+      }
+      
       const snapshot = await knowledgeRef.limit(10).get(); 
 
-      snapshot.forEach(doc => {
+      snapshot.forEach((doc: any) => {
         const data = doc.data();
         context += `\nContent: ${data.content}\n---\n`;
       });

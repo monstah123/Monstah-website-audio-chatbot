@@ -4,6 +4,14 @@
   const currentScript = document.currentScript;
   const position = 'right'; // FORCE TO RIGHT SIDE
   
+  let uid = '';
+  if (currentScript && currentScript.src) {
+    try {
+      const scriptUrl = new URL(currentScript.src);
+      uid = scriptUrl.searchParams.get('uid') || '';
+    } catch (e) {}
+  }
+  
   const wrapper = document.createElement('div');
   wrapper.id = 'monstah-ai-final-anchor';
   wrapper.style.cssText = `
@@ -21,7 +29,7 @@
   (document.documentElement || document.body).appendChild(wrapper);
 
   const iframe = document.createElement('iframe');
-  iframe.src = `${VERCEL_URL}/widget?pos=${position}&v=${Date.now()}`; 
+  iframe.src = `${VERCEL_URL}/widget?pos=${position}&uid=${uid}&v=${Date.now()}`; 
   iframe.style.cssText = `
     width: 100% !important;
     height: 100% !important;

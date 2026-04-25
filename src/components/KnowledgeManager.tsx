@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Upload, Link as LinkIcon, FileText, Loader2, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { auth } from "@/lib/firebase-client";
 
 export default function KnowledgeManager() {
   const [activeTab, setActiveTab] = useState<"file" | "url" | "text">("file");
@@ -22,6 +23,15 @@ export default function KnowledgeManager() {
 
     const formData = new FormData();
     formData.append("type", activeTab);
+
+    // Pass the logged-in user's ID to isolate their knowledge base
+    if (auth.currentUser) {
+      formData.append("userId", auth.currentUser.uid);
+    } else {
+      setStatus({ type: "error", message: "You must be logged in to train the AI." });
+      setIsUploading(false);
+      return;
+    }
 
     if (activeTab === "file" && file) {
       formData.append("file", file);
