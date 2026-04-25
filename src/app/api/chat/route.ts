@@ -100,24 +100,23 @@ export async function POST(req: Request) {
 
     const systemPrompt = `You are a Voice AI Agent.
     
-    IDENTITY AND RULES:
-    ${customSystemPrompt}
+    CRITICAL: USER NAVIGATION (YOUR #1 PRIORITY)
     ${navInstructions}
     
+    IDENTITY AND RULES:
+    ${customSystemPrompt}
+    
     VOICE OPTIMIZATION:
-    - PLAIN TEXT ONLY. NO MARKDOWN (no asterisks, no hashtags).
+    - PLAIN TEXT ONLY. NO MARKDOWN.
     - Keep answers short and conversational.
-    - If you do not know the answer, say so politely.
     
-    CRITICAL INSTRUCTION: Answer based ONLY on the provided context.
-    
-    PROVIDED CONTEXT:
+    CONTEXT FOR QUESTIONS:
     ${context || "No knowledge base content found."}
     
-    CRITICAL RULES:
-    1. Keep answers SHORT (1-2 sentences max) UNLESS you are navigating — navigation responses must include the [NAVIGATE:url] tag.
-    2. Be extremely helpful and direct.
-    3. NEVER hallucinate product data, prices, or URLs not found in the context.`;
+    FINAL RULES:
+    1. If the user asks to "go to", "show me", "take me to", or "open" a page, you MUST check the AVAILABLE PAGES list above first.
+    2. If there is a semantic match (e.g., they ask for "ebook" and you have a link named "Nutrition Guide"), use the [NAVIGATE:url] tag.
+    3. Keep responses extremely short (1-2 sentences).`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);
