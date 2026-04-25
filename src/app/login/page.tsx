@@ -133,8 +133,8 @@ export default function LoginPage() {
 
         .auth-card {
           width: 100%;
-          max-width: 420px;
-          padding: 40px;
+          max-width: 440px;
+          padding: 40px 32px;
           border-radius: 24px;
           text-align: center;
           background: rgba(10, 10, 10, 0.8);
@@ -144,25 +144,26 @@ export default function LoginPage() {
         }
 
         h2 {
-          font-size: 2rem;
-          margin-bottom: 10px;
+          font-size: 1.7rem;
+          margin-bottom: 8px;
           font-weight: 700;
         }
 
         .subtitle {
           color: var(--text-secondary);
-          margin-bottom: 30px;
+          margin-bottom: 24px;
+          font-size: 0.9rem;
         }
         
         .btn-google {
           width: 100%;
-          padding: 14px;
+          padding: 12px;
           background: white;
           color: #000;
           border: none;
           border-radius: 12px;
           font-weight: 600;
-          font-size: 1rem;
+          font-size: 0.95rem;
           cursor: pointer;
           display: flex;
           justify-content: center;
@@ -178,8 +179,8 @@ export default function LoginPage() {
         }
         
         .google-icon {
-          width: 20px;
-          height: 20px;
+          width: 18px;
+          height: 18px;
         }
         
         .divider {
@@ -199,12 +200,12 @@ export default function LoginPage() {
         .divider span {
           padding: 0 16px;
           color: var(--text-secondary);
-          font-size: 0.9rem;
+          font-size: 0.85rem;
         }
 
         .input-group {
           position: relative;
-          margin-bottom: 20px;
+          margin-bottom: 16px;
         }
 
         .icon {
@@ -217,12 +218,12 @@ export default function LoginPage() {
 
         input {
           width: 100%;
-          padding: 16px 16px 16px 44px;
+          padding: 14px 14px 14px 44px;
           background: rgba(0, 0, 0, 0.5);
           border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 12px;
           color: white;
-          font-size: 1rem;
+          font-size: 0.95rem;
           outline: none;
           transition: border-color 0.2s;
         }
