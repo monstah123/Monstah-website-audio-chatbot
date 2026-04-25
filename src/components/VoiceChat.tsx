@@ -333,9 +333,9 @@ export default function VoiceChat({ uid }: { uid?: string }) {
 
       // Check for navigation command after stream is complete
       let urlToRedirect = "";
-      const navMatch = aiResponse.match(/\[NAVIGATE:\s*(https?:\/\/[^\]]+)\]/);
+      const navMatch = aiResponse.match(/\[NAVIGATE:\s*([^\]\s]+)\s*\]/);
       if (navMatch) {
-        urlToRedirect = navMatch[1];
+        urlToRedirect = navMatch[1].trim();
         aiResponse = aiResponse.replace(navMatch[0], "").trim();
       }
 

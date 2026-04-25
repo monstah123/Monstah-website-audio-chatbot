@@ -82,11 +82,11 @@ export async function POST(req: Request) {
     3. COPY the URL CHARACTER-FOR-CHARACTER from the list below. Do NOT modify it in any way.
     
     AVAILABLE PAGES (use EXACT URL, do not alter):
-    ${navigationLinks.map((l, i) => `[${i + 1}] ${l.name} → ${l.url}`).join("\n")}
+    ${navigationLinks.map((l) => `- ${l.name}: ${l.url}`).join("\n")}
     
-    CRITICAL: The [NAVIGATE:url] tag must contain the URL exactly as listed above — no trailing slashes added, no path changes, no modifications whatsoever.
-    Example: "Taking you there now! [NAVIGATE:https://example.com/page]"
-    Only use URLs from this list.`
+    CRITICAL: The [NAVIGATE:url] tag must contain the URL exactly as listed above. Do not add slashes, do not change protocols, do not trim paths.
+    Example: "[NAVIGATE:${navigationLinks[0]?.url || 'https://site.com'}]"
+    Only use URLs from this list. If the user asks for a page not in this list, do not use the [NAVIGATE] tag.`
       : "";
 
     const systemPrompt = `You are a Voice AI Agent.
