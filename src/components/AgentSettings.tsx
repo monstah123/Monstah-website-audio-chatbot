@@ -229,7 +229,12 @@ export default function AgentSettings() {
 
       {/* ---- Navigation Links ---- */}
       <div className="input-group">
-        <label><MessageSquare size={16} /> Page Navigation Links</label>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <label style={{ margin: 0 }}><MessageSquare size={16} /> Page Navigation Links</label>
+          <span className="link-count-badge">
+            {navigationLinks.filter(l => l.name.trim() && l.url.trim()).length} Active Links
+          </span>
+        </div>
         <p className="help-text">
           Add as many pages as you want. The AI will send users there when they ask 
           (e.g. &ldquo;Take me to the hoodies page&rdquo;). URLs must be complete and exact — copy them directly from your browser.
@@ -528,6 +533,16 @@ export default function AgentSettings() {
 
         .btn-add-nav:hover {
           background: rgba(68, 255, 68, 0.15);
+        }
+
+        .link-count-badge {
+          background: rgba(68, 255, 68, 0.1);
+          color: var(--primary);
+          padding: 4px 10px;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          border: 1px solid rgba(68, 255, 68, 0.2);
         }
 
         @keyframes spin {
