@@ -85,9 +85,9 @@ export async function POST(req: Request) {
     ${context || "No knowledge base content found."}
     
     NAVIGATION INSTRUCTIONS:
-    You have access to a list of specific pages on the user's website. If the user asks for a page, or if you mention a product that exists in the list below:
-    1. Respond with a short confirmation or helpful sentence.
-    2. Append the EXACT LINK_ID in this tag: [NAVIGATE:LINK_ID]
+    You have access to a list of specific pages on the user's website.
+    1. Respond with a short confirmation.
+    2. YOU MUST APPEND the EXACT LINK_ID in this tag at the END of your response: [NAVIGATE:LINK_ID]
     
     AVAILABLE_PAGES_DATABASE:
     ${navigationLinks.map((l, i) => {
@@ -96,14 +96,14 @@ export async function POST(req: Request) {
     }).join("\n")}
     
     CRITICAL RULES:
-    1. NEVER TYPE A URL. Only use the LINK_IDs provided above.
-    2. ZERO TOLERANCE: Do not change even one character of the LINK_ID.
-    3. HALLUCINATION PROTECTION: If you see "Wrist Straps" in the database, use that specific ID. Do not "correct" it to "Wraps".
+    1. MANDATORY TAG: If the user asks to "go to", "open", or "see" a page, you MUST include the [NAVIGATE:] tag. NO EXCEPTIONS.
+    2. NO Hallucinations: Use the EXACT LINK_ID. Do not change "STRAPS" to "WRAPS".
+    3. DATABASE OVERRIDE: If your internal knowledge says "Wraps" but the database says "Straps", the DATABASE is correct. Use the database ID.
     
     FINAL RULES:
-    1. Respond in 1-2 short sentences maximum.
-    2. Be helpful and enthusiastic.
-    3. You MUST use the [NAVIGATE:LINK_ID] tag if a match exists. No exceptions.`;
+    1. Respond in 1 short sentence.
+    2. Be helpful.
+    3. You MUST use the [NAVIGATE:LINK_ID] tag if a match exists. Failure to do so will break the system.`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);

@@ -353,6 +353,8 @@ export default function VoiceChat({ uid }: { uid?: string }) {
           const index = parseInt(indexStr);
           if (!isNaN(index) && navigationLinks[index]) {
             urlToRedirect = navigationLinks[index].url;
+          } else {
+            console.error("Unknown Navigation ID:", navId);
           }
         } else {
           // SAFETY SHIELD: AI sent a raw string. Check if it matches a known URL exactly.
@@ -361,17 +363,20 @@ export default function VoiceChat({ uid }: { uid?: string }) {
             urlToRedirect = matchedLink.url;
           } else {
             console.error("Blocked hallucinated navigation:", navId);
-            urlToRedirect = ""; // Block
+            // Optionally tell the user
+            // aiResponse += "\n\n*(System Note: Blocked a potentially hallucinated link)*";
           }
         }
 
         if (urlToRedirect) {
-          console.log("Resolved Navigation:", urlToRedirect);
+          console.log("🚀 Redirecting to:", urlToRedirect);
           // Visual feedback in the chat window
           setMessages(prev => {
             const last = prev[prev.length - 1];
             return [...prev.slice(0, -1), { ...last, content: last.content + `\n\n*(Redirecting to: ${urlToRedirect})*` }];
           });
+        } else {
+          console.warn("⚠️ Navigation tag found but no valid URL resolved for ID:", navId);
         }
       }
 
