@@ -68,13 +68,13 @@ export async function POST(req: Request) {
           
           // Auto-discover links from training data sources
           if (data.source && data.source.startsWith('http')) {
-            const alreadyExists = navigationLinks.some(l => l.url === data.source);
-            const alreadyDiscovered = discoveredLinks.some(l => l.url === data.source);
+            const alreadyExists = navigationLinks.some((l: any) => l.url === data.source);
+            const alreadyDiscovered = discoveredLinks.some((l: any) => l.url === data.source);
             
             if (!alreadyExists && !alreadyDiscovered) {
               const urlParts = data.source.split('/');
               const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Trained Page";
-              const name = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+              const name = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
               discoveredLinks.push({ name, url: data.source });
             }
           }
