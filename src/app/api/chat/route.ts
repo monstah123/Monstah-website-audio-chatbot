@@ -83,15 +83,7 @@ export async function POST(req: Request) {
     
     CRITICAL RULES:
     1. Keep answers SHORT (2 sentences max).
-    2. Use code: monstah55 (15% off over $75).
-    3. Always prioritize gym gear even if the transcript is messy.
-    
-    NAVIGATION INSTRUCTIONS:
-    - If the user explicitly asks to "see it", "show me", or "send me the link" for a product, YOU MUST append a special link at the end of your response.
-    - BUT FIRST, pitch the product like a hardcore salesman. Tell them WHY they need it. Example: For the Hoodie, explicitly mention it has "Intense is how I train" printed on the back. SELL IT!
-    - After you pitch it, format the link EXACTLY like this: [NAVIGATE: https://monstahgymwear.com/?s=SEARCH_TERM&post_type=product]
-    - Replace SEARCH_TERM with the product name formatted for a URL (e.g., Knee+Wraps, Pre-Workout, Hoodie).
-    - DO NOT use this tag unless they explicitly ask to see it, show it, or get a link.
+    2. Be extremely helpful and direct.
     
     CONTEXT:
     ${context}`;
