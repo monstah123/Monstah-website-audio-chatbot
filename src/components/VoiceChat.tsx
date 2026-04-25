@@ -349,10 +349,9 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         
         aiResponse = aiResponse.replace(navMatch[0], "").trim();
         
-        // Resolve Semantic ID to URL (e.g. PAGE_WRIST_STRAPS_2 -> navigationLinks[2].url)
-        if (navId.startsWith("PAGE_")) {
-          const parts = navId.split("_");
-          const indexStr = parts[parts.length - 1];
+        // Resolve Semantic ID to URL (e.g. LINK_2 -> navigationLinks[2].url)
+        if (navId.startsWith("LINK_")) {
+          const indexStr = navId.replace("LINK_", "");
           const index = parseInt(indexStr);
           if (!isNaN(index) && navigationLinks[index]) {
             urlToRedirect = navigationLinks[index].url;

@@ -94,8 +94,7 @@ export async function POST(req: Request) {
     
     AVAILABLE_PAGES_DATABASE:
     ${navigationLinks.map((l, i) => {
-      const slug = l.name.toUpperCase().replace(/\s+/g, '_').replace(/[^A-Z0-9_]/g, '');
-      return `- LINK_ID: PAGE_${slug}_${i} => PAGE_NAME: "${l.name}"`;
+      return `- LINK_ID: LINK_${i} => PAGE_NAME: "${l.name}"`;
     }).join("\n")}
     
     ULTIMATE COMMANDS (MANDATORY):
@@ -105,12 +104,12 @@ export async function POST(req: Request) {
     
     EXAMPLE EXACT OUTPUT:
     Sure, I'll take you to the requested page right now.
-    REDIRECT_TO_ID: PAGE_YOUR_DATABASE_MATCH_INDEX
+    REDIRECT_TO_ID: LINK_1
     
     FINAL RULES:
     1. Speak naturally but keep it to 1-2 short sentences.
     2. The REDIRECT_TO_ID: tag DOES NOT count as a sentence. You MUST include it on a new line if a redirect is happening.
-    3. The example tag above is just a placeholder! You MUST use the EXACT LINK_ID exactly as it appears in the AVAILABLE_PAGES_DATABASE!`;
+    3. You MUST use the EXACT LINK_ID (e.g. LINK_0, LINK_1) exactly as it appears in the AVAILABLE_PAGES_DATABASE!`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);
