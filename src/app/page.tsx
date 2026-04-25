@@ -43,19 +43,40 @@ export default function Home() {
           </div>
         </motion.div>
 
-        {/* Stats row */}
+        {/* Stats row — inline styles guarantee horizontal layout */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.7 }}
-          className="stats-row"
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'nowrap',
+            width: '100%',
+            marginBottom: '64px',
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '20px',
+            overflow: 'hidden',
+          }}
         >
           {[
             { value: "< 1s", label: "Response Time" },
             { value: "100%", label: "Data Isolation" },
             { value: "∞", label: "Knowledge Docs" },
-          ].map((s) => (
-            <div className="stat-item" key={s.label}>
+          ].map((s, i, arr) => (
+            <div
+              key={s.label}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '28px 12px',
+                borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none',
+              }}
+            >
               <span className="stat-value gradient-text">{s.value}</span>
               <span className="stat-label">{s.label}</span>
             </div>
@@ -450,11 +471,89 @@ export default function Home() {
         }
 
         @media (max-width: 768px) {
-          h1 { font-size: 2.8rem; }
-          .section-title { font-size: 2.2rem; }
-          .cta-card { padding: 40px 24px; }
-          .cta-card h2 { font-size: 2rem; }
-          .stats-row { gap: 24px; padding: 20px; }
+          .main-container {
+            padding: 60px 16px 100px;
+          }
+
+          h1 {
+            font-size: 2.4rem;
+            letter-spacing: -0.01em;
+          }
+
+          p {
+            font-size: 1rem;
+            margin-bottom: 28px;
+          }
+
+          .hero {
+            margin-bottom: 80px;
+          }
+
+          .hero-content {
+            margin-bottom: 36px;
+          }
+
+          .cta-group {
+            flex-direction: column;
+            align-items: center;
+          }
+
+          .btn-primary, .btn-secondary {
+            width: 100%;
+            max-width: 320px;
+            justify-content: center;
+          }
+
+          .stat-value {
+            font-size: 1.8rem !important;
+          }
+
+          .stat-label {
+            font-size: 0.7rem !important;
+          }
+
+          .features-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .how-section, .perks-section, .final-cta {
+            margin-bottom: 80px;
+          }
+
+          .section-title {
+            font-size: 2rem;
+          }
+
+          .section-subtitle {
+            font-size: 0.95rem;
+            margin-bottom: 36px;
+          }
+
+          .steps-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .step-card {
+            padding: 28px 24px;
+          }
+
+          .perks-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .cta-card {
+            padding: 40px 24px;
+          }
+
+          .cta-card h2 {
+            font-size: 2rem;
+          }
+
+          .btn-large {
+            width: 100%;
+            max-width: 320px;
+            justify-content: center;
+          }
         }
       `}</style>
     </main>
