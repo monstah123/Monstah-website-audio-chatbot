@@ -85,23 +85,25 @@ export async function POST(req: Request) {
     ${context || "No knowledge base content found."}
     
     NAVIGATION INSTRUCTIONS:
-    You have access to a list of specific URLs on the user's website. If the user asks for a page, or if you mention a product that exists in the list below:
+    You have access to a list of specific pages on the user's website. If the user asks for a page, or if you mention a product that exists in the list below:
     1. Respond with a short confirmation or helpful sentence.
-    2. Append the EXACT URL in this tag: [NAVIGATE:url]
+    2. Append the EXACT LINK_ID in this tag: [NAVIGATE:LINK_ID]
     
-    AVAILABLE_PAGES_DATABASE (USE THESE EXACT URLS):
-    ${navigationLinks.map(l => `- NAME: "${l.name}" => URL: "${l.url}"`).join("\n")}
+    AVAILABLE_PAGES_DATABASE:
+    ${navigationLinks.map((l, i) => {
+      const slug = l.name.toUpperCase().replace(/\s+/g, '_').replace(/[^A-Z0-9_]/g, '');
+      return `- LINK_ID: "PAGE_${slug}_${i}" => PAGE_NAME: "${l.name}"`;
+    }).join("\n")}
     
     CRITICAL RULES:
-    1. PROACTIVE LINKING: If you mention a product, page, or category that exists in the AVAILABLE_PAGES_DATABASE, you MUST append the [NAVIGATE:] tag for it automatically.
-    2. FUZZY MATCHING: Be smart. "e-book" matches anything with "book" or "guide" in the name. "hoodie" matches "hoodies" or "clothing".
-    3. EXACT URL: Copy the URL exactly as shown in the database. DO NOT add suffixes or change characters.
-    4. NO HALLUCINATIONS: If a page is NOT in the database, do not use the [NAVIGATE:] tag.
+    1. NEVER TYPE A URL. Only use the LINK_IDs provided above.
+    2. ZERO TOLERANCE: Do not change even one character of the LINK_ID.
+    3. HALLUCINATION PROTECTION: If you see "Wrist Straps" in the database, use that specific ID. Do not "correct" it to "Wraps".
     
     FINAL RULES:
     1. Respond in 1-2 short sentences maximum.
     2. Be helpful and enthusiastic.
-    3. If you can help the user find a page from the database, do it immediately. No excuses.`;
+    3. You MUST use the [NAVIGATE:LINK_ID] tag if a match exists. No exceptions.`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);
