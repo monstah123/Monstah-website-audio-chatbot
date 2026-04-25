@@ -6,7 +6,7 @@ import { auth } from "@/lib/firebase-client";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import KnowledgeManager from "@/components/KnowledgeManager";
 import AgentSettings from "@/components/AgentSettings";
-import { LogOut, Copy, CheckCircle2, LayoutDashboard, Code } from "lucide-react";
+import { LogOut, Copy, CheckCircle2, LayoutDashboard, Code, Home } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function DashboardPage() {
@@ -58,11 +58,14 @@ export default function DashboardPage() {
           <span>Monstah AI Dashboard</span>
         </div>
         <div className="nav-user">
-          <span className="user-email">{user?.email}</span>
-          <button onClick={handleSignOut} className="btn-logout">
-            <LogOut size={16} /> Sign Out
-          </button>
-        </div>
+            <span className="user-email">{user?.email}</span>
+            <button onClick={() => router.push('/')} className="btn-home">
+              <Home size={16} /> Home
+            </button>
+            <button onClick={handleSignOut} className="btn-logout">
+              <LogOut size={16} /> Sign Out
+            </button>
+          </div>
       </nav>
 
       <main className="dash-main">
@@ -149,6 +152,26 @@ export default function DashboardPage() {
         .user-email {
           color: var(--text-secondary);
           font-size: 0.9rem;
+        }
+
+        .btn-home {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.06);
+          color: white;
+          border: 1px solid var(--glass-border);
+          padding: 8px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: all 0.2s;
+        }
+
+        .btn-home:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: var(--primary);
+          color: var(--primary);
         }
 
         .btn-logout {

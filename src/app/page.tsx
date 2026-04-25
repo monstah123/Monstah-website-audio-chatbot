@@ -54,7 +54,6 @@ export default function Home() {
             { value: "< 1s", label: "Response Time" },
             { value: "100%", label: "Data Isolation" },
             { value: "∞", label: "Knowledge Docs" },
-            { value: "$0", label: "Monthly Fee" },
           ].map((s) => (
             <div className="stat-item" key={s.label}>
               <span className="stat-value gradient-text">{s.value}</span>
@@ -275,21 +274,31 @@ export default function Home() {
         /* ===== STATS ===== */
         .stats-row {
           display: flex;
-          gap: 48px;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          gap: 0;
           justify-content: center;
-          flex-wrap: wrap;
+          align-items: stretch;
           margin-bottom: 64px;
-          padding: 32px;
           background: rgba(255,255,255,0.03);
           border: 1px solid var(--glass-border);
           border-radius: 20px;
+          overflow: hidden;
         }
 
         .stat-item {
           display: flex;
           flex-direction: column;
           align-items: center;
+          justify-content: center;
           gap: 4px;
+          flex: 1;
+          padding: 28px 16px;
+          border-right: 1px solid var(--glass-border);
+        }
+
+        .stat-item:last-child {
+          border-right: none;
         }
 
         .stat-value {
