@@ -101,11 +101,14 @@ export async function POST(req: Request) {
     ULTIMATE COMMANDS (MANDATORY):
     1. DATABASE IS GOD: If the database says "Wrist Straps", you MUST call them "Wrist Straps". If the context or your brain says "Wraps", you MUST IGNORE IT and say "Straps".
     2. NO Hallucinations: If a product name in the database contains "Straps", you are FORBIDDEN from using the word "Wraps".
-    3. MANDATORY TAG: If you confirm a redirect, the [NAVIGATE:] tag is REQUIRED.
+    3. MANDATORY TAG: If you confirm a redirect, the [NAVIGATE:] tag is REQUIRED at the very end.
+    
+    EXAMPLE RESPONSE FORMAT:
+    Sure, I'll take you to the Wrist Straps page right now. [NAVIGATE:PAGE_WRIST_STRAPS_0]
     
     FINAL RULES:
     1. Respond in 1 short sentence.
-    2. You MUST use the [NAVIGATE:LINK_ID] tag if a match exists.`;
+    2. You MUST use the [NAVIGATE:LINK_ID] tag exactly as shown in the example if a match exists.`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);
