@@ -355,8 +355,14 @@ export default function VoiceChat({ uid }: { uid?: string }) {
             urlToRedirect = navigationLinks[index].url;
           }
         } else {
-          // AI sent a raw URL directly (Legacy support)
-          urlToRedirect = navId;
+          // SAFETY SHIELD: AI sent a raw string. Check if it matches a known URL exactly.
+          const matchedLink = navigationLinks.find(l => l.url === navId);
+          if (matchedLink) {
+            urlToRedirect = matchedLink.url;
+          } else {
+            console.error("Blocked hallucinated navigation:", navId);
+            urlToRedirect = ""; // Block
+          }
         }
 
         if (urlToRedirect) {
