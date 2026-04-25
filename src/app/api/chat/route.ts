@@ -81,12 +81,12 @@ export async function POST(req: Request) {
     2. You MUST append [NAVIGATE:url] at the very end — this is MANDATORY.
     3. COPY the URL CHARACTER-FOR-CHARACTER from the list below. Do NOT modify it in any way.
     
-    AVAILABLE PAGES (use EXACT URL, do not alter):
-    ${navigationLinks.map((l) => `- ${l.name}: ${l.url}`).join("\n")}
+    AVAILABLE PAGES:
+    ${navigationLinks.map((l) => `${l.name} => ${l.url}`).join("\n")}
     
-    CRITICAL: The [NAVIGATE:url] tag must contain the URL exactly as listed above. Do not add slashes, do not change protocols, do not trim paths.
+    CRITICAL: You must use the EXACT URL from the list above. Do not add or remove anything.
     Example: "[NAVIGATE:${navigationLinks[0]?.url || 'https://site.com'}]"
-    Only use URLs from this list. If the user asks for a page not in this list, do not use the [NAVIGATE] tag.`
+    If the user asks for a page not listed above, do not use the tag.`
       : "";
 
     const systemPrompt = `You are a Voice AI Agent.

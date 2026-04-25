@@ -254,7 +254,7 @@ export default function AgentSettings() {
               className="nav-input"
             />
             <input
-              type="url"
+              type="text"
               value={link.url}
               onChange={(e) => {
                 const updated = [...navigationLinks];
@@ -264,6 +264,15 @@ export default function AgentSettings() {
               placeholder="https://yoursite.com/exact-page-path"
               className="nav-input"
             />
+            <button
+              className="btn-test-nav"
+              title="Test this link"
+              onClick={() => {
+                if (link.url.trim()) {
+                  window.open(link.url.startsWith('http') ? link.url : `https://${link.url}`, '_blank');
+                }
+              }}
+            >🔗</button>
             <button
               className="btn-remove-nav"
               onClick={() => setNavigationLinks(navigationLinks.filter((_, idx) => idx !== i))}
@@ -533,6 +542,27 @@ export default function AgentSettings() {
 
         .btn-add-nav:hover {
           background: rgba(68, 255, 68, 0.15);
+        }
+
+        .btn-test-nav {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          color: white;
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 1rem;
+          flex-shrink: 0;
+          transition: all 0.2s;
+        }
+
+        .btn-test-nav:hover {
+          background: rgba(255, 255, 255, 0.15);
+          border-color: var(--primary);
         }
 
         .link-count-badge {

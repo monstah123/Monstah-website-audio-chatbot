@@ -337,6 +337,12 @@ export default function VoiceChat({ uid }: { uid?: string }) {
       if (navMatch) {
         urlToRedirect = navMatch[1].trim();
         aiResponse = aiResponse.replace(navMatch[0], "").trim();
+        
+        // Visual feedback in the chat window
+        setMessages(prev => {
+          const last = prev[prev.length - 1];
+          return [...prev.slice(0, -1), { ...last, content: last.content + `\n\n*(Redirecting to: ${urlToRedirect})*` }];
+        });
       }
 
       await speak(aiResponse);
@@ -345,10 +351,19 @@ export default function VoiceChat({ uid }: { uid?: string }) {
       if (urlToRedirect) {
         // If running inside an iframe (embedded widget), notify the parent host page
         const isEmbedded = window.self !== window.top;
+        
+        // Final fallback: if it's not a full URL, make it one relative to parent if possible
+        if (!urlToRedirect.startsWith('http')) {
+          if (isEmbedded) {
+            // Parent will handle relative URL correctly
+          } else {
+            urlToRedirect = window.location.origin + (urlToRedirect.startsWith('/') ? '' : '/') + urlToRedirect;
+          }
+        }
+
         if (isEmbedded) {
           window.parent.postMessage({ type: 'redirect', url: urlToRedirect }, "*");
         } else {
-          // Running directly in a browser tab (e.g. /widget preview) — navigate directly
           window.location.href = urlToRedirect;
         }
       }
