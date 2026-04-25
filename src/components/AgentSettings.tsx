@@ -112,13 +112,24 @@ export default function AgentSettings() {
             />
             <button
               className="btn-unlock"
-              onClick={() => {
-                if (unlockCode === process.env.NEXT_PUBLIC_PRO_UNLOCK_CODE) {
-                  setIsBrandingUnlocked(true);
-                  setStatus({ type: "success", message: "🔓 White-label branding unlocked!" });
-                  setTimeout(() => setStatus(null), 3000);
-                } else {
-                  setStatus({ type: "error", message: "❌ Invalid unlock code." });
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/unlock", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ code: unlockCode }),
+                  });
+                  const data = await res.json();
+                  if (data.success) {
+                    setIsBrandingUnlocked(true);
+                    setStatus({ type: "success", message: "🔓 White-label branding unlocked!" });
+                    setTimeout(() => setStatus(null), 3000);
+                  } else {
+                    setStatus({ type: "error", message: "❌ Invalid unlock code." });
+                    setTimeout(() => setStatus(null), 3000);
+                  }
+                } catch {
+                  setStatus({ type: "error", message: "❌ Something went wrong." });
                   setTimeout(() => setStatus(null), 3000);
                 }
               }}
