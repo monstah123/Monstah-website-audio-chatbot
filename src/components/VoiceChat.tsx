@@ -507,9 +507,10 @@ export default function VoiceChat() {
           font-size: 0.8rem;
           font-weight: 800;
           font-family: 'Inter', sans-serif;
-          margin-left: 50px; /* Align text above the black button */
+          text-align: center; /* Centered perfectly in the card */
           text-transform: uppercase;
           letter-spacing: 0.5px;
+          width: 100%;
         }
 
         .cta-bottom {
@@ -547,14 +548,15 @@ export default function VoiceChat() {
         .cta-button {
           background: #000;
           color: white;
-          padding: 10px 20px;
+          padding: 8px 16px;
           border-radius: 30px;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
+          gap: 8px;
           font-weight: 700;
-          font-size: 0.95rem;
+          font-size: 0.85rem;
+          white-space: nowrap; /* Prevent wrapping */
           transition: all 0.2s;
         }
         .cta-button:hover {
