@@ -55,6 +55,7 @@ export async function POST(req: Request) {
       lastTrainedUrl,
       brandName,
       navigationLinks,   // expected as array: [{ name, url }]
+      quickLinks,        // expected as array: [{ label, action }]
     } = await req.json();
 
     if (!userId) {
@@ -73,9 +74,16 @@ export async function POST(req: Request) {
     if (trainingSchedule !== undefined) updateData.trainingSchedule = trainingSchedule;
     if (lastTrainedUrl !== undefined) updateData.lastTrainedUrl = lastTrainedUrl;
     if (brandName !== undefined) updateData.brandName = brandName || "Monstah AI";
+    
     if (navigationLinks !== undefined) {
       updateData.navigationLinks = Array.isArray(navigationLinks)
         ? navigationLinks.filter((l: any) => l.name?.trim() && l.url?.trim())
+        : [];
+    }
+
+    if (quickLinks !== undefined) {
+      updateData.quickLinks = Array.isArray(quickLinks)
+        ? quickLinks.filter((q: any) => q.label?.trim() && q.action?.trim())
         : [];
     }
 

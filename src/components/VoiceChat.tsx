@@ -14,9 +14,9 @@ export default function VoiceChat({ uid }: { uid?: string }) {
   const [idleTimeout, setIdleTimeout] = useState(15);
   const [brandName, setBrandName] = useState("Monstah AI");
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
-  const [micError, setMicError] = useState<string | null>(null);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [navigationLinks, setNavigationLinks] = useState<any[]>([]);
+  const [quickLinks, setQuickLinks] = useState<{ label: string; action: string }[]>([]);
 
   useEffect(() => {
     // Fetch custom first message and agent name based on the widget uid
@@ -45,6 +45,9 @@ export default function VoiceChat({ uid }: { uid?: string }) {
             }
             if (data.navigationLinks) {
               setNavigationLinks(data.navigationLinks);
+            }
+            if (data.quickLinks) {
+              setQuickLinks(data.quickLinks);
             }
           }
         } catch (e) {

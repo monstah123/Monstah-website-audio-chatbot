@@ -15,6 +15,7 @@ export default function AgentSettings() {
   const [unlockCode, setUnlockCode] = useState("");
   const [isBrandingUnlocked, setIsBrandingUnlocked] = useState(false);
   const [navigationLinks, setNavigationLinks] = useState<{ name: string; url: string }[]>([]);
+  const [quickLinks, setQuickLinks] = useState<{ label: string; action: string }[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -35,6 +36,7 @@ export default function AgentSettings() {
           setTrainingSchedule(data.trainingSchedule || "manual");
           setBrandName(data.brandName || "");
           setIsBrandingUnlocked(!!data.brandName);
+          setQuickLinks(data.quickLinks || []);
           // Convert the saved {name: url} map back to array for the UI
           if (data.navigationLinks) {
             // Support both array format and legacy {name:url} object
@@ -79,6 +81,7 @@ export default function AgentSettings() {
           brandName,
           // Send as array directly — no conversion needed
           navigationLinks: navigationLinks.filter(l => l.name.trim() && l.url.trim()),
+          quickLinks: quickLinks.filter(q => q.label.trim() && q.action.trim()),
         }),
       });
 
@@ -231,6 +234,48 @@ export default function AgentSettings() {
           <option value="daily">Daily Auto-Refresh (PRO)</option>
           <option value="weekly">Weekly Auto-Refresh (PRO)</option>
         </select>
+      </div>
+
+      {/* ---- Quick Action Buttons (FastBots Style) ---- */}
+      <div className="input-group">
+        <label><MessageSquare size={16} /> Quick Action Buttons</label>
+        <p className="help-text">
+          Add buttons that appear at the bottom of the chat. Users can click them to instantly ask a question or go to a link.
+        </p>
+        {quickLinks.map((ql, i) => (
+          <div key={i} className="nav-link-row">
+            <input
+              type="text"
+              value={ql.label}
+              onChange={(e) => {
+                const updated = [...quickLinks];
+                updated[i].label = e.target.value;
+                setQuickLinks(updated);
+              }}
+              placeholder="Button Label (e.g. Pricing)"
+              className="nav-input"
+            />
+            <input
+              type="text"
+              value={ql.action}
+              onChange={(e) => {
+                const updated = [...quickLinks];
+                updated[i].action = e.target.value;
+                setQuickLinks(updated);
+              }}
+              placeholder="Question or URL"
+              className="nav-input"
+            />
+            <button
+              className="btn-remove-nav"
+              onClick={() => setQuickLinks(quickLinks.filter((_, idx) => idx !== i))}
+            >✕</button>
+          </div>
+        ))}
+        <button
+          className="btn-add-nav"
+          onClick={() => setQuickLinks([...quickLinks, { label: "", action: "" }])}
+        >+ Add Quick Button</button>
       </div>
 
       {/* ---- Navigation Links ---- */}
