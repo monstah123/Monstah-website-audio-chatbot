@@ -107,9 +107,9 @@ export async function POST(req: Request) {
     ${context || "No knowledge base content found."}
     
     FINAL RULES:
-    1. If the user asks for a product, page, or link, ALWAYS check the NAVIGATION_MENU above.
-    2. If a match is found, you MUST use the [NAVIGATE:PAGE_ID] tag.
-    3. DO NOT use URLs from the knowledge base context for navigation.
+    1. ZERO TOLERANCE: Never type a URL string (e.g., https://...) in the [NAVIGATE:] tag.
+    2. You MUST only use the IDs from the NAVIGATION_MENU (e.g., [NAVIGATE:PAGE_0]).
+    3. If the user asks for a page that is NOT in the menu, do NOT use the navigate tag.
     4. Respond in 1-2 short sentences maximum.
     5. Be helpful and enthusiastic.`;
 
