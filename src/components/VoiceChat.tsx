@@ -352,36 +352,28 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         
         aiResponse = aiResponse.replace(navMatch[0], "").trim();
         
-        if (navId.startsWith("http")) {
-          // DIRECT URL NAVIGATION (Most reliable)
-          urlToRedirect = navId;
+        // VALIDATE ALL REDIRECTS (Safety Shield)
+        // Check if the link exists in our database of known/trained links
+        const matchedLink = navigationLinks.find((l: any) => l.url === navId || l.url === navId + "/");
+        
+        if (matchedLink) {
+          urlToRedirect = matchedLink.url;
         } else if (navId.startsWith("LINK_") || navId.startsWith("PAGE_")) {
-          // INDEX-BASED NAVIGATION (Manual links)
+          // Fallback for manual index-based IDs
           const indexStr = navId.replace("LINK_", "").replace("PAGE_", "");
           const index = parseInt(indexStr);
           if (!isNaN(index) && navigationLinks[index]) {
             urlToRedirect = navigationLinks[index].url;
-          } else {
-            console.error("Unknown Navigation ID:", navId);
-            aiResponse += `\n\n*(System Error: Invalid link ID: ${navId}. Valid IDs are LINK_0 to LINK_${navigationLinks.length - 1})*`;
-          }
-        } else {
-          // SAFETY SHIELD: AI sent a raw string. Check if it matches a known URL exactly.
-          const matchedLink = navigationLinks.find((l: any) => l.url === navId);
-          if (matchedLink) {
-            urlToRedirect = matchedLink.url;
-          } else {
-            console.error("Blocked hallucinated navigation:", navId);
-            aiResponse += `\n\n*(System Shield: Blocked hallucinated link: ${navId})*`;
           }
         }
 
         if (urlToRedirect) {
-          console.log("🚀 Redirecting to:", urlToRedirect);
+          console.log("🚀 Redirecting to verified URL:", urlToRedirect);
           // Visual feedback in the chat window
           aiResponse += `\n\n*(Redirecting to: ${urlToRedirect})*`;
         } else {
-          console.warn("⚠️ Navigation tag found but no valid URL resolved for ID:", navId);
+          console.error("Blocked hallucinated/unknown link:", navId);
+          aiResponse += `\n\n*(System Shield: Blocked unauthorized link: ${navId}. Only trained links are allowed.)*`;
         }
 
         // Final UI update

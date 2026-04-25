@@ -37,20 +37,22 @@ export async function GET(req: Request) {
       navigationLinks = data.navigationLinks;
     }
 
-    // DISCOVER LINKS FROM KNOWLEDGE BASE
+    // DISCOVER ALL UNIQUE LINKS FROM KNOWLEDGE BASE
     try {
       const knowledgeSnapshot = await db.collection("knowledge")
         .where("userId", "==", userId)
-        .limit(100) // Don't scan everything, just enough to find the main pages
+        .where("source", ">=", "http")
+        .where("source", "<=", "http\uf8ff")
+        .limit(500) // Scan more docs to find all product pages
         .get();
 
       knowledgeSnapshot.forEach((doc: any) => {
         const kData = doc.data();
-        if (kData.source && kData.source.startsWith("http")) {
+        if (kData.source) {
           const alreadyExists = navigationLinks.some((l: any) => l.url === kData.source);
           if (!alreadyExists) {
             const urlParts = kData.source.split('/');
-            const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Trained Page";
+            const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Page";
             const name = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
             navigationLinks.push({ name, url: kData.source });
           }
