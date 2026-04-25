@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup
+} from "firebase/auth";
 import { auth } from "@/lib/firebase-client";
 import { useRouter } from "next/navigation";
 import { Lock, Mail, Loader2 } from "lucide-react";
@@ -15,7 +20,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
@@ -40,6 +45,25 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleAuth = async () => {
+    if (!auth) {
+      setError("System Offline: Firebase API keys missing.");
+      return;
+    }
+    
+    setIsLoading(true);
+    setError("");
+    
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message);
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="auth-container">
       <motion.div 
@@ -50,7 +74,16 @@ export default function LoginPage() {
         <h2>{isLogin ? "Welcome Back" : "Create Account"}</h2>
         <p className="subtitle">Sign in to manage your AI Knowledge Base</p>
 
-        <form onSubmit={handleAuth}>
+        <button onClick={handleGoogleAuth} className="btn-google" disabled={isLoading}>
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="google-icon" />
+          Continue with Google
+        </button>
+
+        <div className="divider">
+          <span>or continue with email</span>
+        </div>
+
+        <form onSubmit={handleEmailAuth}>
           <div className="input-group">
             <Mail size={18} className="icon" />
             <input 
@@ -119,6 +152,54 @@ export default function LoginPage() {
         .subtitle {
           color: var(--text-secondary);
           margin-bottom: 30px;
+        }
+        
+        .btn-google {
+          width: 100%;
+          padding: 14px;
+          background: white;
+          color: #000;
+          border: none;
+          border-radius: 12px;
+          font-weight: 600;
+          font-size: 1rem;
+          cursor: pointer;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 12px;
+          transition: transform 0.2s, box-shadow 0.2s;
+          margin-bottom: 24px;
+        }
+        
+        .btn-google:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 20px rgba(255,255,255,0.1);
+        }
+        
+        .google-icon {
+          width: 20px;
+          height: 20px;
+        }
+        
+        .divider {
+          display: flex;
+          align-items: center;
+          text-align: center;
+          margin-bottom: 24px;
+        }
+        
+        .divider::before,
+        .divider::after {
+          content: "";
+          flex: 1;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .divider span {
+          padding: 0 16px;
+          color: var(--text-secondary);
+          font-size: 0.9rem;
         }
 
         .input-group {
