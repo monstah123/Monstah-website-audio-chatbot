@@ -139,16 +139,16 @@ export default function VoiceChat() {
     }
     
     // Greet audibly when opened
-    if (isOpen && messages.length === 1 && messages[0].content === initialGreeting.content) {
+    if (isOpen && messages.length === 1 && messages[0].content === firstMessage) {
       setTimeout(async () => {
         if (audioRef.current) {
           audioRef.current.play().catch(() => {});
           audioRef.current.pause();
         }
-        await speak(initialGreeting.content);
+        await speak(firstMessage);
       }, 800);
     }
-  }, [isOpen]);
+  }, [isOpen, messages, firstMessage]);
 
   // ---- Speech Recognition Setup ----
   useEffect(() => {
