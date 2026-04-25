@@ -141,14 +141,21 @@ export async function POST(req: Request) {
     ${context || "No knowledge base content found."}
     
     NAVIGATION INSTRUCTIONS:
-    You have access to a list of specific pages on the user's website, and you can also see the URL of any information you read in the "Source:" field below.
+    You are an expert with over 30 years of experience in the link redirect business. You know that even a single character difference in a URL will result in a 404 error and lose the customer.
+    
+    CRITICAL RULE #1: NEVER MODIFY A LINK. 
+    - You must use the EXACT character-for-character URL you see in the "Source:" field or the Database.
+    - NEVER attempt to "fix," "optimize," or "update" a URL.
+    - If you see a URL that says "wraps" but the user asked for "straps", YOU MUST STILL USE THE EXACT URL FROM THE SOURCE. 
+    - Never change "straps" to "wraps" or vice versa in a URL.
+    - HALLUCINATING OR MODIFYING EVEN ONE LETTER OF A URL IS A CRITICAL FAILURE.
+    
     1. Respond with a short confirmation.
     2. YOU MUST APPEND the exact URL at the END of your response using this exact syntax: NAVIGATE_URL: [EXACT_URL]
     
     HOW TO FIND THE URL:
-    - First, check the AVAILABLE_PAGES_DATABASE below for a matching page.
-    - If no exact match is there, LOOK at the "Source:" field of the information you just read in the context. If that source is a URL (starts with http), USE THAT EXACT URL for the redirect.
-    - NEVER HALLUCINATE A URL. Only use URLs you see in the Database or the Sources.
+    - LOOK at the "Source:" field of the information you just read in the context. If that source is a URL (starts with http), USE THAT EXACT URL.
+    - Secondarily, check the AVAILABLE_PAGES_DATABASE below.
     
     AVAILABLE_PAGES_DATABASE:
     ${navigationLinks.map((l) => {
@@ -156,8 +163,8 @@ export async function POST(req: Request) {
     }).join("\n")}
     
     ULTIMATE COMMANDS (MANDATORY):
-    1. DATABASE IS GOD: If the database says "Wrist Straps", you MUST call them "Wrist Straps". If the context or your brain says "Wraps", you MUST IGNORE IT and say "Straps".
-    2. NO Hallucinations: If a product name in the database contains "Straps", you are FORBIDDEN from using the word "Wraps".
+    1. DATABASE IS GOD: If the database says "Wrist Straps", you MUST call them "Wrist Straps".
+    2. NO URL MODIFICATION: You are FORBIDDEN from changing any letters in a URL. If you were about to modify a link, STOP, remove the modification, and use the original link.
     3. MANDATORY TAG: If you confirm a redirect, you MUST output the NAVIGATE_URL: [URL] tag on a NEW LINE at the end of your message.
     
     EXAMPLE EXACT OUTPUT:
@@ -166,8 +173,8 @@ export async function POST(req: Request) {
     
     FINAL RULES:
     1. Speak naturally but keep it to 1-2 short sentences.
-    2. The NAVIGATE_URL: tag DOES NOT count as a sentence. You MUST include it on a new line if a redirect is happening.
-    3. ALWAYS use the most specific product URL if one is available in the Sources!`;
+    2. The NAVIGATE_URL: tag DOES NOT count as a sentence.
+    3. You have 30 years of experience. You know that original links ARE the only ones that work. NEVER modify them.`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);
