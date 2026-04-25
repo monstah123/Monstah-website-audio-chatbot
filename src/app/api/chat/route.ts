@@ -58,31 +58,26 @@ export async function POST(req: Request) {
 
     let context = "";
     try {
-      // 2. DISCOVER ALL UNIQUE LINKS (The "Site Map")
       if (userId) {
-        try {
-          // Fetch documents specifically to find unique URLs (up to 100 to find unique ones)
-          const allLinksSnapshot = await db.collection("knowledge")
-            .where("userId", "==", userId)
-            .where("source", ">=", "http")
-            .where("source", "<=", "http\uf8ff")
-            .limit(100)
-            .get();
+        // 1. DYNAMIC SITE MAP DISCOVERY (Fetch a wide range of chunks to find unique URLs)
+        const sitemapSnapshot = await db.collection("knowledge")
+          .where("userId", "==", userId)
+          .where("source", ">=", "http")
+          .where("source", "<=", "http\uf8ff")
+          .limit(200)
+          .get();
 
-          allLinksSnapshot.forEach(doc => {
-            const data = doc.data();
-            if (data.source && !navigationLinks.some(l => l.url === data.source) && !discoveredLinks.some(l => l.url === data.source)) {
-              const urlParts = data.source.split('/');
-              const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Page";
-              const name = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
-              discoveredLinks.push({ name, url: data.source });
-            }
-          });
-        } catch (e) {
-          console.warn("Bulk link discovery failed:", e);
-        }
+        sitemapSnapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.source && !navigationLinks.some(l => l.url === data.source) && !discoveredLinks.some(l => l.url === data.source)) {
+            const urlParts = data.source.split('/');
+            const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Page";
+            const name = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+            discoveredLinks.push({ name, url: data.source });
+          }
+        });
 
-        // 3. Search Firestore for CONTEXT (Vector Similarity)
+        // 2. VECTOR SIMILARITY SEARCH (For actual conversational context)
         const knowledgeSnapshot = await db.collection("knowledge")
           .where("userId", "==", userId)
           .limit(200)
@@ -105,11 +100,9 @@ export async function POST(req: Request) {
         sortedDocs.forEach((data) => {
           context += `\nSource: ${data.source}\nContent: ${data.content}\n---\n`;
           
-          // Also add these to discovered links if they aren't there yet
+          // CRITICAL: Ensure URLs from relevant context chunks are ALWAYS in the database
           if (data.source && data.source.startsWith('http')) {
-            const alreadyExists = navigationLinks.some((l: any) => l.url === data.source);
-            const alreadyDiscovered = discoveredLinks.some((l: any) => l.url === data.source);
-            if (!alreadyExists && !alreadyDiscovered) {
+            if (!navigationLinks.some(l => l.url === data.source) && !discoveredLinks.some(l => l.url === data.source)) {
               const urlParts = data.source.split('/');
               const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Page";
               const name = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
@@ -125,7 +118,7 @@ export async function POST(req: Request) {
     // Combine manual and discovered links
     navigationLinks = [...navigationLinks, ...discoveredLinks];
 
-    console.log("Chat Request - Navigation Links:", navigationLinks);
+    console.log("Chat Request - Total Navigation Links Found:", navigationLinks.length);
     console.log("Chat Request - Context Length:", context?.length || 0);
 
     const systemPrompt = `You are a Voice AI Agent.
