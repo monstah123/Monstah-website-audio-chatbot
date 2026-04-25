@@ -148,7 +148,7 @@ export async function POST(req: Request) {
     - If you see a link that mentions Nutrition or Bodybuilding, that is the E-BOOK.
     
     1. Respond with a short confirmation.
-    2. YOU MUST APPEND the exact URL at the END of your response using this exact syntax: NAVIGATE_URL: [EXACT_URL]`;
+    2. YOU MUST APPEND the exact URL at the END of your response using this exact syntax: NAVIGATE_URL: [EXACT_URL]
     
     HOW TO FIND THE URL:
     - LOOK at the "Source:" field of the information you just read in the context. If that source is a URL (starts with http), USE THAT EXACT URL.
