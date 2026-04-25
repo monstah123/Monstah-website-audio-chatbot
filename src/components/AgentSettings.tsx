@@ -26,7 +26,7 @@ export default function AgentSettings() {
         const res = await fetch(`/api/settings?uid=${auth.currentUser.uid}`);
         if (res.ok) {
           const data = await res.json();
-          setAgentName(data.agentName || "Peterson");
+          setAgentName(data.agentName || "Monstah AI");
           setSystemPrompt(data.systemPrompt || "");
           setFirstMessage(data.firstMessage || "");
           setThemeColor(data.themeColor || "green");

@@ -15,7 +15,7 @@ export async function GET(req: Request) {
 
     if (!doc.exists) {
       return NextResponse.json({
-        agentName: "Peterson",
+        agentName: "Monstah AI",
         systemPrompt: "You are a helpful and friendly customer service representative. Keep answers short and strictly based on the provided context.",
         firstMessage: "Hi! How can I help you today?",
         themeColor: "green",

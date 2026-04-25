@@ -13,8 +13,8 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-async function ingestWebsite(url: string) {
-  console.log(`🚀 Starting crawl and training for: ${url}`);
+async function ingestWebsite(url: string, userId: string) {
+  console.log(`🚀 Starting crawl and training for: ${url} (User: ${userId})`);
   
   try {
     const crawlResponse = await app.crawlUrl(url, {
@@ -46,12 +46,13 @@ async function ingestWebsite(url: string) {
 
       // Save to Firestore
       await db.collection("knowledge").add({
+        userId,
+        source: page.url,
         type: "web_page",
-        url: page.url,
         title: page.metadata?.title || "Untitled",
         content: content.substring(0, 5000), // Snippet for context
-        embedding: vector,
-        updatedAt: new Date(),
+        vector,
+        createdAt: new Date().toISOString(),
       });
       
       console.log(`   - Saved to Firestore Knowledge Base.`);
@@ -65,8 +66,9 @@ async function ingestWebsite(url: string) {
 }
 
 const targetUrl = process.argv[2];
-if (targetUrl) {
-  ingestWebsite(targetUrl);
+const targetUserId = process.argv[3];
+if (targetUrl && targetUserId) {
+  ingestWebsite(targetUrl, targetUserId);
 } else {
-  console.log("Please provide a URL to crawl: npx ts-node src/scripts/ingest-web.ts https://yoursite.com");
+  console.log("Please provide a URL and a User ID to crawl: npx ts-node src/scripts/ingest-web.ts https://yoursite.com <userId>");
 }

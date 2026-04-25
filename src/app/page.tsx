@@ -183,7 +183,7 @@ export default function Home() {
       </section>
 
       {/* Floating Chatbot Widget */}
-      <VoiceChat />
+      <VoiceChat uid="monstah-landing-page" />
 
       <style jsx>{`
         .main-container {

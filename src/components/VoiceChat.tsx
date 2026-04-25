@@ -2,24 +2,26 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, Send, X, Volume2, Loader2, RotateCcw, History } from "lucide-react";
+import { Mic, MicOff, Send, X, Volume2, Loader2, RotateCcw, History, AlertCircle, ShieldCheck } from "lucide-react";
 
-export default function VoiceChat() {
+export default function VoiceChat({ uid }: { uid?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   
-  const [agentName, setAgentName] = useState("Peterson");
-  const [firstMessage, setFirstMessage] = useState("Hi! How can I help you today?");
+  const [agentName, setAgentName] = useState("Monstah AI");
+  const [firstMessage, setFirstMessage] = useState("Hey! I'm Monstah AI. Ask me anything about how I can help your business — or just say hi! 👋");
   const [themeColor, setThemeColor] = useState("green");
   const [idleTimeout, setIdleTimeout] = useState(15);
   const [brandName, setBrandName] = useState("Monstah AI");
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
+  const [micError, setMicError] = useState<string | null>(null);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
 
   useEffect(() => {
     // Fetch custom first message and agent name based on the widget uid
     const fetchSettings = async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const widgetUid = urlParams.get('uid');
+      const widgetUid = uid || urlParams.get('uid');
       if (widgetUid) {
         try {
           const res = await fetch(`/api/settings?uid=${widgetUid}`);
@@ -47,6 +49,21 @@ export default function VoiceChat() {
       }
     };
     fetchSettings();
+  }, []);
+
+  // ---- Auto-Open (Pop-up) Logic ----
+  useEffect(() => {
+    // Check if we've already auto-opened this session to avoid annoying the user
+    const hasAutoOpened = sessionStorage.getItem("monstah_auto_opened");
+    
+    if (!hasAutoOpened) {
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+        sessionStorage.setItem("monstah_auto_opened", "true");
+      }, 3000); // 3 second delay for the pop-up
+      
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   // Set initial greeting only if we have no messages yet, or if firstMessage updates
@@ -199,6 +216,18 @@ export default function VoiceChat() {
       }
     };
 
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error", event.error);
+      if (event.error === 'not-allowed') {
+        setMicError("Permission denied");
+        setIsListening(false);
+        isListeningRef.current = false;
+        setShowPermissionModal(true);
+      } else if (event.error === 'network') {
+        setMicError("Network error");
+      }
+    };
+
     recognitionRef.current = recognition;
   }, []);
 
@@ -208,6 +237,11 @@ export default function VoiceChat() {
     if (audioRef.current) {
       audioRef.current.play().catch(() => {});
       audioRef.current.pause();
+    }
+
+    if (micError === "Permission denied") {
+      setShowPermissionModal(true);
+      return;
     }
 
     if (isListening) {
@@ -220,8 +254,10 @@ export default function VoiceChat() {
       startIdleTimer();
       try { 
         recognitionRef.current?.start(); 
+        setMicError(null);
       } catch (e) {
         console.error("Mic start error:", e);
+        setShowPermissionModal(true);
       }
     }
   };
@@ -251,9 +287,9 @@ export default function VoiceChat() {
     setInput("");
     setIsLoading(true);
 
-    // Get the tenant UID from the URL if this is an embedded widget
+    // Get the tenant UID from the prop or URL if this is an embedded widget
     const urlParams = new URLSearchParams(window.location.search);
-    const widgetUid = urlParams.get('uid') || null;
+    const widgetUid = uid || urlParams.get('uid') || null;
 
     try {
       const response = await fetch("/api/chat", {
@@ -488,14 +524,72 @@ export default function VoiceChat() {
               />
               <button 
                 onClick={toggleListening} 
-                className={`mic-btn ${isListening ? "active" : ""}`}
+                className={`mic-btn ${isListening ? "active" : ""} ${micError ? "error" : ""}`}
+                title={micError === "Permission denied" ? "Microphone blocked" : "Toggle microphone"}
               >
-                <Mic size={18} />
+                {micError === "Permission denied" ? <MicOff size={18} /> : <Mic size={18} />}
               </button>
               <button onClick={() => handleSend(input)} className="send-btn">
                 <Send size={18} />
               </button>
             </div>
+
+            {/* Permission Modal Overlay */}
+            <AnimatePresence>
+              {showPermissionModal && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="modal-overlay"
+                >
+                  <motion.div 
+                    initial={{ scale: 0.9, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, y: 20 }}
+                    className="permission-modal"
+                  >
+                    <div className="modal-header">
+                      <div className="icon-badge">
+                        <ShieldCheck size={24} color="var(--theme-primary)" />
+                      </div>
+                      <button onClick={() => setShowPermissionModal(false)} className="modal-close">
+                        <X size={20} />
+                      </button>
+                    </div>
+                    
+                    <div className="modal-body">
+                      <h3>Enable Microphone</h3>
+                      <p>To talk with {agentName}, we need access to your microphone. This allows you to have a natural voice conversation.</p>
+                      
+                      <div className="instruction-box">
+                        <div className="instruction-item">
+                          <AlertCircle size={16} />
+                          <span>Click the microphone icon in your browser address bar and select "Allow".</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="modal-footer">
+                      <button 
+                        onClick={() => {
+                          setShowPermissionModal(false);
+                          setMicError(null);
+                          // Re-attempting start usually triggers the native prompt if it wasn't permanently denied
+                          setTimeout(() => toggleListening(), 300);
+                        }}
+                        className="grant-btn"
+                      >
+                        Try Again
+                      </button>
+                      <button onClick={() => setShowPermissionModal(false)} className="cancel-btn">
+                        Maybe Later
+                      </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
@@ -528,7 +622,7 @@ export default function VoiceChat() {
                 <div className="vortex-avatar" />
                 <div className="cta-button">
                   <Volume2 size={16} fill="white" />
-                  <span>Talk to {agentName}</span>
+                  <span>Talk to {agentName || "Monstah AI"}</span>
                 </div>
               </div>
             </div>
@@ -819,6 +913,134 @@ export default function VoiceChat() {
           background: var(--accent);
           color: white;
           animation: pulse-glow 1.5s infinite;
+        }
+
+        .mic-btn.error {
+          color: #ff4444;
+          border-color: rgba(255, 68, 68, 0.4);
+        }
+
+        .modal-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(8px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          z-index: 2000;
+        }
+
+        .permission-modal {
+          background: #161618;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 24px;
+          width: 100%;
+          max-width: 320px;
+          padding: 24px;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 20px;
+        }
+
+        .icon-badge {
+          width: 48px;
+          height: 48px;
+          background: rgba(var(--theme-rgb), 0.1);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(var(--theme-rgb), 0.2);
+        }
+
+        .modal-close {
+          background: transparent;
+          border: none;
+          color: #666;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 50%;
+          transition: all 0.2s;
+        }
+        .modal-close:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: #fff;
+        }
+
+        .modal-body h3 {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: #fff;
+          margin: 0 0 12px 0;
+        }
+
+        .modal-body p {
+          font-size: 0.9rem;
+          color: #aaa;
+          line-height: 1.6;
+          margin-bottom: 20px;
+        }
+
+        .instruction-box {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 12px;
+          padding: 12px;
+          margin-bottom: 24px;
+        }
+
+        .instruction-item {
+          display: flex;
+          gap: 10px;
+          font-size: 0.8rem;
+          color: var(--theme-primary);
+          line-height: 1.4;
+        }
+
+        .modal-footer {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .grant-btn {
+          background: var(--theme-primary);
+          color: #000;
+          border: none;
+          padding: 12px;
+          border-radius: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .grant-btn:hover {
+          transform: translateY(-2px);
+          filter: brightness(1.1);
+        }
+
+        .cancel-btn {
+          background: transparent;
+          color: #888;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 12px;
+          border-radius: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .cancel-btn:hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: #fff;
         }
 
         .spin {
