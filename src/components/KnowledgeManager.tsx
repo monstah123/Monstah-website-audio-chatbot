@@ -51,6 +51,18 @@ export default function KnowledgeManager() {
 
       if (!response.ok) throw new Error(data.error || "Failed to upload");
 
+      // After successful training, save the URL to the user document if it's a URL
+      if (activeTab === "url" && auth.currentUser) {
+        await fetch("/api/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: auth.currentUser.uid,
+            lastTrainedUrl: inputValue,
+          }),
+        });
+      }
+
       setStatus({ type: "success", message: data.message });
       setInputValue("");
       setFile(null);

@@ -2,15 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { auth } from "@/lib/firebase-client";
-import { Save, Loader2, Bot, MessageSquare, Lock, Unlock } from "lucide-react";
+import { Save, Loader2, Bot, MessageSquare, Lock, Unlock, RefreshCw } from "lucide-react";
 
 export default function AgentSettings() {
   const [agentName, setAgentName] = useState("");
   const [systemPrompt, setSystemPrompt] = useState("");
   const [firstMessage, setFirstMessage] = useState("");
-  const [themeColor, setThemeColor] = useState("green");
-  const [idleTimeout, setIdleTimeout] = useState(15);
-  const [brandName, setBrandName] = useState("Monstah AI");
+  const [themeColor, setThemeColor] = useState("#44ff44");
+  const [idleTimeout, setIdleTimeout] = useState(3);
+  const [trainingSchedule, setTrainingSchedule] = useState("manual");
+  const [brandName, setBrandName] = useState("");
   const [unlockCode, setUnlockCode] = useState("");
   const [isBrandingUnlocked, setIsBrandingUnlocked] = useState(false);
   const [navigationLinks, setNavigationLinks] = useState<{ name: string; url: string }[]>([]);
@@ -30,8 +31,10 @@ export default function AgentSettings() {
           setSystemPrompt(data.systemPrompt || "");
           setFirstMessage(data.firstMessage || "");
           setThemeColor(data.themeColor || "green");
-          setIdleTimeout(data.idleTimeout ?? 15);
-          setBrandName(data.brandName || "Monstah AI");
+          setIdleTimeout(data.idleTimeout || 3);
+          setTrainingSchedule(data.trainingSchedule || "manual");
+          setBrandName(data.brandName || "");
+          setIsBrandingUnlocked(!!data.brandName);
           // Convert the saved {name: url} map back to array for the UI
           if (data.navigationLinks) {
             // Support both array format and legacy {name:url} object
@@ -72,6 +75,7 @@ export default function AgentSettings() {
           firstMessage,
           themeColor,
           idleTimeout,
+          trainingSchedule,
           brandName,
           // Send as array directly — no conversion needed
           navigationLinks: navigationLinks.filter(l => l.name.trim() && l.url.trim()),
@@ -180,21 +184,6 @@ export default function AgentSettings() {
       </div>
 
       <div className="input-group">
-        <label><MessageSquare size={16} /> Idle Mic Timeout</label>
-        <p className="help-text">How long the microphone stays active before auto-shutting off to save resources. (Monstah AI default: 15s)</p>
-        <select
-          value={idleTimeout}
-          onChange={(e) => setIdleTimeout(Number(e.target.value))}
-          className="theme-select"
-        >
-          <option value={10}>⚡ 10 seconds (Aggressive)</option>
-          <option value={15}>✅ 15 seconds (Recommended)</option>
-          <option value={30}>🕐 30 seconds (Relaxed)</option>
-          <option value={60}>🐢 60 seconds (Always On)</option>
-        </select>
-      </div>
-
-      <div className="input-group">
         <label><Bot size={16} /> Agent Name</label>
         <p className="help-text">This will be displayed on the chatbot button (e.g. "Talk to Sarah").</p>
         <input 
@@ -202,17 +191,6 @@ export default function AgentSettings() {
           value={agentName}
           onChange={(e) => setAgentName(e.target.value)}
           placeholder="e.g. Sarah"
-        />
-      </div>
-
-      <div className="input-group">
-        <label><Bot size={16} /> System Prompt</label>
-        <p className="help-text">Give your AI a name, personality, and specific rules (e.g. "You are Sarah, a helpful real estate assistant...").</p>
-        <textarea 
-          value={systemPrompt}
-          onChange={(e) => setSystemPrompt(e.target.value)}
-          placeholder="You are a helpful and friendly customer service representative..."
-          rows={6}
         />
       </div>
 
@@ -225,6 +203,34 @@ export default function AgentSettings() {
           onChange={(e) => setFirstMessage(e.target.value)}
           placeholder="Hi! How can I help you today?"
         />
+      </div>
+
+      <div className="input-group">
+        <label><MessageSquare size={16} /> Idle Mic Timeout</label>
+        <p className="help-text">Adjust how long (in minutes) the AI waits for you to speak before it says something to keep the conversation going.</p>
+        <div className="timeout-control">
+          <input 
+            type="range" min="1" max="10" step="1" 
+            value={idleTimeout} 
+            onChange={(e) => setIdleTimeout(parseInt(e.target.value))} 
+          />
+          <span className="timeout-val">{idleTimeout} min</span>
+        </div>
+      </div>
+
+      <div className="input-group">
+        <label><RefreshCw size={16} /> Data Training Schedule</label>
+        <p className="help-text">Choose how often your AI should re-scan your website to learn about new products or updates.</p>
+        <select 
+          className="nav-input" 
+          value={trainingSchedule} 
+          onChange={(e) => setTrainingSchedule(e.target.value)}
+          style={{ width: '100%', background: 'rgba(0,0,0,0.3)', color: 'white', cursor: 'pointer' }}
+        >
+          <option value="manual">Manual Refresh Only</option>
+          <option value="daily">Daily Auto-Refresh (PRO)</option>
+          <option value="weekly">Weekly Auto-Refresh (PRO)</option>
+        </select>
       </div>
 
       {/* ---- Navigation Links ---- */}
@@ -290,6 +296,17 @@ export default function AgentSettings() {
             ⚠️ Paste URLs exactly from your browser address bar. One wrong character = 404 error.
           </p>
         )}
+      </div>
+
+      <div className="input-group">
+        <label><Bot size={16} /> System Prompt</label>
+        <p className="help-text">Give your AI a name, personality, and specific rules (e.g. "You are Sarah, a helpful real estate assistant...").</p>
+        <textarea 
+          value={systemPrompt}
+          onChange={(e) => setSystemPrompt(e.target.value)}
+          placeholder="You are a helpful and friendly customer service representative..."
+          rows={6}
+        />
       </div>
 
       {status && (

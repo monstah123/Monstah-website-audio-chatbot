@@ -51,6 +51,7 @@ export async function POST(req: Request) {
       firstMessage,
       themeColor,
       idleTimeout,
+      trainingSchedule,
       brandName,
       navigationLinks,   // expected as array: [{ name, url }]
     } = await req.json();
@@ -67,13 +68,36 @@ export async function POST(req: Request) {
     await db.collection("users").doc(userId).set({
       agentName,
       systemPrompt,
-      firstMessage,
-      themeColor,
-      idleTimeout: idleTimeout ?? 15,
-      brandName: brandName || "Monstah AI",
-      navigationLinks: cleanLinks,
+      idleTimeout,
+      trainingSchedule,
+      lastTrainedUrl,
+      brandName,
+      navigationLinks,   // expected as array: [{ name, url }]
+    } = await req.json();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Missing User ID" }, { status: 401 });
+    }
+
+    const updateData: any = {
       updatedAt: new Date().toISOString(),
-    }, { merge: true });
+    };
+
+    if (agentName !== undefined) updateData.agentName = agentName;
+    if (systemPrompt !== undefined) updateData.systemPrompt = systemPrompt;
+    if (firstMessage !== undefined) updateData.firstMessage = firstMessage;
+    if (themeColor !== undefined) updateData.themeColor = themeColor;
+    if (idleTimeout !== undefined) updateData.idleTimeout = idleTimeout;
+    if (trainingSchedule !== undefined) updateData.trainingSchedule = trainingSchedule;
+    if (lastTrainedUrl !== undefined) updateData.lastTrainedUrl = lastTrainedUrl;
+    if (brandName !== undefined) updateData.brandName = brandName || "Monstah AI";
+    if (navigationLinks !== undefined) {
+      updateData.navigationLinks = Array.isArray(navigationLinks)
+        ? navigationLinks.filter((l: any) => l.name?.trim() && l.url?.trim())
+        : [];
+    }
+
+    await db.collection("users").doc(userId).set(updateData, { merge: true });
 
     return NextResponse.json({ success: true, message: "Settings saved successfully!" });
   } catch (error: any) {
