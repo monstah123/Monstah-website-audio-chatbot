@@ -141,9 +141,14 @@ export async function POST(req: Request) {
     ${context || "No knowledge base content found."}
     
     NAVIGATION INSTRUCTIONS:
-    You have access to a list of specific pages on the user's website.
+    You have access to a list of specific pages on the user's website, and you can also see the URL of any information you read in the "Source:" field below.
     1. Respond with a short confirmation.
-    2. YOU MUST APPEND the exact URL at the END of your response using this exact syntax: NAVIGATE_URL: [EXACT_URL_FROM_DATABASE]
+    2. YOU MUST APPEND the exact URL at the END of your response using this exact syntax: NAVIGATE_URL: [EXACT_URL]
+    
+    HOW TO FIND THE URL:
+    - First, check the AVAILABLE_PAGES_DATABASE below for a matching page.
+    - If no exact match is there, LOOK at the "Source:" field of the information you just read in the context. If that source is a URL (starts with http), USE THAT EXACT URL for the redirect.
+    - NEVER HALLUCINATE A URL. Only use URLs you see in the Database or the Sources.
     
     AVAILABLE_PAGES_DATABASE:
     ${navigationLinks.map((l) => {
@@ -153,16 +158,16 @@ export async function POST(req: Request) {
     ULTIMATE COMMANDS (MANDATORY):
     1. DATABASE IS GOD: If the database says "Wrist Straps", you MUST call them "Wrist Straps". If the context or your brain says "Wraps", you MUST IGNORE IT and say "Straps".
     2. NO Hallucinations: If a product name in the database contains "Straps", you are FORBIDDEN from using the word "Wraps".
-    3. MANDATORY TAG: If you confirm a redirect to a page in the database, you MUST output the NAVIGATE_URL: [URL] tag on a NEW LINE at the end of your message.
+    3. MANDATORY TAG: If you confirm a redirect, you MUST output the NAVIGATE_URL: [URL] tag on a NEW LINE at the end of your message.
     
     EXAMPLE EXACT OUTPUT:
-    Sure, I'll take you to that page right now.
-    NAVIGATE_URL: https://example.com/target-page
+    Sure, I'll take you to the requested page right now.
+    NAVIGATE_URL: https://monstahgymwear.com/product/monstah-weightlifting-leather-gloves/
     
     FINAL RULES:
     1. Speak naturally but keep it to 1-2 short sentences.
     2. The NAVIGATE_URL: tag DOES NOT count as a sentence. You MUST include it on a new line if a redirect is happening.
-    3. You MUST use the EXACT URL from the AVAILABLE_PAGES_DATABASE!`;
+    3. ALWAYS use the most specific product URL if one is available in the Sources!`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);
