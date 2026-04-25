@@ -72,29 +72,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // Build navigation instructions if the tenant configured any links
-    const navInstructions = navigationLinks.length > 0
-      ? `
-    NAVIGATION INSTRUCTIONS — HIGHEST PRIORITY:
-    You can send users to specific pages. When asked to navigate, go to a page, or view something:
-    1. Respond with ONE short sentence confirming the action.
-    NAVIGATION_MENU (SELECT ONE ID):
-    ${navigationLinks.map((l, i) => `- ID: [PAGE_${i}] => NAME: "${l.name}"`).join("\n")}
-    
-    CRITICAL NAVIGATION RULES:
-    1. If the user asks to go to a page, pick the best ID from the menu above.
-    2. You MUST respond with: "Confirmation. [NAVIGATE:PAGE_ID]"
-    3. DO NOT TYPE THE ACTUAL URL. THE SYSTEM HANDLES IT AUTOMATICALLY.
-    4. ONLY use the IDs listed above. If no match, do not use the tag.
-    
-    Example: "Taking you to the guide now! [NAVIGATE:PAGE_0]"
-    Example: "Sure thing! [NAVIGATE:PAGE_1]"`
-      : "";
-
     const systemPrompt = `You are a Voice AI Agent.
-    
-    CRITICAL: USER NAVIGATION (YOUR #1 PRIORITY)
-    ${navInstructions}
     
     IDENTITY AND RULES:
     ${customSystemPrompt}
@@ -106,12 +84,23 @@ export async function POST(req: Request) {
     CONTEXT FOR QUESTIONS:
     ${context || "No knowledge base content found."}
     
+    NAVIGATION INSTRUCTIONS:
+    You have access to a list of specific URLs on the user's website. If the user asks for a page, or if you mention a product that exists in the list below:
+    1. Respond with a short confirmation or helpful sentence.
+    2. Append the EXACT URL in this tag: [NAVIGATE:url]
+    
+    AVAILABLE_PAGES_DATABASE (USE THESE EXACT URLS):
+    ${navigationLinks.map(l => `- NAME: "${l.name}" => URL: "${l.url}"`).join("\n")}
+    
+    CRITICAL RULES:
+    1. PROACTIVE LINKING: If you are talking about the "Introduction to Nutrition" guide, you MUST append the [NAVIGATE:] tag for it automatically.
+    2. KEYWORD MATCHING: "e-book", "guide", and "nutrition" all match the "Introduction to Nutrition" link.
+    3. EXACT COPY: Copy the URL exactly. Never change it.
+    
     FINAL RULES:
-    1. ZERO TOLERANCE: Never type a URL string (e.g., https://...) in the [NAVIGATE:] tag.
-    2. You MUST only use the IDs from the NAVIGATION_MENU (e.g., [NAVIGATE:PAGE_0]).
-    3. If the user asks for a page that is NOT in the menu, do NOT use the navigate tag.
-    4. Respond in 1-2 short sentences maximum.
-    5. Be helpful and enthusiastic.`;
+    1. Respond in 1-2 short sentences maximum.
+    2. Be helpful and enthusiastic.
+    3. If a match is found in the database, you MUST navigate. No excuses.`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);

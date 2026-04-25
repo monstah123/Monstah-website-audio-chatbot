@@ -351,15 +351,14 @@ export default function VoiceChat({ uid }: { uid?: string }) {
           const index = parseInt(navId.replace("PAGE_", ""));
           if (!isNaN(index) && navigationLinks[index]) {
             urlToRedirect = navigationLinks[index].url;
-            console.log("Resolved Navigation:", { navId, urlToRedirect });
           }
         } else {
-          console.warn("AI attempted raw URL navigation (Blocked):", navId);
-          // BLOCK raw URLs to stop hallucinations from causing 404s
-          urlToRedirect = ""; 
+          // AI sent a raw URL directly
+          urlToRedirect = navId;
         }
 
         if (urlToRedirect) {
+          console.log("Resolved Navigation:", urlToRedirect);
           // Visual feedback in the chat window
           setMessages(prev => {
             const last = prev[prev.length - 1];

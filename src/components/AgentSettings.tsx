@@ -225,16 +225,50 @@ export default function AgentSettings() {
       <div className="input-group">
         <label><RefreshCw size={16} /> Data Training Schedule</label>
         <p className="help-text">Choose how often your AI should re-scan your website to learn about new products or updates.</p>
-        <select 
-          className="nav-input" 
-          value={trainingSchedule} 
-          onChange={(e) => setTrainingSchedule(e.target.value)}
-          style={{ width: '100%', background: 'rgba(0,0,0,0.3)', color: 'white', cursor: 'pointer' }}
-        >
-          <option value="manual">Manual Refresh Only</option>
-          <option value="daily">Daily Auto-Refresh (PRO)</option>
-          <option value="weekly">Weekly Auto-Refresh (PRO)</option>
-        </select>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+          <select 
+            className="nav-input" 
+            value={trainingSchedule} 
+            onChange={(e) => setTrainingSchedule(e.target.value)}
+            style={{ flex: 1, background: 'rgba(0,0,0,0.3)', color: 'white', cursor: 'pointer' }}
+          >
+            <option value="manual">Manual Refresh Only</option>
+            <option value="daily">Daily Auto-Refresh (PRO)</option>
+            <option value="weekly">Weekly Auto-Refresh (PRO)</option>
+          </select>
+          <button
+            className="btn-refresh-manual"
+            onClick={async () => {
+              if (!websiteUrl) {
+                alert("Please enter a Website URL first!");
+                return;
+              }
+              try {
+                const res = await fetch('/api/train', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ url: websiteUrl, userId: uid }),
+                });
+                if (res.ok) alert("Website re-scan started!");
+                else alert("Failed to start refresh.");
+              } catch (e) {
+                alert("Error starting refresh.");
+              }
+            }}
+            style={{ 
+              background: 'rgba(68, 255, 68, 0.1)', 
+              color: '#44ff44', 
+              border: '1px solid rgba(68, 255, 68, 0.2)', 
+              padding: '0 20px', 
+              borderRadius: '8px', 
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            Refresh Now
+          </button>
+        </div>
       </div>
 
       {/* ---- Quick Action Buttons (FastBots Style) ---- */}
@@ -325,6 +359,27 @@ export default function AgentSettings() {
                 }
               }}
             >🔗</button>
+            <button
+              className="btn-train-nav"
+              title="Train AI on this specific page"
+              onClick={async () => {
+                if (!link.url.trim()) return;
+                try {
+                  const res = await fetch('/api/train', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: link.url, userId: uid }),
+                  });
+                  if (res.ok) alert(`Training started for: ${link.name}`);
+                  else alert("Training failed to start.");
+                } catch (e) {
+                  alert("Error starting training.");
+                }
+              }}
+              style={{ background: 'rgba(68, 255, 68, 0.1)', color: '#44ff44', border: '1px solid rgba(68, 255, 68, 0.2)', padding: '8px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <RefreshCw size={14} />
+            </button>
             <button
               className="btn-remove-nav"
               onClick={() => setNavigationLinks(navigationLinks.filter((_, idx) => idx !== i))}
