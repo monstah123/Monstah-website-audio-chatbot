@@ -477,13 +477,13 @@ export default function VoiceChat() {
             }}
           >
             <div className="cta-content">
-              <div className="cta-top">
+              <span className="cta-text">Need help?</span>
+              <div className="cta-bottom">
                 <div className="vortex-avatar" />
-                <span className="cta-text">Need help?</span>
-              </div>
-              <div className="cta-button">
-                <Volume2 size={16} fill="white" />
-                <span>Talk to {agentName}</span>
+                <div className="cta-button">
+                  <Volume2 size={16} fill="white" />
+                  <span>Talk to {agentName}</span>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -493,30 +493,32 @@ export default function VoiceChat() {
       <style jsx>{`
         .savage-cta-container {
           background: white;
-          padding: 12px 16px;
-          border-radius: 24px;
+          padding: 14px 18px;
+          border-radius: 28px;
           box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-          width: 240px;
           border: 1px solid rgba(0,0,0,0.05);
         }
 
         .cta-content {
           display: flex;
           flex-direction: column;
-          gap: 10px;
-        }
-
-        .cta-top {
-          display: flex;
-          align-items: center;
-          gap: 12px;
+          gap: 6px;
         }
 
         .cta-text {
-          color: #111;
-          font-size: 1.1rem;
-          font-weight: 600;
+          color: #333;
+          font-size: 0.85rem;
+          font-weight: 700;
           font-family: 'Inter', sans-serif;
+          margin-left: 54px; /* Align text above the black button, past the avatar */
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .cta-bottom {
+          display: flex;
+          align-items: center;
+          gap: 14px;
         }
 
         .vortex-avatar {
