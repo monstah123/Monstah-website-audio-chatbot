@@ -321,9 +321,50 @@ export default function AgentSettings() {
       <div className="input-group">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
           <label style={{ margin: 0 }}><MessageSquare size={16} /> Page Navigation Links</label>
-          <span className="link-count-badge">
-            {navigationLinks.filter(l => l.name.trim() && l.url.trim()).length} Active Links
-          </span>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <span className="link-count-badge">
+              {navigationLinks.filter(l => l.name.trim() && l.url.trim()).length} Active Links
+            </span>
+            <button
+              className="btn-train-all"
+              onClick={async () => {
+                const validLinks = navigationLinks.filter(l => l.url.trim());
+                if (validLinks.length === 0) return;
+                
+                if (!confirm(`This will train the AI on all ${validLinks.length} pages. Continue?`)) return;
+                
+                let successCount = 0;
+                for (const link of validLinks) {
+                  try {
+                    const res = await fetch('/api/train', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ url: link.url, userId: auth.currentUser?.uid }),
+                    });
+                    if (res.ok) successCount++;
+                  } catch (e) {
+                    console.error("Training failed for", link.url);
+                  }
+                }
+                alert(`Bulk training complete! ${successCount} of ${validLinks.length} links were successfully queued.`);
+              }}
+              style={{ 
+                background: 'rgba(68, 255, 68, 0.1)', 
+                color: '#44ff44', 
+                border: '1px solid rgba(68, 255, 68, 0.2)', 
+                padding: '4px 12px', 
+                borderRadius: '6px', 
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}
+            >
+              <RefreshCw size={12} /> Train All Links
+            </button>
+          </div>
         </div>
         <p className="help-text">
           Add as many pages as you want. The AI will send users there when they ask 
