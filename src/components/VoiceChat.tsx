@@ -352,11 +352,13 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         // If running inside an iframe (embedded widget), notify the parent host page
         const isEmbedded = window.self !== window.top;
         
-        // Final fallback: if it's not a full URL, make it one relative to parent if possible
+        // Final fallback: if it's not a full URL (no http/https)
         if (!urlToRedirect.startsWith('http')) {
-          if (isEmbedded) {
-            // Parent will handle relative URL correctly
-          } else {
+          // If it looks like a domain (contains a dot and doesn't start with /)
+          if (urlToRedirect.includes('.') && !urlToRedirect.startsWith('/')) {
+            urlToRedirect = 'https://' + urlToRedirect;
+          } else if (!isEmbedded) {
+            // Only prepend origin if NOT embedded (otherwise parent handles relative)
             urlToRedirect = window.location.origin + (urlToRedirect.startsWith('/') ? '' : '/') + urlToRedirect;
           }
         }
