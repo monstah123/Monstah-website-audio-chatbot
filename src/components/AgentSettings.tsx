@@ -103,7 +103,7 @@ export default function AgentSettings() {
 
       <div className="input-group">
         <label><MessageSquare size={16} /> Idle Mic Timeout</label>
-        <p className="help-text">How long the microphone stays active before auto-shutting off to save resources. (ElevenLabs default: 15s)</p>
+        <p className="help-text">How long the microphone stays active before auto-shutting off to save resources. (Monstah AI default: 15s)</p>
         <select
           value={idleTimeout}
           onChange={(e) => setIdleTimeout(Number(e.target.value))}
