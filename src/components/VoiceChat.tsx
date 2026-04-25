@@ -331,7 +331,7 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         aiResponse += chunk;
         
         // Hide the navigation tag from the UI while streaming
-        const displayResponse = aiResponse.replace(/\[NAVIGATE:.*?\]/g, "").trim();
+        const displayResponse = aiResponse.replace(/REDIRECT_TO_ID:\s*\S+/g, "").trim();
         
         setMessages(prev => {
           const last = prev[prev.length - 1];
@@ -341,7 +341,7 @@ export default function VoiceChat({ uid }: { uid?: string }) {
 
       // Check for navigation command after stream is complete
       let urlToRedirect = "";
-      const navMatch = aiResponse.match(/\[NAVIGATE:\s*([^\]\s]+)\s*\]/);
+      const navMatch = aiResponse.match(/REDIRECT_TO_ID:\s*(\S+)/);
       if (navMatch) {
         const navId = navMatch[1].trim();
         aiResponse = aiResponse.replace(navMatch[0], "").trim();

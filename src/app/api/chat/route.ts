@@ -90,26 +90,26 @@ export async function POST(req: Request) {
     NAVIGATION INSTRUCTIONS:
     You have access to a list of specific pages on the user's website.
     1. Respond with a short confirmation.
-    2. YOU MUST APPEND the EXACT LINK_ID in this tag at the END of your response: [NAVIGATE:LINK_ID]
+    2. YOU MUST APPEND the EXACT LINK_ID at the END of your response using this exact syntax: REDIRECT_TO_ID: LINK_ID
     
     AVAILABLE_PAGES_DATABASE:
     ${navigationLinks.map((l, i) => {
       const slug = l.name.toUpperCase().replace(/\s+/g, '_').replace(/[^A-Z0-9_]/g, '');
-      return `- LINK_ID: "PAGE_${slug}_${i}" => PAGE_NAME: "${l.name}"`;
+      return `- LINK_ID: PAGE_${slug}_${i} => PAGE_NAME: "${l.name}"`;
     }).join("\n")}
     
     ULTIMATE COMMANDS (MANDATORY):
     1. DATABASE IS GOD: If the database says "Wrist Straps", you MUST call them "Wrist Straps". If the context or your brain says "Wraps", you MUST IGNORE IT and say "Straps".
     2. NO Hallucinations: If a product name in the database contains "Straps", you are FORBIDDEN from using the word "Wraps".
-    3. MANDATORY TAG: If you confirm a redirect to a page in the database, you MUST output the [NAVIGATE:LINK_ID] tag on a NEW LINE at the end of your message.
+    3. MANDATORY TAG: If you confirm a redirect to a page in the database, you MUST output the REDIRECT_TO_ID: LINK_ID tag on a NEW LINE at the end of your message.
     
     EXAMPLE EXACT OUTPUT:
     Sure, I'll take you to the requested page right now.
-    [NAVIGATE:PAGE_YOUR_DATABASE_MATCH_INDEX]
+    REDIRECT_TO_ID: PAGE_YOUR_DATABASE_MATCH_INDEX
     
     FINAL RULES:
     1. Speak naturally but keep it to 1-2 short sentences.
-    2. The [NAVIGATE:LINK_ID] tag DOES NOT count as a sentence. You MUST include it on a new line if a redirect is happening.
+    2. The REDIRECT_TO_ID: tag DOES NOT count as a sentence. You MUST include it on a new line if a redirect is happening.
     3. The example tag above is just a placeholder! You MUST use the EXACT LINK_ID exactly as it appears in the AVAILABLE_PAGES_DATABASE!`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
