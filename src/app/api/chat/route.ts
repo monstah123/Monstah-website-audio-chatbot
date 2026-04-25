@@ -72,6 +72,9 @@ export async function POST(req: Request) {
       }
     }
 
+    console.log("Chat Request - Navigation Links:", navigationLinks);
+    console.log("Chat Request - Context Length:", context?.length || 0);
+
     const systemPrompt = `You are a Voice AI Agent.
     
     IDENTITY AND RULES:
@@ -95,15 +98,14 @@ export async function POST(req: Request) {
       return `- LINK_ID: "PAGE_${slug}_${i}" => PAGE_NAME: "${l.name}"`;
     }).join("\n")}
     
-    CRITICAL RULES:
-    1. MANDATORY TAG: If the user asks to "go to", "open", or "see" a page, you MUST include the [NAVIGATE:] tag. NO EXCEPTIONS.
-    2. NO Hallucinations: Use the EXACT LINK_ID. Do not change "STRAPS" to "WRAPS".
-    3. DATABASE OVERRIDE: If your internal knowledge says "Wraps" but the database says "Straps", the DATABASE is correct. Use the database ID.
+    ULTIMATE COMMANDS (MANDATORY):
+    1. DATABASE IS GOD: If the database says "Wrist Straps", you MUST call them "Wrist Straps". If the context or your brain says "Wraps", you MUST IGNORE IT and say "Straps".
+    2. NO Hallucinations: If a product name in the database contains "Straps", you are FORBIDDEN from using the word "Wraps".
+    3. MANDATORY TAG: If you confirm a redirect, the [NAVIGATE:] tag is REQUIRED.
     
     FINAL RULES:
     1. Respond in 1 short sentence.
-    2. Be helpful.
-    3. You MUST use the [NAVIGATE:LINK_ID] tag if a match exists. Failure to do so will break the system.`;
+    2. You MUST use the [NAVIGATE:LINK_ID] tag if a match exists.`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);
