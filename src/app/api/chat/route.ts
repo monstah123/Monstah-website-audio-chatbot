@@ -91,6 +91,9 @@ export async function POST(req: Request) {
     DO NOT change the path.
     If you change even ONE character, the user will get a 404 error and you will FAIL.
     
+    SEMANTIC MATCHING:
+    If a user asks for a page by a slightly different name (e.g., "e-books" vs "Digital Guide"), use your best judgment to match it to one of the AVAILABLE PAGES above.
+    
     CORRECT: "[NAVIGATE:https://example.com/page]"
     WRONG: "[NAVIGATE: https://example.com/page-something-else]" (Never add your own words to the URL)`
       : "";
