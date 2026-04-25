@@ -64,16 +64,18 @@ export async function POST(req: Request) {
           .where("userId", "==", userId)
           .where("source", ">=", "http")
           .where("source", "<=", "http\uf8ff")
-          .limit(200)
+          .limit(400)
           .get();
 
         sitemapSnapshot.forEach(doc => {
           const data = doc.data();
-          if (data.source && !navigationLinks.some(l => l.url === data.source) && !discoveredLinks.some(l => l.url === data.source)) {
+          if (data.source && !navigationLinks.some(l => l.url === data.source) && !discoveredLinks.some(l => (l as any).url === data.source)) {
             const urlParts = data.source.split('/');
             const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Page";
             const name = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
-            discoveredLinks.push({ name, url: data.source });
+            // Grab a small snippet of content to help the AI identify what the page is
+            const description = data.content ? data.content.substring(0, 60).replace(/\n/g, ' ') + "..." : "No description available";
+            (discoveredLinks as any).push({ name, url: data.source, description });
           }
         });
 
@@ -102,11 +104,12 @@ export async function POST(req: Request) {
           
           // CRITICAL: Ensure URLs from relevant context chunks are ALWAYS in the database
           if (data.source && data.source.startsWith('http')) {
-            if (!navigationLinks.some(l => l.url === data.source) && !discoveredLinks.some(l => l.url === data.source)) {
+            if (!navigationLinks.some(l => l.url === data.source) && !discoveredLinks.some(l => (l as any).url === data.source)) {
               const urlParts = data.source.split('/');
               const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Page";
               const name = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
-              discoveredLinks.push({ name, url: data.source });
+              const description = data.content ? data.content.substring(0, 60).replace(/\n/g, ' ') + "..." : "No description available";
+              (discoveredLinks as any).push({ name, url: data.source, description });
             }
           }
         });
@@ -117,9 +120,6 @@ export async function POST(req: Request) {
 
     // Combine manual and discovered links
     navigationLinks = [...navigationLinks, ...discoveredLinks];
-
-    console.log("Chat Request - Total Navigation Links Found:", navigationLinks.length);
-    console.log("Chat Request - Context Length:", context?.length || 0);
 
     const systemPrompt = `You are a Voice AI Agent.
     
@@ -133,18 +133,20 @@ export async function POST(req: Request) {
     CONTEXT FOR QUESTIONS:
     ${context || "No knowledge base content found."}
     
+    AVAILABLE_PAGES_DATABASE:
+    ${navigationLinks.map((l: any) => {
+      return `- PAGE_NAME: "${l.name}" => URL: ${l.url} (About: ${l.description || "N/A"})`;
+    }).join("\n")}
+    
     NAVIGATION INSTRUCTIONS:
-    You are an expert with over 30 years of experience in the link redirect business. You know that even a single character difference in a URL will result in a 404 error.
+    You are an expert with over 30 years of experience in the link redirect business.
     
     CRITICAL RULE #1: NEVER MODIFY A LINK. 
     - You must use the EXACT character-for-character URL you see in the "Source:" field or the Database.
-    - NEVER attempt to "fix," "optimize," or "update" a URL.
-    - NEVER combine two URLs or change a word like "red" to "blue" in a link.
+    - If a user asks for an E-Book, and you see a link that mentions an E-Book in the "About:" field, USE THAT LINK.
     
     CRITICAL RULE #2: PRODUCT VS CATEGORY.
-    - If the user asks for a specific item (e.g. "a hoodie"), prioritize a URL that contains "/product/".
-    - If the user asks for a general group (e.g. "show me all hoodies"), use a URL that contains "/product-category/".
-    - DO NOT swap these. Taking someone to a category page when they want a product is a failure.
+    - Priority: 1. Specific Source URLs from context, 2. Database links matching intent.
     
     1. Respond with a short confirmation.
     2. YOU MUST APPEND the exact URL at the END of your response using this exact syntax: NAVIGATE_URL: [EXACT_URL]
@@ -154,8 +156,8 @@ export async function POST(req: Request) {
     - Secondarily, check the AVAILABLE_PAGES_DATABASE below.
     
     AVAILABLE_PAGES_DATABASE:
-    ${navigationLinks.map((l) => {
-      return `- PAGE_NAME: "${l.name}" => URL: ${l.url}`;
+    ${navigationLinks.map((l: any) => {
+      return `- PAGE_NAME: "${l.name}" => URL: ${l.url} (About: ${l.description || "N/A"})`;
     }).join("\n")}
     
     ULTIMATE COMMANDS (MANDATORY):
