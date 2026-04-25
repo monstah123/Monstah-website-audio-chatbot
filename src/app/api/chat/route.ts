@@ -59,12 +59,12 @@ export async function POST(req: Request) {
     let context = "";
     try {
       if (userId) {
-        // 1. DYNAMIC SITE MAP DISCOVERY (Fetch a wide range of chunks to find unique URLs)
+        // 1. DYNAMIC SITE MAP DISCOVERY (Fetch a massive range to find EVERY link)
         const sitemapSnapshot = await db.collection("knowledge")
           .where("userId", "==", userId)
           .where("source", ">=", "http")
           .where("source", "<=", "http\uf8ff")
-          .limit(400)
+          .limit(1000) // Increase to 1000 to be absolutely sure
           .get();
 
         sitemapSnapshot.forEach(doc => {
@@ -73,13 +73,12 @@ export async function POST(req: Request) {
             const urlParts = data.source.split('/');
             const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Page";
             const name = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
-            // Grab a small snippet of content to help the AI identify what the page is
-            const description = data.content ? data.content.substring(0, 60).replace(/\n/g, ' ') + "..." : "No description available";
+            const description = data.content ? data.content.substring(0, 80).replace(/\n/g, ' ') + "..." : "Product page";
             (discoveredLinks as any).push({ name, url: data.source, description });
           }
         });
 
-        // 2. VECTOR SIMILARITY SEARCH (For actual conversational context)
+        // 2. VECTOR SIMILARITY SEARCH
         const knowledgeSnapshot = await db.collection("knowledge")
           .where("userId", "==", userId)
           .limit(200)
@@ -102,13 +101,12 @@ export async function POST(req: Request) {
         sortedDocs.forEach((data) => {
           context += `\nSource: ${data.source}\nContent: ${data.content}\n---\n`;
           
-          // CRITICAL: Ensure URLs from relevant context chunks are ALWAYS in the database
           if (data.source && data.source.startsWith('http')) {
             if (!navigationLinks.some(l => l.url === data.source) && !discoveredLinks.some(l => (l as any).url === data.source)) {
               const urlParts = data.source.split('/');
               const slug = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2] || "Page";
               const name = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
-              const description = data.content ? data.content.substring(0, 60).replace(/\n/g, ' ') + "..." : "No description available";
+              const description = data.content ? data.content.substring(0, 80).replace(/\n/g, ' ') + "..." : "Product page";
               (discoveredLinks as any).push({ name, url: data.source, description });
             }
           }
@@ -121,10 +119,14 @@ export async function POST(req: Request) {
     // Combine manual and discovered links
     navigationLinks = [...navigationLinks, ...discoveredLinks];
 
-    const systemPrompt = `You are a Voice AI Agent.
+    const systemPrompt = `You are a Voice AI Agent for Monstah Gym Wear.
     
     IDENTITY AND RULES:
     ${customSystemPrompt}
+    
+    PRODUCT KNOWLEDGE:
+    - The product "Introduction to Nutrition for Competing Bodybuilders" is an E-BOOK. 
+    - If a user asks for an "e-book" or "nutrition guide", you MUST take them to that page.
     
     VOICE OPTIMIZATION:
     - PLAIN TEXT ONLY. NO MARKDOWN.
@@ -135,21 +137,18 @@ export async function POST(req: Request) {
     
     AVAILABLE_PAGES_DATABASE:
     ${navigationLinks.map((l: any) => {
-      return `- PAGE_NAME: "${l.name}" => URL: ${l.url} (About: ${l.description || "N/A"})`;
+      return `- PAGE_NAME: "${l.name}" => URL: ${l.url} (Description: ${l.description || "N/A"})`;
     }).join("\n")}
     
     NAVIGATION INSTRUCTIONS:
     You are an expert with over 30 years of experience in the link redirect business.
     
     CRITICAL RULE #1: NEVER MODIFY A LINK. 
-    - You must use the EXACT character-for-character URL you see in the "Source:" field or the Database.
-    - If a user asks for an E-Book, and you see a link that mentions an E-Book in the "About:" field, USE THAT LINK.
-    
-    CRITICAL RULE #2: PRODUCT VS CATEGORY.
-    - Priority: 1. Specific Source URLs from context, 2. Database links matching intent.
+    - You must use the EXACT character-for-character URL you see in the Database or Sources.
+    - If you see a link that mentions Nutrition or Bodybuilding, that is the E-BOOK.
     
     1. Respond with a short confirmation.
-    2. YOU MUST APPEND the exact URL at the END of your response using this exact syntax: NAVIGATE_URL: [EXACT_URL]
+    2. YOU MUST APPEND the exact URL at the END of your response using this exact syntax: NAVIGATE_URL: [EXACT_URL]`;
     
     HOW TO FIND THE URL:
     - LOOK at the "Source:" field of the information you just read in the context. If that source is a URL (starts with http), USE THAT EXACT URL.
