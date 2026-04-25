@@ -59,6 +59,14 @@ export default function VoiceChat({ uid }: { uid?: string }) {
     if (!hasAutoOpened) {
       const timer = setTimeout(() => {
         setIsOpen(true);
+        // Attempt to activate mic — will trigger permission prompt if needed
+        setIsListening(true);
+        isListeningRef.current = true;
+        try { 
+          recognitionRef.current?.start(); 
+          startIdleTimer();
+        } catch (e) {}
+        
         sessionStorage.setItem("monstah_auto_opened", "true");
       }, 3000); // 3 second delay for the pop-up
       
@@ -257,6 +265,10 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         setMicError(null);
       } catch (e) {
         console.error("Mic start error:", e);
+        // If it's already started, just ignore
+        if (e instanceof Error && e.message.includes("already started")) {
+          return;
+        }
         setShowPermissionModal(true);
       }
     }
