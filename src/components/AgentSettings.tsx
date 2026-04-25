@@ -211,13 +211,14 @@ export default function AgentSettings() {
       <div className="input-group">
         <label><MessageSquare size={16} /> Idle Mic Timeout</label>
         <p className="help-text">Adjust how long (in minutes) the AI waits for you to speak before it says something to keep the conversation going.</p>
-        <div className="timeout-control">
+        <div className="timeout-control" style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '12px' }}>
           <input 
             type="range" min="1" max="10" step="1" 
             value={idleTimeout} 
             onChange={(e) => setIdleTimeout(parseInt(e.target.value))} 
+            style={{ accentColor: 'var(--primary)' }}
           />
-          <span className="timeout-val">{idleTimeout} min</span>
+          <span className="timeout-val" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{idleTimeout} min</span>
         </div>
       </div>
 
