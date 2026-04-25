@@ -11,6 +11,7 @@ export default function VoiceChat() {
   const [agentName, setAgentName] = useState("Peterson");
   const [firstMessage, setFirstMessage] = useState("Hi! How can I help you today?");
   const [themeColor, setThemeColor] = useState("green");
+  const [idleTimeout, setIdleTimeout] = useState(15);
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
 
   useEffect(() => {
@@ -31,6 +32,9 @@ export default function VoiceChat() {
             }
             if (data.themeColor) {
               setThemeColor(data.themeColor);
+            }
+            if (data.idleTimeout) {
+              setIdleTimeout(data.idleTimeout);
             }
           }
         } catch (e) {
@@ -98,14 +102,14 @@ export default function VoiceChat() {
   const isSpeakingRef = useRef(false);
   const isListeningRef = useRef(false);
 
-  // ---- Idle Timer (15s) ----
+  // ---- Idle Timer (configurable per tenant) ----
   const startIdleTimer = () => {
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     idleTimerRef.current = setTimeout(() => {
       recognitionRef.current?.stop();
       setIsListening(false);
       isListeningRef.current = false;
-    }, 15000);
+    }, idleTimeout * 1000);
   };
 
   const resetIdleTimer = () => {

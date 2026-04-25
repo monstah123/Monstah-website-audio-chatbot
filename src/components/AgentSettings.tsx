@@ -9,6 +9,7 @@ export default function AgentSettings() {
   const [systemPrompt, setSystemPrompt] = useState("");
   const [firstMessage, setFirstMessage] = useState("");
   const [themeColor, setThemeColor] = useState("green");
+  const [idleTimeout, setIdleTimeout] = useState(15);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -25,6 +26,7 @@ export default function AgentSettings() {
           setSystemPrompt(data.systemPrompt || "");
           setFirstMessage(data.firstMessage || "");
           setThemeColor(data.themeColor || "green");
+          setIdleTimeout(data.idleTimeout ?? 15);
         }
       } catch (e) {
         console.error("Failed to load settings", e);
@@ -53,6 +55,7 @@ export default function AgentSettings() {
           systemPrompt,
           firstMessage,
           themeColor,
+          idleTimeout,
         }),
       });
 
@@ -95,6 +98,21 @@ export default function AgentSettings() {
           <option value="gold">🟡 Liquid Gold</option>
           <option value="white">⚪️ Phantom White</option>
           <option value="purple">🔮 Amethyst Purple</option>
+        </select>
+      </div>
+
+      <div className="input-group">
+        <label><MessageSquare size={16} /> Idle Mic Timeout</label>
+        <p className="help-text">How long the microphone stays active before auto-shutting off to save resources. (ElevenLabs default: 15s)</p>
+        <select
+          value={idleTimeout}
+          onChange={(e) => setIdleTimeout(Number(e.target.value))}
+          className="theme-select"
+        >
+          <option value={10}>⚡ 10 seconds (Aggressive)</option>
+          <option value={15}>✅ 15 seconds (Recommended)</option>
+          <option value={30}>🕐 30 seconds (Relaxed)</option>
+          <option value={60}>🐢 60 seconds (Always On)</option>
         </select>
       </div>
 
