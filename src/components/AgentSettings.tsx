@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { auth } from "@/lib/firebase-client";
-import { Save, Loader2, Bot, MessageSquare } from "lucide-react";
+import { Save, Loader2, Bot, MessageSquare, Lock, Unlock } from "lucide-react";
 
 export default function AgentSettings() {
   const [agentName, setAgentName] = useState("");
@@ -10,6 +10,9 @@ export default function AgentSettings() {
   const [firstMessage, setFirstMessage] = useState("");
   const [themeColor, setThemeColor] = useState("green");
   const [idleTimeout, setIdleTimeout] = useState(15);
+  const [brandName, setBrandName] = useState("Monstah AI");
+  const [unlockCode, setUnlockCode] = useState("");
+  const [isBrandingUnlocked, setIsBrandingUnlocked] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -27,6 +30,7 @@ export default function AgentSettings() {
           setFirstMessage(data.firstMessage || "");
           setThemeColor(data.themeColor || "green");
           setIdleTimeout(data.idleTimeout ?? 15);
+          setBrandName(data.brandName || "Monstah AI");
         }
       } catch (e) {
         console.error("Failed to load settings", e);
@@ -56,6 +60,7 @@ export default function AgentSettings() {
           firstMessage,
           themeColor,
           idleTimeout,
+          brandName,
         }),
       });
 
@@ -82,6 +87,54 @@ export default function AgentSettings() {
         <h2>Agent Identity</h2>
       </div>
       <p className="subtitle">Customize exactly how your AI behaves and talks to customers.</p>
+
+      {/* ---- White-Label Branding (Pro Feature) ---- */}
+      <div className={`input-group branding-panel ${isBrandingUnlocked ? 'unlocked' : 'locked'}`}>
+        <div className="branding-header">
+          {isBrandingUnlocked ? <Unlock size={16} color="#44ff44" /> : <Lock size={16} color="#ff9900" />}
+          <label style={{ margin: 0 }}>White-Label Brand Name</label>
+          {!isBrandingUnlocked && <span className="pro-badge">PRO</span>}
+        </div>
+        <p className="help-text">
+          {isBrandingUnlocked
+            ? "Your custom brand name is shown in the chat widget header instead of \"Monstah AI\"."
+            : "Enter your unlock code to customize the brand name displayed in the widget header."}
+        </p>
+
+        {!isBrandingUnlocked ? (
+          <div className="unlock-row">
+            <input
+              type="password"
+              value={unlockCode}
+              onChange={(e) => setUnlockCode(e.target.value)}
+              placeholder="Enter unlock code..."
+              className="unlock-input"
+            />
+            <button
+              className="btn-unlock"
+              onClick={() => {
+                if (unlockCode === process.env.NEXT_PUBLIC_PRO_UNLOCK_CODE) {
+                  setIsBrandingUnlocked(true);
+                  setStatus({ type: "success", message: "🔓 White-label branding unlocked!" });
+                  setTimeout(() => setStatus(null), 3000);
+                } else {
+                  setStatus({ type: "error", message: "❌ Invalid unlock code." });
+                  setTimeout(() => setStatus(null), 3000);
+                }
+              }}
+            >
+              Unlock
+            </button>
+          </div>
+        ) : (
+          <input
+            type="text"
+            value={brandName}
+            onChange={(e) => setBrandName(e.target.value)}
+            placeholder="e.g. My Company AI"
+          />
+        )}
+      </div>
 
       <div className="input-group">
         <label><Bot size={16} /> Widget Theme</label>
@@ -291,6 +344,65 @@ export default function AgentSettings() {
           align-items: center;
           height: 200px;
           color: var(--text-secondary);
+        }
+
+        .branding-panel {
+          border-radius: 12px;
+          padding: 16px;
+          background: rgba(255, 153, 0, 0.05);
+          border: 1px solid rgba(255, 153, 0, 0.2);
+          transition: all 0.3s;
+        }
+
+        .branding-panel.unlocked {
+          background: rgba(68, 255, 68, 0.05);
+          border-color: rgba(68, 255, 68, 0.2);
+        }
+
+        .branding-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 4px;
+        }
+
+        .pro-badge {
+          background: linear-gradient(135deg, #ff9900, #ff6600);
+          color: #000;
+          font-size: 0.65rem;
+          font-weight: 800;
+          padding: 2px 7px;
+          border-radius: 20px;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          margin-left: auto;
+        }
+
+        .unlock-row {
+          display: flex;
+          gap: 10px;
+        }
+
+        .unlock-input {
+          flex: 1;
+        }
+
+        .btn-unlock {
+          padding: 14px 20px;
+          background: linear-gradient(135deg, #ff9900, #ff6600);
+          color: #000;
+          border: none;
+          border-radius: 12px;
+          font-weight: 700;
+          font-size: 0.9rem;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-unlock:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 0 20px rgba(255, 153, 0, 0.4);
         }
 
         @keyframes spin {

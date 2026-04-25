@@ -12,6 +12,7 @@ export default function VoiceChat() {
   const [firstMessage, setFirstMessage] = useState("Hi! How can I help you today?");
   const [themeColor, setThemeColor] = useState("green");
   const [idleTimeout, setIdleTimeout] = useState(15);
+  const [brandName, setBrandName] = useState("Monstah AI");
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
 
   useEffect(() => {
@@ -35,6 +36,9 @@ export default function VoiceChat() {
             }
             if (data.idleTimeout) {
               setIdleTimeout(data.idleTimeout);
+            }
+            if (data.brandName) {
+              setBrandName(data.brandName);
             }
           }
         } catch (e) {
@@ -402,7 +406,7 @@ export default function VoiceChat() {
             <div className="chat-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div className="status-dot" />
-                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>MONSTAH AI</h3>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>{brandName.toUpperCase()}</h3>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button onClick={() => setShowHistory(!showHistory)} className="header-icon-btn" title="History">
