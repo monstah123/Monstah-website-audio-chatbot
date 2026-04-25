@@ -115,9 +115,12 @@ export async function POST(req: Request) {
     ${context || "No knowledge base content found."}
     
     FINAL RULES:
-    1. If the user asks to "go to", "show me", "take me to", or "open" a page, you MUST check the AVAILABLE PAGES list above first.
-    2. If there is a semantic match (e.g., they ask for "ebook" and you have a link named "Nutrition Guide"), use the [NAVIGATE:url] tag.
-    3. Keep responses extremely short (1-2 sentences).`;
+    1. If the user asks to "go to", "show me", "take me to", or "open" a page, you MUST check the AVAILABLE_PAGES_DATABASE above.
+    2. DO NOT USE ANY URLS FOUND IN THE "CONTEXT FOR QUESTIONS" FOR NAVIGATION. THOSE ARE OFTEN STALE OR WRONG.
+    3. ONLY USE THE URLS IN THE AVAILABLE_PAGES_DATABASE.
+    4. If a match is found, use the [NAVIGATE:url] tag with the EXACT string from the database.
+    5. If no match is found in the database, DO NOT navigate. Just answer the question normally.
+    6. Keep responses extremely short (1-2 sentences).`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);
