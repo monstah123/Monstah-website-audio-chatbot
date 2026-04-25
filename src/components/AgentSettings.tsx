@@ -8,6 +8,7 @@ export default function AgentSettings() {
   const [agentName, setAgentName] = useState("");
   const [systemPrompt, setSystemPrompt] = useState("");
   const [firstMessage, setFirstMessage] = useState("");
+  const [themeColor, setThemeColor] = useState("green");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -23,6 +24,7 @@ export default function AgentSettings() {
           setAgentName(data.agentName || "Peterson");
           setSystemPrompt(data.systemPrompt || "");
           setFirstMessage(data.firstMessage || "");
+          setThemeColor(data.themeColor || "green");
         }
       } catch (e) {
         console.error("Failed to load settings", e);
@@ -50,6 +52,7 @@ export default function AgentSettings() {
           agentName,
           systemPrompt,
           firstMessage,
+          themeColor,
         }),
       });
 
@@ -76,6 +79,24 @@ export default function AgentSettings() {
         <h2>Agent Identity</h2>
       </div>
       <p className="subtitle">Customize exactly how your AI behaves and talks to customers.</p>
+
+      <div className="input-group">
+        <label><Bot size={16} /> Widget Theme</label>
+        <p className="help-text">Select the color palette for the chat widget's neon glow and vortex animation.</p>
+        <select 
+          value={themeColor}
+          onChange={(e) => setThemeColor(e.target.value)}
+          className="theme-select"
+        >
+          <option value="green">🟢 Monstah Green</option>
+          <option value="red">🔴 Crimson Red</option>
+          <option value="blue">🔵 Electric Blue</option>
+          <option value="pink">🟣 Cyber Pink</option>
+          <option value="gold">🟡 Liquid Gold</option>
+          <option value="white">⚪️ Phantom White</option>
+          <option value="purple">🔮 Amethyst Purple</option>
+        </select>
+      </div>
 
       <div className="input-group">
         <label><Bot size={16} /> Agent Name</label>
@@ -167,7 +188,7 @@ export default function AgentSettings() {
           margin-bottom: 12px;
         }
 
-        textarea, input {
+        textarea, input, .theme-select {
           width: 100%;
           background: rgba(0, 0, 0, 0.5);
           border: 1px solid rgba(255, 255, 255, 0.1);
@@ -177,12 +198,21 @@ export default function AgentSettings() {
           font-size: 1rem;
           font-family: inherit;
           transition: border-color 0.2s;
+        }
+
+        textarea {
           resize: vertical;
         }
 
-        textarea:focus, input:focus {
+        textarea:focus, input:focus, .theme-select:focus {
           outline: none;
           border-color: var(--primary);
+        }
+
+        .theme-select option {
+          background: #1a1a1a;
+          color: white;
+          padding: 10px;
         }
 
         .btn-save {

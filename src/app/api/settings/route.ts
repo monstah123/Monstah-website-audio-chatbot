@@ -18,6 +18,7 @@ export async function GET(req: Request) {
         agentName: "Peterson",
         systemPrompt: "You are a helpful and friendly customer service representative. Keep answers short and strictly based on the provided context.",
         firstMessage: "Hi! How can I help you today?",
+        themeColor: "green"
       });
     }
 
@@ -29,7 +30,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { userId, agentName, systemPrompt, firstMessage } = await req.json();
+    const { userId, agentName, systemPrompt, firstMessage, themeColor } = await req.json();
 
     if (!userId) {
       return NextResponse.json({ error: "Missing User ID" }, { status: 401 });
@@ -39,6 +40,7 @@ export async function POST(req: Request) {
       agentName,
       systemPrompt,
       firstMessage,
+      themeColor,
       updatedAt: new Date().toISOString(),
     }, { merge: true });
 

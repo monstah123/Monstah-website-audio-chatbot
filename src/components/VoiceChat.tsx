@@ -10,6 +10,7 @@ export default function VoiceChat() {
   
   const [agentName, setAgentName] = useState("Peterson");
   const [firstMessage, setFirstMessage] = useState("Hi! How can I help you today?");
+  const [themeColor, setThemeColor] = useState("green");
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
 
   useEffect(() => {
@@ -27,6 +28,9 @@ export default function VoiceChat() {
             }
             if (data.agentName) {
               setAgentName(data.agentName);
+            }
+            if (data.themeColor) {
+              setThemeColor(data.themeColor);
             }
           }
         } catch (e) {
@@ -348,8 +352,27 @@ export default function VoiceChat() {
     });
   };
 
+  const THEMES: Record<string, { primary: string; secondary: string; rgb: string; gradient: string }> = {
+    green: { primary: "#44ff44", secondary: "#77ff77", rgb: "68, 255, 68", gradient: "conic-gradient(#000 0deg, #44ff44 90deg, #000 180deg, #44ff44 270deg, #000 360deg)" },
+    red: { primary: "#ff1111", secondary: "#ff4444", rgb: "255, 17, 17", gradient: "conic-gradient(#000 0deg, #ff1111 90deg, #000 180deg, #ff1111 270deg, #000 360deg)" },
+    blue: { primary: "#00eeff", secondary: "#55ffff", rgb: "0, 238, 255", gradient: "conic-gradient(#000 0deg, #00eeff 90deg, #000 180deg, #00eeff 270deg, #000 360deg)" },
+    pink: { primary: "#ff00aa", secondary: "#ff55cc", rgb: "255, 0, 170", gradient: "conic-gradient(#000 0deg, #ff00aa 90deg, #000 180deg, #ff00aa 270deg, #000 360deg)" },
+    gold: { primary: "#ffcc00", secondary: "#ffdd44", rgb: "255, 204, 0", gradient: "conic-gradient(#000 0deg, #ffcc00 90deg, #000 180deg, #ffcc00 270deg, #000 360deg)" },
+    white: { primary: "#ffffff", secondary: "#dddddd", rgb: "255, 255, 255", gradient: "conic-gradient(#000 0deg, #ffffff 90deg, #000 180deg, #ffffff 270deg, #000 360deg)" },
+    purple: { primary: "#aa00ff", secondary: "#cc44ff", rgb: "170, 0, 255", gradient: "conic-gradient(#000 0deg, #aa00ff 90deg, #000 180deg, #aa00ff 270deg, #000 360deg)" }
+  };
+
+  const activeTheme = THEMES[themeColor] || THEMES.green;
+
   return (
-    <>
+    <div style={{
+      '--theme-primary': activeTheme.primary,
+      '--theme-secondary': activeTheme.secondary,
+      '--theme-rgb': activeTheme.rgb,
+      '--theme-gradient': activeTheme.gradient,
+      '--primary': activeTheme.primary, /* Override global for the widget */
+      '--accent': activeTheme.primary, /* Override global for the widget */
+    } as React.CSSProperties}>
       <AnimatePresence>
         {isOpen && (
             <motion.div
@@ -523,7 +546,7 @@ export default function VoiceChat() {
           width: 40px;
           height: 40px;
           border-radius: 50%;
-          background: conic-gradient(#000 0deg, #44ff44 90deg, #000 180deg, #44ff44 270deg, #000 360deg);
+          background: var(--theme-gradient);
           animation: rotate-vortex 4s linear infinite;
           box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
           position: relative;
@@ -570,10 +593,10 @@ export default function VoiceChat() {
           width: 100%;
           height: 100%;
           background: #0d0d0f !important;
-          border: 2px solid #44ff44 !important; /* NEON LOCKDOWN */
+          border: 2px solid var(--theme-primary) !important; /* NEON LOCKDOWN */
           border-radius: 28px !important;
           overflow: hidden !important;
-          box-shadow: 0 0 20px rgba(68, 255, 68, 0.4) !important;
+          box-shadow: 0 0 20px rgba(var(--theme-rgb), 0.4) !important;
           position: relative;
         }
 
@@ -582,9 +605,9 @@ export default function VoiceChat() {
         }
 
         @keyframes neon-breathe {
-          0% { border-color: #44ff44 !important; box-shadow: 0 0 15px rgba(68, 255, 68, 0.2) !important; }
-          50% { border-color: #77ff77 !important; box-shadow: 0 0 30px rgba(68, 255, 68, 0.6) !important; }
-          100% { border-color: #44ff44 !important; box-shadow: 0 0 15px rgba(68, 255, 68, 0.2) !important; }
+          0% { border-color: var(--theme-primary) !important; box-shadow: 0 0 15px rgba(var(--theme-rgb), 0.2) !important; }
+          50% { border-color: var(--theme-secondary) !important; box-shadow: 0 0 30px rgba(var(--theme-rgb), 0.6) !important; }
+          100% { border-color: var(--theme-primary) !important; box-shadow: 0 0 15px rgba(var(--theme-rgb), 0.2) !important; }
         }
 
         .chat-header {
@@ -788,6 +811,6 @@ export default function VoiceChat() {
           to { transform: rotate(360deg); }
         }
       `}</style>
-    </>
+    </div>
   );
 }
