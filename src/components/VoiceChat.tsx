@@ -331,7 +331,7 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         aiResponse += chunk;
         
         // Hide the navigation tag from the UI while streaming
-        const displayResponse = aiResponse.replace(/REDIRECT_TO_ID:\s*\S+/g, "").trim();
+        const displayResponse = aiResponse.replace(/REDIRECT_TO_ID[^\w]*\S+/gi, "").trim();
         
         setMessages(prev => {
           const last = prev[prev.length - 1];
@@ -341,9 +341,12 @@ export default function VoiceChat({ uid }: { uid?: string }) {
 
       // Check for navigation command after stream is complete
       let urlToRedirect = "";
-      const navMatch = aiResponse.match(/REDIRECT_TO_ID:\s*(\S+)/);
+      const navMatch = aiResponse.match(/REDIRECT_TO_ID[^\w]*(\S+)/i);
       if (navMatch) {
-        const navId = navMatch[1].trim();
+        let navId = navMatch[1].trim();
+        // Clean up trailing punctuation just in case
+        navId = navId.replace(/[.,!?]+$/, "");
+        
         aiResponse = aiResponse.replace(navMatch[0], "").trim();
         
         // Resolve Semantic ID to URL (e.g. PAGE_WRIST_STRAPS_2 -> navigationLinks[2].url)
@@ -379,13 +382,13 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         // Final UI update
         setMessages(prev => {
           const last = prev[prev.length - 1];
-          return [...prev.slice(0, -1), { ...last, content: last.content ? last.content : aiResponse }];
+          return [...prev.slice(0, -1), { ...last, content: aiResponse }];
         });
       } else {
         // No tag found at all, just update UI
         setMessages(prev => {
           const last = prev[prev.length - 1];
-          return [...prev.slice(0, -1), { ...last, content: last.content ? last.content : aiResponse }];
+          return [...prev.slice(0, -1), { ...last, content: aiResponse }];
         });
       }
 
