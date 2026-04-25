@@ -293,9 +293,16 @@ export default function VoiceChat() {
 
       await speak(aiResponse);
 
-      // Trigger redirect in parent window ONLY AFTER speaking finishes
-      if (urlToRedirect && window.parent) {
-        window.parent.postMessage({ type: 'redirect', url: urlToRedirect }, "*");
+      // Trigger redirect AFTER speaking finishes
+      if (urlToRedirect) {
+        // If running inside an iframe (embedded widget), notify the parent host page
+        const isEmbedded = window.self !== window.top;
+        if (isEmbedded) {
+          window.parent.postMessage({ type: 'redirect', url: urlToRedirect }, "*");
+        } else {
+          // Running directly in a browser tab (e.g. /widget preview) — navigate directly
+          window.location.href = urlToRedirect;
+        }
       }
     } catch (error) {
       console.error("Chat Error:", error);

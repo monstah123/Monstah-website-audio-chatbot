@@ -69,13 +69,16 @@ export async function POST(req: Request) {
     // Build navigation instructions if the tenant configured any links
     const navInstructions = Object.keys(navigationLinks).length > 0
       ? `
-    NAVIGATION INSTRUCTIONS:
-    You can navigate users to specific pages on this website. When a user asks to go to a page, 
-    respond naturally AND append a [NAVIGATE:url] tag at the very end of your response.
+    NAVIGATION INSTRUCTIONS — HIGHEST PRIORITY:
+    You have the ability to redirect the user to pages. When a user asks to go somewhere, 
+    view a product, or navigate anywhere:
+    1. Give a SHORT one-sentence confirmation (e.g. "Taking you there now!").
+    2. You MUST append [NAVIGATE:url] at the very end — this is non-negotiable.
     Available pages:
     ${Object.entries(navigationLinks).map(([name, url]) => `- ${name}: ${url}`).join("\n")}
-    Example: "Sure! Taking you to the products page now! [NAVIGATE:https://example.com/products]"
-    Only use navigation URLs from the list above.`
+    CRITICAL: Always end your response with [NAVIGATE:url] when navigating. Never omit it.
+    Example output: "Taking you to the hoodie page now! [NAVIGATE:https://example.com/hoodies]"
+    Only use URLs from the list above. Do not make up URLs.`
       : "";
 
     const systemPrompt = `You are a Voice AI Agent.
@@ -87,16 +90,17 @@ export async function POST(req: Request) {
     VOICE OPTIMIZATION:
     - PLAIN TEXT ONLY. NO MARKDOWN (no asterisks, no hashtags).
     - Keep answers short and conversational.
-    - If you do not know the answer based on the context, say so politely.
+    - If you do not know the answer, say so politely.
     
-    CRITICAL INSTRUCTION: You must strictly answer based ONLY on the provided context.
+    CRITICAL INSTRUCTION: Answer based ONLY on the provided context.
     
     PROVIDED CONTEXT:
-    ${context}
+    ${context || "No knowledge base content found."}
     
     CRITICAL RULES:
-    1. Keep answers SHORT (2 sentences max).
-    2. Be extremely helpful and direct.`;
+    1. Keep answers SHORT (1-2 sentences max) UNLESS you are navigating — navigation responses must include the [NAVIGATE:url] tag.
+    2. Be extremely helpful and direct.
+    3. NEVER hallucinate product data, prices, or URLs not found in the context.`;
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);
