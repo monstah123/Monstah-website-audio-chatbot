@@ -65,7 +65,7 @@ export default function KnowledgeManager() {
   return (
     <div className="knowledge-manager">
       <div className="km-header">
-        <h2>Train Peterson's Brain</h2>
+        <h2>Clone Your Knowledge Base</h2>
         <p>Upload documents, paste links, or type raw text to instantly expand the chatbot's knowledge base.</p>
       </div>
 
