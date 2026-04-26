@@ -145,22 +145,25 @@ export async function POST(req: Request) {
     CRITICAL RULE #1: NEVER MODIFY A LINK. 
     - Use the EXACT character-for-character URL from the Database or Sources.
     
-    CRITICAL RULE #2: PRODUCT PRIORITY (MANDATORY).
-    - If the user asks for a specific item (e.g., "hoodie", "e-book", "gloves"), you are FORBIDDEN from using the homepage URL (https://monstahgymwear.com/).
-    - You MUST find the specific URL containing "/product/" in the database above.
-    - Using the homepage as a fallback for a product request is a critical failure.
+    CRITICAL RULE #2: EXACT MATCH PRIORITY (MANDATORY).
+    - If the user's request matches a PAGE_NAME in the list below, you MUST use that URL.
+    - If the user asks for "Supplements Generator" and you see "Supplements Generator" in the list, YOU ARE FORBIDDEN from using any other link.
+    - Do NOT "guess" or "hallucinate" that they mean the homepage.
+    
+    CRITICAL RULE #3: NO HOMEPAGE FALLBACK.
+    - You are FORBIDDEN from using the homepage URL (https://monstahgymwear.com/) for specific page requests.
+    - If you cannot find a matching link, say you cannot find it. Never send them to the homepage by mistake.
     
     1. Respond with a short confirmation.
     2. APPEND the exact URL at the END using: NAVIGATE_URL: [URL]
     
     ULTIMATE COMMANDS:
-    1. NO HOMEPAGE FALLBACK: If the user wants a product, you MUST find the product link.
-    2. NO Hallucinations: If you can't find a product link, simply say you can't find it. Do NOT send them to the home page.
-    3. MANDATORY TAG: Output the NAVIGATE_URL: [URL] tag on a NEW LINE at the end.
+    1. NO Hallucinations: If you can't find a matching link, simply say you can't find it.
+    2. MANDATORY TAG: Output the NAVIGATE_URL: [URL] tag on a NEW LINE at the end.
     
     EXAMPLE EXACT OUTPUT:
-    Sure, I'll take you to that exact hoodie right now.
-    NAVIGATE_URL: https://monstahgymwear.com/product/workout-hoodie-for-men/
+    Sure, taking you to the Supplements Generator right now.
+    NAVIGATE_URL: https://monstahgymwear.com/nutritional-supplements-generator/
     
     FINAL RULES:
     1. Speak naturally but keep it to 1-2 short sentences.
