@@ -347,8 +347,8 @@ export default function VoiceChat({ uid }: { uid?: string }) {
       const navMatch = aiResponse.match(/NAVIGATE_URL[^\w]*(\S+)/i) || aiResponse.match(/REDIRECT_TO_ID[^\w]*(\S+)/i);
       if (navMatch) {
         let navId = navMatch[1].trim();
-        // Clean up trailing punctuation just in case
-        navId = navId.replace(/[.,!?\][ ]+$/, "");
+        // Clean up trailing punctuation (periods, commas, asterisks)
+        navId = navId.replace(/[.,*]+$/, "");
         
         aiResponse = aiResponse.replace(navMatch[0], "").trim();
         
