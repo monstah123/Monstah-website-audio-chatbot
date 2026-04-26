@@ -400,10 +400,25 @@ export default function VoiceChat({ uid }: { uid?: string }) {
           }
         }
 
-        if (isEmbedded) {
-          window.parent.postMessage({ type: 'redirect', url: urlToRedirect }, "*");
-        } else {
-          window.location.href = urlToRedirect;
+        // ── HOMEPAGE GUARD ──
+        // If the AI returned the root/homepage URL (e.g. https://monstahgymwear.com/)
+        // instead of a specific product page, abort the redirect entirely.
+        try {
+          const parsed = new URL(urlToRedirect);
+          if (parsed.pathname === '/' || parsed.pathname === '') {
+            console.warn('🚫 Blocked homepage redirect — AI should not redirect to root for a product query.');
+            urlToRedirect = ''; // kill it
+          }
+        } catch {
+          urlToRedirect = ''; // malformed URL — also kill it
+        }
+
+        if (urlToRedirect) {
+          if (isEmbedded) {
+            window.parent.postMessage({ type: 'redirect', url: urlToRedirect }, "*");
+          } else {
+            window.location.href = urlToRedirect;
+          }
         }
       }
     } catch (error) {
