@@ -125,35 +125,44 @@ export async function POST(req: Request) {
     // Save settings first
     await db.collection("users").doc(userId).set(updateData, { merge: true });
 
-    // BACKGROUND AUTO-TRAINING: Check if any new navigation links need training
+    // AUTO-TRAINING: Check if any new navigation links need training
     if (processedLinks.length > 0) {
-      // Trigger training in background (non-blocking for better UI response)
-      (async () => {
-        for (const link of processedLinks) {
-          try {
-            // 1. Check if we already have content for this URL
-            const existing = await db.collection("knowledge")
-              .where("userId", "==", userId)
-              .where("source", "==", link.url)
-              .limit(1)
-              .get();
+      console.log(`[Auto-Training] Checking ${processedLinks.length} links for userId: ${userId}`);
+      for (const link of processedLinks) {
+        try {
+          // 1. Check if we already have content for this URL
+          const existing = await db.collection("knowledge")
+            .where("userId", "==", userId)
+            .where("source", "==", link.url)
+            .limit(1)
+            .get();
 
-            if (existing.empty) {
-              console.log(`[Auto-Training] Learning new page: ${link.url}`);
+          if (existing.empty) {
+            console.log(`[Auto-Training] Learning new page: ${link.url}`);
+            
+            // 2. Scrape content with timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            
+            try {
+              const response = await fetch(link.url, { signal: controller.signal });
+              clearTimeout(timeoutId);
               
-              // 2. Scrape content
-              const response = await fetch(link.url);
-              if (!response.ok) continue;
+              if (!response.ok) {
+                console.warn(`[Auto-Training] Could not fetch ${link.url}: ${response.status}`);
+                continue;
+              }
+              
               const html = await response.text();
               const $ = cheerio.load(html);
-              $("script, style, noscript, nav, footer").remove();
+              $("script, style, noscript, nav, footer, iframe, header").remove();
               const content = $("body").text().replace(/\s+/g, " ").trim();
 
               if (content.length > 10) {
                 // 3. Generate Embedding
                 const embeddingResponse = await openai.embeddings.create({
                   model: "text-embedding-3-small",
-                  input: content.substring(0, 8000), // Safety cap for tokens
+                  input: content.substring(0, 8000), 
                 });
                 const vector = embeddingResponse.data[0].embedding;
 
@@ -161,21 +170,25 @@ export async function POST(req: Request) {
                 await db.collection("knowledge").add({
                   userId,
                   source: link.url,
-                  content: content.substring(0, 5000), // Just enough for context
+                  content: content.substring(0, 5000),
                   vector,
                   createdAt: new Date().toISOString(),
                 });
-                console.log(`[Auto-Training] Success: ${link.url}`);
+                console.log(`[Auto-Training] Successfully learned: ${link.url}`);
               }
+            } catch (fetchError: any) {
+              console.error(`[Auto-Training] Fetch error for ${link.url}:`, fetchError.message);
             }
-          } catch (e) {
-            console.error(`[Auto-Training] Failed for ${link.url}:`, e);
+          } else {
+            console.log(`[Auto-Training] Skipping already trained link: ${link.url}`);
           }
+        } catch (e) {
+          console.error(`[Auto-Training] Loop error for ${link.url}:`, e);
         }
-      })();
+      }
     }
 
-    return NextResponse.json({ success: true, message: "Settings saved & auto-training triggered!" });
+    return NextResponse.json({ success: true, message: "Settings saved & training complete!" });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
