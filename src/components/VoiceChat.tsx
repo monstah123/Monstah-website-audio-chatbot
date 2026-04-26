@@ -348,14 +348,17 @@ export default function VoiceChat({ uid }: { uid?: string }) {
       if (navMatch) {
         let navId = navMatch[1].trim();
         // Aggressively clean up trailing punctuation (strip everything except valid URL chars at the end)
-        navId = navId.replace(/[^a-zA-Z0-9/_-]+$/, "");
-        console.log("🛡️ Safety Shield - Cleaned URL:", navId);
+        navId = navId.replace(/[^a-zA-Z0-9/-]+$/, "");
+        const cleanNavId = navId.endsWith('/') ? navId.slice(0, -1) : navId;
         
+        // Remove the tag from the response text
         aiResponse = aiResponse.replace(navMatch[0], "").trim();
         
         // VALIDATE ALL REDIRECTS (Safety Shield)
-        // Check if the link exists in our database of known/trained links
-        const matchedLink = navigationLinks.find((l: any) => l.url === navId || l.url === navId + "/");
+        const matchedLink = navigationLinks.find((l: any) => {
+          const cleanLinkUrl = l.url.endsWith('/') ? l.url.slice(0, -1) : l.url;
+          return cleanLinkUrl === cleanNavId;
+        });
         
         if (matchedLink) {
           urlToRedirect = matchedLink.url;
