@@ -122,13 +122,10 @@ export async function POST(req: Request) {
     IDENTITY AND RULES:
     ${customSystemPrompt}
     
-    PRODUCT KNOWLEDGE & ALIASES:
-    - "E-Book" / "Nutrition Guide" = "Introduction to Nutrition for Competing Bodybuilders"
-    - "Wrist Straps" = "Monstah Lifting Wrist Straps"
-    - "Creatine" = "Monstah Performance Creatine Monohydrate"
-    - "Knee Wraps" = Any page containing "Knee Wraps"
-    
-    If the user asks for a product (like "knee wraps"), and you see a PAGE_NAME that contains those words (like "Monstah Heavy Duty Knee Wraps"), YOU MUST USE IT. Partial matches are correct.
+    UNIVERSAL PRODUCT MATCHING (MANDATORY):
+    - You must dynamically match what the user asks for to the PAGE_NAME in the database.
+    - If the user asks for a product (e.g., "knee wraps", "ebook", "dog food"), and you see a PAGE_NAME that contains those words (e.g., "Monstah Heavy Duty Knee Wraps", "Nutrition Ebook", "Premium Dog Food"), YOU MUST USE IT.
+    - Partial and fuzzy matches are correct. Do NOT fallback to the homepage if a partial match exists.
     
     VOICE OPTIMIZATION:
     - PLAIN TEXT ONLY. NO MARKDOWN.
