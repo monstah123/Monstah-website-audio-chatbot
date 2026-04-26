@@ -28,8 +28,11 @@
   
   (document.documentElement || document.body).appendChild(wrapper);
 
+  // Pass the current page origin to the iframe so it can build absolute URLs correctly
+  const pageOrigin = window.location.origin;
+
   const iframe = document.createElement('iframe');
-  iframe.src = `${VERCEL_URL}/widget?pos=${position}&uid=${uid}&v=${Date.now()}`; 
+  iframe.src = `${VERCEL_URL}/widget?pos=${position}&uid=${uid}&origin=${encodeURIComponent(pageOrigin)}&v=${Date.now()}`;
   iframe.style.cssText = `
     width: 100% !important;
     height: 100% !important;
@@ -53,7 +56,15 @@
         wrapper.style.height = '140px';
       }
     } else if (event.data.type === 'redirect') {
-      window.location.href = event.data.url;
+      let url = event.data.url;
+      // Safety net: resolve relative URLs against the current page origin
+      // This handles cases where the AI returns a path like /product/knee-wraps/
+      if (url && !url.startsWith('http')) {
+        url = window.location.origin + (url.startsWith('/') ? '' : '/') + url;
+      }
+      if (url) {
+        window.location.href = url;
+      }
     }
   });
 })();

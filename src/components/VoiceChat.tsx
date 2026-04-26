@@ -382,13 +382,20 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         // If running inside an iframe (embedded widget), notify the parent host page
         const isEmbedded = window.self !== window.top;
         
-        // Final fallback: if it's not a full URL (no http/https)
+        // Retrieve the parent page's origin that widget.js injected into the iframe src
+        const urlParams = new URLSearchParams(window.location.search);
+        const parentOrigin = urlParams.get('origin') ? decodeURIComponent(urlParams.get('origin')!) : null;
+
+        // Build the absolute URL using the parent page origin (not the iframe origin)
         if (!urlToRedirect.startsWith('http')) {
-          // If it looks like a domain (contains a dot and doesn't start with /)
           if (urlToRedirect.includes('.') && !urlToRedirect.startsWith('/')) {
+            // Looks like a bare domain e.g. "monstahgymwear.com/product/gloves"
             urlToRedirect = 'https://' + urlToRedirect;
+          } else if (isEmbedded && parentOrigin) {
+            // Relative path + embedded → use parent page origin
+            urlToRedirect = parentOrigin + (urlToRedirect.startsWith('/') ? '' : '/') + urlToRedirect;
           } else if (!isEmbedded) {
-            // Only prepend origin if NOT embedded (otherwise parent handles relative)
+            // Non-embedded fallback (direct Next.js page usage)
             urlToRedirect = window.location.origin + (urlToRedirect.startsWith('/') ? '' : '/') + urlToRedirect;
           }
         }
