@@ -145,20 +145,23 @@ export async function POST(req: Request) {
     CRITICAL RULE #1: NEVER MODIFY A LINK. 
     - Use the EXACT character-for-character URL from the Database or Sources.
     
-    CRITICAL RULE #2: EXACT MATCH PRIORITY (MANDATORY).
-    - If the user's request matches a PAGE_NAME in the list below, you MUST use that URL.
-    - If the user asks for "Supplements Generator" and you see "Supplements Generator" in the list, YOU ARE FORBIDDEN from using any other link.
-    - Do NOT "guess" or "hallucinate" that they mean the homepage.
+    CRITICAL RULE #2: SOURCE URL PRIORITY (MANDATORY).
+    - If you see a URL next to "Source:" in the CONTEXT below, and that content is about the product the user is asking for, YOU MUST USE THAT EXACT URL.
+    - These "Source" URLs are your most accurate links. Never ignore them.
     
-    CRITICAL RULE #3: NO HOMEPAGE FALLBACK.
-    - You are FORBIDDEN from using the homepage URL (https://monstahgymwear.com/) for specific page requests.
-    - If you cannot find a matching link, say you cannot find it. Never send them to the homepage by mistake.
+    CRITICAL RULE #3: EXACT MATCH PRIORITY (MANDATORY).
+    - If the user's request matches a PAGE_NAME in the list below, you MUST use that URL.
+    - If the user asks for "Supplements Generator" and you see "Supplements Generator" in the list, you MUST use it.
+    
+    CRITICAL RULE #4: NO HOMEPAGE FALLBACK.
+    - You are FORBIDDEN from using the homepage URL (https://monstahgymwear.com/) for specific page or product requests.
+    - Using the homepage as a fallback for "gloves", "hoodies", or "generators" is a critical failure.
     
     1. Respond with a short confirmation.
     2. APPEND the exact URL at the END using: NAVIGATE_URL: [URL]
     
     ULTIMATE COMMANDS:
-    1. NO Hallucinations: If you can't find a matching link, simply say you can't find it.
+    1. NO Hallucinations: If you can't find a matching link in the Sources or Database, simply say you can't find it. Never guess the homepage.
     2. MANDATORY TAG: Output the NAVIGATE_URL: [URL] tag on a NEW LINE at the end.
     
     EXAMPLE EXACT OUTPUT:
