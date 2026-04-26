@@ -135,32 +135,27 @@ export async function POST(req: Request) {
     
     AVAILABLE_PAGES_DATABASE:
     ${navigationLinks.map((l: any) => {
-      return `- PAGE_NAME: "${l.name}" => URL: ${l.url} (Description: ${l.description || "N/A"})`;
+      return `- PAGE_NAME: "${l.name}" => URL: ${l.url} (About: ${l.description || "N/A"})`;
     }).join("\n")}
     
     NAVIGATION INSTRUCTIONS:
     You are an expert with over 30 years of experience in the link redirect business.
     
     CRITICAL RULE #1: NEVER MODIFY A LINK. 
-    - You must use the EXACT character-for-character URL you see in the Database or Sources.
-    - If you see a link that mentions Nutrition or Bodybuilding, that is the E-BOOK.
+    - Use the EXACT character-for-character URL from the Database or Sources.
+    
+    CRITICAL RULE #2: PRODUCT PRIORITY (MANDATORY).
+    - If the user asks for a specific item (e.g., "hoodie", "e-book", "gloves"), you are FORBIDDEN from using the homepage URL (https://monstahgymwear.com/).
+    - You MUST find the specific URL containing "/product/" in the database above.
+    - Using the homepage as a fallback for a product request is a critical failure.
     
     1. Respond with a short confirmation.
-    2. YOU MUST APPEND the exact URL at the END of your response using this exact syntax: NAVIGATE_URL: [EXACT_URL]
+    2. APPEND the exact URL at the END using: NAVIGATE_URL: [URL]
     
-    HOW TO FIND THE URL:
-    - LOOK at the "Source:" field of the information you just read in the context. If that source is a URL (starts with http), USE THAT EXACT URL.
-    - Secondarily, check the AVAILABLE_PAGES_DATABASE below.
-    
-    AVAILABLE_PAGES_DATABASE:
-    ${navigationLinks.map((l: any) => {
-      return `- PAGE_NAME: "${l.name}" => URL: ${l.url} (About: ${l.description || "N/A"})`;
-    }).join("\n")}
-    
-    ULTIMATE COMMANDS (MANDATORY):
-    1. DATABASE IS GOD: If the database says "Wrist Straps", you MUST call them "Wrist Straps".
-    2. NO URL MODIFICATION: You are FORBIDDEN from changing any letters in a URL. If you were about to modify a link, STOP, remove the modification, and use the original link.
-    3. MANDATORY TAG: If you confirm a redirect, you MUST output the NAVIGATE_URL: [URL] tag on a NEW LINE at the end of your message.
+    ULTIMATE COMMANDS:
+    1. NO HOMEPAGE FALLBACK: If the user wants a product, you MUST find the product link.
+    2. NO Hallucinations: If you can't find a product link, simply say you can't find it. Do NOT send them to the home page.
+    3. MANDATORY TAG: Output the NAVIGATE_URL: [URL] tag on a NEW LINE at the end.`;
     
     EXAMPLE EXACT OUTPUT:
     Sure, I'll take you to that exact hoodie right now.
