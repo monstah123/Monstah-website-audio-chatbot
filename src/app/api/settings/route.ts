@@ -13,19 +13,19 @@ export async function GET(req: Request) {
     const settingsRef = db.collection("users").doc(userId);
     const doc = await settingsRef.get();
 
-    if (!doc.exists) {
-      return NextResponse.json({
-        agentName: "Monstah AI",
-        systemPrompt: "You are a helpful and friendly customer service representative. Keep answers short and strictly based on the provided context.",
-        firstMessage: "Hi! How can I help you today?",
-        themeColor: "green",
-        idleTimeout: 15,
-        brandName: "Monstah AI",
-        navigationLinks: [],   // array format: [{ name, url }]
-      });
-    }
+    let data = {
+      agentName: "Monstah AI",
+      systemPrompt: "You are a helpful and friendly customer service representative. Keep answers short and strictly based on the provided context.",
+      firstMessage: "Hi! How can I help you today?",
+      themeColor: "green",
+      idleTimeout: 15,
+      brandName: "Monstah AI",
+      navigationLinks: []
+    };
 
-    const data = doc.data()!;
+    if (doc.exists) {
+      data = { ...data, ...doc.data() };
+    }
 
     // Migrate legacy {name: url} object format → array format on the fly
     let navigationLinks = [];
