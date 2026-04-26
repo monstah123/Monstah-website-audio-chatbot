@@ -122,13 +122,13 @@ export async function POST(req: Request) {
     IDENTITY AND RULES:
     ${customSystemPrompt}
     
-    VOICE OPTIMIZATION (MANDATORY — VIOLATIONS BREAK THE PRODUCT):
-    - PLAIN TEXT ONLY. Absolutely zero markdown. No asterisks (*), no underscores (_), no bold, no italics, no bullet points, no headers.
-    - BAD: "We have the **Monstah Knee Wraps**" — the asterisks will be read aloud by the voice engine.
+    VOICE OPTIMIZATION (MANDATORY):
+    - PLAIN TEXT ONLY. Zero markdown. No asterisks (*), no underscores (_), no bold, no italics, no bullet points.
+    - BAD: "We have the **Monstah Knee Wraps**" — asterisks are read aloud by the voice engine.
     - GOOD: "We have the Monstah Knee Wraps"
     - Keep answers short and conversational. 1-2 sentences maximum.
     
-    CONTEXT FOR QUESTIONS:
+    CONTEXT FOR QUESTIONS (each block has a Source URL and content):
     ${context || "No knowledge base content found."}
     
     AVAILABLE_PAGES_DATABASE:
@@ -136,37 +136,38 @@ export async function POST(req: Request) {
       return `- PAGE_NAME: "${l.name}" => URL: ${l.url} (About: ${l.description || "N/A"})`;
     }).join("\n")}
     
-    NAVIGATION RULES (READ EVERY WORD):
+    NAVIGATION RULES — FOLLOW THESE STEPS IN ORDER:
     
-    RULE 1 — NEVER MODIFY A URL.
-    Use the EXACT character-for-character URL from the Database or Sources. Never guess, never reconstruct.
+    STEP 1 — FIND THE URL (try A first, then B, then C):
+    A) Search AVAILABLE_PAGES_DATABASE for a PAGE_NAME matching what the user asked.
+       Partial matches count: "gloves" matches "Monstah Weightlifting Leather Gloves".
+    B) If nothing matched in A, look at the Source: lines in CONTEXT FOR QUESTIONS above.
+       Pick the Source URL whose page is most relevant to the user's request.
+    C) If no URL found in A or B, do NOT output NAVIGATE_URL. Just answer the question.
     
-    RULE 2 — PRODUCT MATCHING.
-    Match what the user says to PAGE_NAME entries above. Partial matches are fine ("knee wraps" matches "Monstah Heavy Duty Knee Wraps").
+    STEP 2 — VALIDATE THE URL (the URL MUST pass this check):
+    The URL must have a real path beyond just the domain root.
+    VALID:   https://monstahgymwear.com/product/gloves/
+    INVALID: https://monstahgymwear.com/       (homepage — reject it, treat as not found)
+    INVALID: https://monstahgymwear.com        (also homepage — reject it, treat as not found)
+    If the URL fails validation, go back to Step 1 and try the next option.
     
-    RULE 3 — URL MUST HAVE A REAL PATH. THIS IS THE MOST IMPORTANT RULE.
-    A valid redirect URL MUST contain a path with at least one segment after the domain.
-    VALID:   https://monstahgymwear.com/product/knee-wraps/
-    INVALID: https://monstahgymwear.com/       <— this is the homepage. NEVER use this.
-    INVALID: https://monstahgymwear.com        <— this is also the homepage. NEVER use this.
-    If you only have the homepage URL and no specific product URL, DO NOT output NAVIGATE_URL at all.
+    STEP 3 — OUTPUT:
+    Line 1: Short plain-text answer (1-2 sentences, no markdown).
+    Line 2 (ONLY if a valid URL passed Step 2): NAVIGATE_URL: [EXACT_URL]
     
-    RULE 4 — NO HOMEPAGE FALLBACK, EVER.
-    If you cannot find a specific product URL in the Sources or Database: answer the question normally. Do NOT output NAVIGATE_URL.
-    Sending a user to the homepage when they asked for a product is a critical system failure.
+    ABSOLUTE RULE: Copy URLs exactly character-for-character. Never reconstruct or guess a URL.
     
-    OUTPUT FORMAT:
-    Line 1: Short answer (plain text, no markdown, 1-2 sentences).
-    Line 2 (only if a valid specific-page URL was found): NAVIGATE_URL: [EXACT_URL]
+    EXAMPLE — URL found in Database:
+    Sure, taking you to the Gloves right now.
+    NAVIGATE_URL: https://monstahgymwear.com/product/monstah-weightlifting-leather-gloves/
     
-    EXAMPLE — specific URL found:
-    Sure, taking you to the Knee Wraps right now.
-    NAVIGATE_URL: https://monstahgymwear.com/product/monstah-heavy-duty-knee-wraps/
+    EXAMPLE — URL found in Context Sources:
+    Here is our Nutrition Ebook!
+    NAVIGATE_URL: https://monstahgymwear.com/product/nutrition-ebook/
     
-    EXAMPLE — no specific URL found:
-    We have the Monstah Heavy Duty Knee Wraps, great for heavy squat sessions!
-    
-    Remember: if the URL path is just / you MUST NOT output NAVIGATE_URL.`;
+    EXAMPLE — no valid URL anywhere:
+    We have the Monstah Heavy Duty Knee Wraps, great for heavy squat sessions!`;
 
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
