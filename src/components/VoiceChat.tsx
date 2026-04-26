@@ -347,19 +347,32 @@ export default function VoiceChat({ uid }: { uid?: string }) {
       const navMatch = aiResponse.match(/NAVIGATE_URL[^\w]*(\S+)/i) || aiResponse.match(/REDIRECT_TO_ID[^\w]*(\S+)/i);
       if (navMatch) {
         let navId = navMatch[1].trim();
-        // Aggressively clean up trailing punctuation (strip everything except valid URL chars at the end)
-        navId = navId.replace(/[^a-zA-Z0-9/-]+$/, "");
-        
+        // Aggressively clean up trailing punctuation
+        navId = navId.replace(/[^a-zA-Z0-9/_.~:?#@!$&'()*+,;=%-]+$/, "");
+
         // Remove the tag from the response text
         aiResponse = aiResponse.replace(navMatch[0], "").trim();
-        
-        // DIRECT REDIRECT (No shield)
+
+        // ── HOMEPAGE GUARD (runs BEFORE adding any UI text) ──
+        // If the AI returned only a root/homepage URL, kill the redirect now
+        // so we never show a "Redirecting to: homepage" message in the chat.
+        try {
+          const testUrl = navId.startsWith('http') ? navId : 'https://' + navId;
+          const parsed = new URL(testUrl);
+          if (parsed.pathname === '/' || parsed.pathname === '') {
+            console.warn('🚫 Blocked homepage redirect — dropping NAVIGATE_URL silently.');
+            navId = ''; // kill it before it touches the UI
+          }
+        } catch {
+          navId = ''; // malformed URL — also kill silently
+        }
+
         urlToRedirect = navId;
 
         if (urlToRedirect) {
           console.log("🚀 Redirecting to:", urlToRedirect);
-          // Visual feedback in the chat window
-          aiResponse += `\n\n*(Redirecting to: ${urlToRedirect})*`;
+          // Visual feedback only for valid product-page URLs
+          aiResponse += `\n\n*(Redirecting you now...)*`;
         }
 
         // Final UI update
