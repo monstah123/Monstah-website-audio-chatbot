@@ -155,7 +155,7 @@ export async function POST(req: Request) {
     ULTIMATE COMMANDS:
     1. NO HOMEPAGE FALLBACK: If the user wants a product, you MUST find the product link.
     2. NO Hallucinations: If you can't find a product link, simply say you can't find it. Do NOT send them to the home page.
-    3. MANDATORY TAG: Output the NAVIGATE_URL: [URL] tag on a NEW LINE at the end.`;
+    3. MANDATORY TAG: Output the NAVIGATE_URL: [URL] tag on a NEW LINE at the end.
     
     EXAMPLE EXACT OUTPUT:
     Sure, I'll take you to that exact hoodie right now.
