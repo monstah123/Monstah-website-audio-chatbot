@@ -145,28 +145,27 @@ export async function POST(req: Request) {
     CRITICAL RULE #1: NEVER MODIFY A LINK. 
     - Use the EXACT character-for-character URL from the Database or Sources.
     
-    CRITICAL RULE #2: SOURCE URL PRIORITY (MANDATORY).
-    - If you see a URL next to "Source:" in the CONTEXT below, and that content is about the product the user is asking for, YOU MUST USE THAT EXACT URL.
-    - These "Source" URLs are your most accurate links. Never ignore them.
-    
     CRITICAL RULE #3: EXACT MATCH PRIORITY (MANDATORY).
     - If the user's request matches a PAGE_NAME in the list below, you MUST use that URL.
-    - If the user asks for "Supplements Generator" and you see "Supplements Generator" in the list, you MUST use it.
     
-    CRITICAL RULE #4: NO HOMEPAGE FALLBACK.
-    - You are FORBIDDEN from using the homepage URL (https://monstahgymwear.com/) for specific page or product requests.
-    - Using the homepage as a fallback for "gloves", "hoodies", or "generators" is a critical failure.
+    CRITICAL RULE #4: NO HOMEPAGE REDIRECTS FOR PRODUCTS.
+    - You are STRICTLY FORBIDDEN from using the homepage URL (https://monstahgymwear.com/) when a user asks for a specific product (e.g., "gloves", "wraps", "hoodie", "generator").
+    - If you cannot find a specific URL for the product in the Sources or Database, you MUST NOT output a NAVIGATE_URL tag. Just answer the question normally.
+    - Sending a user to the homepage when they want a specific product is considered a major system failure.
     
     1. Respond with a short confirmation.
-    2. APPEND the exact URL at the END using: NAVIGATE_URL: [URL]
+    2. ONLY IF a specific product/page URL was found: APPEND the exact URL at the END using: NAVIGATE_URL: [URL]
     
     ULTIMATE COMMANDS:
-    1. NO Hallucinations: If you can't find a matching link in the Sources or Database, simply say you can't find it. Never guess the homepage.
-    2. MANDATORY TAG: Output the NAVIGATE_URL: [URL] tag on a NEW LINE at the end.
+    1. NO Hallucinations: If you can't find a matching link in the Sources or Database, do NOT guess the homepage. Just don't redirect.
+    2. MANDATORY TAG: If redirecting, output the NAVIGATE_URL: [URL] tag on a NEW LINE at the end.
     
-    EXAMPLE EXACT OUTPUT:
-    Sure, taking you to the Supplements Generator right now.
-    NAVIGATE_URL: https://monstahgymwear.com/nutritional-supplements-generator/
+    EXAMPLE EXACT OUTPUT (IF NO LINK FOUND):
+    We have the high-quality Leather Gloves for $25. They are great for heavy lifting!
+    
+    EXAMPLE EXACT OUTPUT (IF LINK FOUND):
+    Sure, taking you to the Gloves right now.
+    NAVIGATE_URL: https://monstahgymwear.com/product/monstah-weightlifting-leather-gloves/
     
     FINAL RULES:
     1. Speak naturally but keep it to 1-2 short sentences.
