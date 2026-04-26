@@ -122,9 +122,10 @@ export async function POST(req: Request) {
     IDENTITY AND RULES:
     ${customSystemPrompt}
     
-    PRODUCT KNOWLEDGE:
-    - The product "Introduction to Nutrition for Competing Bodybuilders" is an E-BOOK. 
-    - If a user asks for an "e-book" or "nutrition guide", you MUST take them to that page.
+    PRODUCT KNOWLEDGE & ALIASES:
+    - "E-Book" / "Nutrition Guide" = "Introduction to Nutrition for Competing Bodybuilders"
+    - "Wrist Straps" = "Monstah Lifting Wrist Straps"
+    - "Creatine" = "Monstah Performance Creatine Monohydrate"
     
     VOICE OPTIMIZATION:
     - PLAIN TEXT ONLY. NO MARKDOWN.
