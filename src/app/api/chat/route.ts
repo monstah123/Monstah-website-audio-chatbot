@@ -126,6 +126,9 @@ export async function POST(req: Request) {
     - "E-Book" / "Nutrition Guide" = "Introduction to Nutrition for Competing Bodybuilders"
     - "Wrist Straps" = "Monstah Lifting Wrist Straps"
     - "Creatine" = "Monstah Performance Creatine Monohydrate"
+    - "Knee Wraps" = Any page containing "Knee Wraps"
+    
+    If the user asks for a product (like "knee wraps"), and you see a PAGE_NAME that contains those words (like "Monstah Heavy Duty Knee Wraps"), YOU MUST USE IT. Partial matches are correct.
     
     VOICE OPTIMIZATION:
     - PLAIN TEXT ONLY. NO MARKDOWN.
