@@ -127,7 +127,7 @@ export async function POST(req: Request) {
 
     // AUTO-TRAINING: Check if any new navigation links need training
     if (processedLinks.length > 0) {
-      console.log(`[Auto-Training] Checking ${processedLinks.length} links for userId: ${userId}`);
+      console.log(`[Auto-Training] Processing ${processedLinks.length} links for userId: ${userId}`);
       for (const link of processedLinks) {
         try {
           // 1. Check if we already have content for this URL
@@ -138,52 +138,72 @@ export async function POST(req: Request) {
             .get();
 
           if (existing.empty) {
-            console.log(`[Auto-Training] Learning new page: ${link.url}`);
+            console.log(`[Auto-Training] Hardened Learning: ${link.url}`);
             
-            // 2. Scrape content with timeout
+            // 2. Scrape content with Chrome-like User-Agent (to bypass WAF/Cloudflare)
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
             
             try {
-              const response = await fetch(link.url, { signal: controller.signal });
+              const response = await fetch(link.url, { 
+                signal: controller.signal,
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                  'Accept-Language': 'en-US,en;q=0.9',
+                }
+              });
               clearTimeout(timeoutId);
               
               if (!response.ok) {
-                console.warn(`[Auto-Training] Could not fetch ${link.url}: ${response.status}`);
+                console.warn(`[Auto-Training] HTTP Error ${response.status} for ${link.url}`);
                 continue;
               }
               
               const html = await response.text();
               const $ = cheerio.load(html);
-              $("script, style, noscript, nav, footer, iframe, header").remove();
-              const content = $("body").text().replace(/\s+/g, " ").trim();
+              
+              // 3. Aggressive Content Cleaning
+              $("script, style, noscript, nav, footer, iframe, header, aside, .ads, .sidebar, .menu").remove();
+              let fullContent = $("body").text().replace(/\s+/g, " ").trim();
 
-              if (content.length > 10) {
-                // 3. Generate Embedding
-                const embeddingResponse = await openai.embeddings.create({
-                  model: "text-embedding-3-small",
-                  input: content.substring(0, 8000), 
-                });
-                const vector = embeddingResponse.data[0].embedding;
+              if (fullContent.length > 10) {
+                // 4. Industrial-Grade Chunking (Handle massive pages without crashing OpenAI)
+                const chunkSize = 4000; // Character count per chunk
+                const chunks = [];
+                for (let i = 0; i < fullContent.length; i += chunkSize) {
+                  chunks.push(fullContent.slice(i, i + chunkSize));
+                }
 
-                // 4. Store in knowledge base
-                await db.collection("knowledge").add({
-                  userId,
-                  source: link.url,
-                  content: content.substring(0, 5000),
-                  vector,
-                  createdAt: new Date().toISOString(),
-                });
-                console.log(`[Auto-Training] Successfully learned: ${link.url}`);
+                console.log(`[Auto-Training] Found ${chunks.length} chunks for ${link.url}`);
+
+                for (const [index, chunk] of chunks.entries()) {
+                  // 5. Generate Embedding per chunk
+                  const embeddingResponse = await openai.embeddings.create({
+                    model: "text-embedding-3-small",
+                    input: chunk, 
+                  });
+                  const vector = embeddingResponse.data[0].embedding;
+
+                  // 6. Store in knowledge base
+                  await db.collection("knowledge").add({
+                    userId,
+                    source: link.url,
+                    content: chunk,
+                    vector,
+                    createdAt: new Date().toISOString(),
+                    chunkIndex: index,
+                    totalChunks: chunks.length
+                  });
+                }
+                console.log(`[Auto-Training] Fully Learned: ${link.url}`);
               }
             } catch (fetchError: any) {
-              console.error(`[Auto-Training] Fetch error for ${link.url}:`, fetchError.message);
+              console.error(`[Auto-Training] Scrape Failure for ${link.url}:`, fetchError.message);
             }
-          } else {
-            console.log(`[Auto-Training] Skipping already trained link: ${link.url}`);
           }
         } catch (e) {
-          console.error(`[Auto-Training] Loop error for ${link.url}:`, e);
+          console.error(`[Auto-Training] Master Loop Error for ${link.url}:`, e);
         }
       }
     }
