@@ -41,8 +41,6 @@ export async function GET(req: Request) {
     try {
       const knowledgeSnapshot = await db.collection("knowledge")
         .where("userId", "==", userId)
-        .where("source", ">=", "http")
-        .where("source", "<=", "http\uf8ff")
         .limit(500) // Scan more docs to find all product pages
         .get();
 
