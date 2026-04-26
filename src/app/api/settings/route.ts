@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase-admin";
+import { OpenAI } from "openai";
+import * as cheerio from "cheerio";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export async function GET(req: Request) {
   try {
@@ -102,10 +108,12 @@ export async function POST(req: Request) {
     if (lastTrainedUrl !== undefined) updateData.lastTrainedUrl = lastTrainedUrl;
     if (brandName !== undefined) updateData.brandName = brandName || "Monstah AI";
     
+    let processedLinks = [];
     if (navigationLinks !== undefined) {
-      updateData.navigationLinks = Array.isArray(navigationLinks)
+      processedLinks = Array.isArray(navigationLinks)
         ? navigationLinks.filter((l: any) => l.name?.trim() && l.url?.trim())
         : [];
+      updateData.navigationLinks = processedLinks;
     }
 
     if (quickLinks !== undefined) {
@@ -114,9 +122,60 @@ export async function POST(req: Request) {
         : [];
     }
 
+    // Save settings first
     await db.collection("users").doc(userId).set(updateData, { merge: true });
 
-    return NextResponse.json({ success: true, message: "Settings saved successfully!" });
+    // BACKGROUND AUTO-TRAINING: Check if any new navigation links need training
+    if (processedLinks.length > 0) {
+      // Trigger training in background (non-blocking for better UI response)
+      (async () => {
+        for (const link of processedLinks) {
+          try {
+            // 1. Check if we already have content for this URL
+            const existing = await db.collection("knowledge")
+              .where("userId", "==", userId)
+              .where("source", "==", link.url)
+              .limit(1)
+              .get();
+
+            if (existing.empty) {
+              console.log(`[Auto-Training] Learning new page: ${link.url}`);
+              
+              // 2. Scrape content
+              const response = await fetch(link.url);
+              if (!response.ok) continue;
+              const html = await response.text();
+              const $ = cheerio.load(html);
+              $("script, style, noscript, nav, footer").remove();
+              const content = $("body").text().replace(/\s+/g, " ").trim();
+
+              if (content.length > 10) {
+                // 3. Generate Embedding
+                const embeddingResponse = await openai.embeddings.create({
+                  model: "text-embedding-3-small",
+                  input: content.substring(0, 8000), // Safety cap for tokens
+                });
+                const vector = embeddingResponse.data[0].embedding;
+
+                // 4. Store in knowledge base
+                await db.collection("knowledge").add({
+                  userId,
+                  source: link.url,
+                  content: content.substring(0, 5000), // Just enough for context
+                  vector,
+                  createdAt: new Date().toISOString(),
+                });
+                console.log(`[Auto-Training] Success: ${link.url}`);
+              }
+            }
+          } catch (e) {
+            console.error(`[Auto-Training] Failed for ${link.url}:`, e);
+          }
+        }
+      })();
+    }
+
+    return NextResponse.json({ success: true, message: "Settings saved & auto-training triggered!" });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
