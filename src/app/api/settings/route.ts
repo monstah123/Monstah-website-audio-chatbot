@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     }
 
     // Migrate legacy {name: url} object format → array format on the fly
-    let navigationLinks = [];
+    let navigationLinks: any[] = [];
     if (data.navigationLinks && !Array.isArray(data.navigationLinks)) {
       navigationLinks = Object.entries(data.navigationLinks).map(
         ([name, url]) => ({ name, url: url as string })
