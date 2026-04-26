@@ -377,7 +377,9 @@ export default function VoiceChat({ uid }: { uid?: string }) {
           aiResponse += `\n\n*(Redirecting to: ${urlToRedirect})*`;
         } else {
           console.error("Blocked hallucinated/unknown link:", navId);
-          aiResponse += `\n\n*(System Shield: Blocked unauthorized link: ${navId}. Only trained links are allowed.)*`;
+          console.log("Approved Links Count:", navigationLinks.length);
+          const approvedSample = navigationLinks.slice(0, 3).map((l: any) => l.url).join(", ");
+          aiResponse += `\n\n*(System Shield: Blocked unauthorized link: ${navId}. Found ${navigationLinks.length} approved links in database. Sample: ${approvedSample || "NONE"})*`;
         }
 
         // Final UI update
