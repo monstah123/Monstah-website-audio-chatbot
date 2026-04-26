@@ -349,37 +349,17 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         let navId = navMatch[1].trim();
         // Aggressively clean up trailing punctuation (strip everything except valid URL chars at the end)
         navId = navId.replace(/[^a-zA-Z0-9/-]+$/, "");
-        const cleanNavId = navId.endsWith('/') ? navId.slice(0, -1) : navId;
         
         // Remove the tag from the response text
         aiResponse = aiResponse.replace(navMatch[0], "").trim();
         
-        // VALIDATE ALL REDIRECTS (Safety Shield)
-        const matchedLink = navigationLinks.find((l: any) => {
-          const cleanLinkUrl = l.url.endsWith('/') ? l.url.slice(0, -1) : l.url;
-          return cleanLinkUrl === cleanNavId;
-        });
-        
-        if (matchedLink) {
-          urlToRedirect = matchedLink.url;
-        } else if (navId.startsWith("LINK_") || navId.startsWith("PAGE_")) {
-          // Fallback for manual index-based IDs
-          const indexStr = navId.replace("LINK_", "").replace("PAGE_", "");
-          const index = parseInt(indexStr);
-          if (!isNaN(index) && navigationLinks[index]) {
-            urlToRedirect = navigationLinks[index].url;
-          }
-        }
+        // DIRECT REDIRECT (No shield)
+        urlToRedirect = navId;
 
         if (urlToRedirect) {
-          console.log("🚀 Redirecting to verified URL:", urlToRedirect);
+          console.log("🚀 Redirecting to:", urlToRedirect);
           // Visual feedback in the chat window
           aiResponse += `\n\n*(Redirecting to: ${urlToRedirect})*`;
-        } else {
-          console.error("Blocked hallucinated/unknown link:", navId);
-          console.log("Approved Links Count:", navigationLinks.length);
-          const approvedSample = navigationLinks.slice(0, 3).map((l: any) => l.url).join(", ");
-          aiResponse += `\n\n*(System Shield: Blocked unauthorized link: ${navId}. Found ${navigationLinks.length} approved links in database. Sample: ${approvedSample || "NONE"})*`;
         }
 
         // Final UI update
