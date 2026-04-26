@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { auth } from "@/lib/firebase-client";
 import { Save, Loader2, Bot, MessageSquare, Lock, Unlock, RefreshCw } from "lucide-react";
 
@@ -22,6 +22,9 @@ export default function AgentSettings() {
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [trainingStates, setTrainingStates] = useState<Record<number, boolean>>({});
   const [isBulkTraining, setIsBulkTraining] = useState(false);
+  const [autoTrainStatus, setAutoTrainStatus] = useState<string | null>(null);
+  // Track URLs already in Firestore so we only auto-train NEW ones on save
+  const trainedUrlsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -43,13 +46,15 @@ export default function AgentSettings() {
           // Convert the saved {name: url} map back to array for the UI
             if (data.navigationLinks) {
               // Support both array format and legacy {name:url} object
+              let loaded: { name: string; url: string }[] = [];
               if (Array.isArray(data.navigationLinks)) {
-                setNavigationLinks(data.navigationLinks);
+                loaded = data.navigationLinks;
               } else {
-                setNavigationLinks(
-                  Object.entries(data.navigationLinks).map(([name, url]) => ({ name, url: url as string }))
-                );
+                loaded = Object.entries(data.navigationLinks).map(([name, url]) => ({ name, url: url as string }));
               }
+              setNavigationLinks(loaded);
+              // Mark all existing URLs as already trained
+              trainedUrlsRef.current = new Set(loaded.map(l => l.url.trim()).filter(Boolean));
             }
             if (data.lastTrainedUrl) {
               setWebsiteUrl(data.lastTrainedUrl);
@@ -96,6 +101,31 @@ export default function AgentSettings() {
 
       setStatus({ type: "success", message: "Agent Settings Saved!" });
       setTimeout(() => setStatus(null), 3000);
+
+      // ── Auto-train any NEW navigation link URLs (same as Clone Your Knowledge Base) ──
+      const newUrls = navigationLinks
+        .map(l => l.url.trim())
+        .filter(url => url && url.startsWith('http') && !trainedUrlsRef.current.has(url));
+
+      if (newUrls.length > 0) {
+        setAutoTrainStatus(`🧠 Auto-training ${newUrls.length} new page${newUrls.length > 1 ? 's' : ''}...`);
+        let trained = 0;
+        for (const url of newUrls) {
+          try {
+            const formData = new FormData();
+            formData.append("type", "url");
+            formData.append("url", url);
+            formData.append("userId", auth.currentUser!.uid);
+            const r = await fetch('/api/ingest', { method: 'POST', body: formData });
+            if (r.ok) {
+              trainedUrlsRef.current.add(url); // mark as trained so re-saves skip it
+              trained++;
+            }
+          } catch {}
+        }
+        setAutoTrainStatus(`✅ Auto-trained ${trained} of ${newUrls.length} new page${newUrls.length > 1 ? 's' : ''}!`);
+        setTimeout(() => setAutoTrainStatus(null), 4000);
+      }
     } catch (e: any) {
       setStatus({ type: "error", message: e.message });
     } finally {
@@ -523,6 +553,13 @@ export default function AgentSettings() {
       {status && (
         <div className={`status-message ${status.type}`}>
           {status.message}
+        </div>
+      )}
+
+      {autoTrainStatus && (
+        <div className="status-message success" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {autoTrainStatus.startsWith('🧠') && <Loader2 size={14} className="spin" />}
+          {autoTrainStatus}
         </div>
       )}
 
