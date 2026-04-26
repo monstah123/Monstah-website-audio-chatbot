@@ -62,7 +62,7 @@ export async function POST(req: Request) {
         // 1. DYNAMIC SITE MAP DISCOVERY (Fetch a massive range to find EVERY link)
         const sitemapSnapshot = await db.collection("knowledge")
           .where("userId", "==", userId)
-          .limit(1000) // Fetch enough to find all unique URLs
+          .limit(5000) // Fetch enough to find all unique URLs
           .get();
 
         sitemapSnapshot.forEach(doc => {

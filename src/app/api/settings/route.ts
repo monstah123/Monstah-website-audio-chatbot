@@ -41,7 +41,7 @@ export async function GET(req: Request) {
     try {
       const knowledgeSnapshot = await db.collection("knowledge")
         .where("userId", "==", userId)
-        .limit(500) // Scan more docs to find all product pages
+        .limit(5000) // Scan up to 5000 docs to ensure no product pages are missed
         .get();
 
       knowledgeSnapshot.forEach((doc: any) => {
