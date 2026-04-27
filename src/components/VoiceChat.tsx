@@ -575,13 +575,22 @@ export default function VoiceChat({ uid }: { uid?: string }) {
             <audio ref={audioRef} style={{ display: 'none' }} playsInline />
             
             <div className="chat-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {logoUrl ? (
-                  <img src={logoUrl} alt="Logo" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
-                ) : (
-                  <div className="status-dot" />
-                )}
-                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>{brandName.toUpperCase()}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'contain', background: 'rgba(255,255,255,0.05)', padding: '2px' }} />
+                  ) : (
+                    <div className="status-dot" style={{ width: '12px', height: '12px' }} />
+                  )}
+                  {logoUrl && <div className="status-dot" style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '10px', height: '10px', border: '2px solid #1a1a1c' }} />}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, letterSpacing: '0.5px', color: '#fff' }}>{brandName.toUpperCase()}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {!logoUrl && <span style={{ fontSize: '0.7rem', color: 'var(--theme-primary)', fontWeight: 600 }}>Active Now</span>}
+                    {logoUrl && <span style={{ fontSize: '0.65rem', color: 'var(--theme-primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Online</span>}
+                  </div>
+                </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button onClick={() => setShowHistory(!showHistory)} className="header-icon-btn" title="History">

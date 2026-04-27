@@ -245,28 +245,24 @@ export default function AgentSettings() {
                   const file = e.target.files?.[0];
                   if (!file) return;
                   
-                  setIsUploading(true);
-                  const formData = new FormData();
-                  formData.append("file", file);
-                  formData.append("userId", auth.currentUser.uid);
-                  
-                  try {
-                    const res = await fetch("/api/settings/logo", {
-                      method: "POST",
-                      body: formData
-                    });
-                    const data = await res.json();
-                    if (data.logoUrl) {
-                      setLogoUrl(data.logoUrl);
-                      setStatus({ type: "success", message: "Logo uploaded! Remember to click Save Agent below." });
-                    } else {
-                      throw new Error(data.error);
-                    }
-                  } catch (err: any) {
-                    setStatus({ type: "error", message: err.message });
-                  } finally {
-                    setIsUploading(false);
+                  if (file.size > 500 * 1024) { // 500KB limit
+                    setStatus({ type: "error", message: "Logo too large. Please use an image under 500KB." });
+                    return;
                   }
+
+                  setIsUploading(true);
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    const base64String = reader.result as string;
+                    setLogoUrl(base64String);
+                    setIsUploading(false);
+                    setStatus({ type: "success", message: "Logo ready! Click Save Agent below." });
+                  };
+                  reader.onerror = () => {
+                    setStatus({ type: "error", message: "Failed to read file." });
+                    setIsUploading(false);
+                  };
+                  reader.readAsDataURL(file);
                 }} 
               />
             </div>
