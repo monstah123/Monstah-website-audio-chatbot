@@ -578,14 +578,14 @@ export default function VoiceChat({ uid }: { uid?: string }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   {logoUrl ? (
-                    <img src={logoUrl} alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'contain', background: 'rgba(255,255,255,0.05)', padding: '2px' }} />
+                    <img src={logoUrl} alt="Logo" style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'contain', background: 'rgba(255,255,255,0.05)', padding: '2px' }} />
                   ) : (
                     <div className="status-dot" style={{ width: '12px', height: '12px' }} />
                   )}
-                  {logoUrl && <div className="status-dot" style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '10px', height: '10px', border: '2px solid #1a1a1c' }} />}
+                  {logoUrl && <div className="status-dot" style={{ position: 'absolute', bottom: '-1px', right: '-1px', width: '11px', height: '11px', border: '2px solid #1a1a1c' }} />}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, letterSpacing: '0.5px', color: '#fff' }}>{brandName.toUpperCase()}</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, letterSpacing: '0.5px', color: '#fff' }}>{brandName.toUpperCase()}</h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {!logoUrl && <span style={{ fontSize: '0.7rem', color: 'var(--theme-primary)', fontWeight: 600 }}>Active Now</span>}
                     {logoUrl && <span style={{ fontSize: '0.65rem', color: 'var(--theme-primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Online</span>}
@@ -892,7 +892,7 @@ export default function VoiceChat({ uid }: { uid?: string }) {
 
         .chat-window {
           display: grid;
-          grid-template-rows: 60px 1fr 75px; /* RIGID GRID */
+          grid-template-rows: 70px 1fr 75px; /* RIGID GRID */
           width: 100%;
           height: 100%;
           background: #0d0d0f !important;
