@@ -147,14 +147,14 @@ export default function Home() {
             "Custom Agent Name & Brand Identity",
             "7 premium widget color themes",
             "Configurable idle mic timeout",
-            "Page navigation integration",
+            "Customizable Voice Clarity Controls",
+            "Intelligent Speech Debouncer Engine",
+            "Page navigation URL integration",
             "White-label brand name (Pro unlock)",
-            "AWS S3 document storage",
-            "Firebase vector knowledge base",
             "DeepSeek AI — near-zero cost per query",
             "OpenAI TTS — premium AI voice",
             "Embeddable WordPress/Shopify widget",
-            "Auto-update via GitHub + Vercel",
+            "Fully managed cloud hosting included",
           ].map((perk) => (
             <div className="perk-item" key={perk}>
               <CheckCircle size={16} color="#44ff44" />
