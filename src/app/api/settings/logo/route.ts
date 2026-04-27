@@ -27,6 +27,7 @@ export async function POST(req: Request) {
       Key: fileName,
       Body: buffer,
       ContentType: file.type,
+      ACL: 'public-read' as any,
     };
 
     await s3Client.send(new PutObjectCommand(uploadParams));
