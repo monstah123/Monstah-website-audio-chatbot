@@ -134,6 +134,14 @@ export async function POST(req: Request) {
     // Save settings first
     await db.collection("users").doc(userId).set(updateData, { merge: true });
 
+    // MASTER SYNC: If this is Peterson's dashboard account, automatically update the live website account too
+    const DASHBOARD_UID = "zYXZQWVdWKPnHiE566SJxWaTqip1";
+    const WEBSITE_UID = "irYbunVg2BUW38Xw5rzsObbXawF2";
+    if (userId === DASHBOARD_UID) {
+      console.log("[Master Sync] Auto-updating live website account...");
+      await db.collection("users").doc(WEBSITE_UID).set(updateData, { merge: true });
+    }
+
     // AUTO-CLEANUP: Delete knowledge chunks for URLs that were removed from the UI
     // ONLY run cleanup if navigationLinks was explicitly provided in the payload
     if (navigationLinks !== undefined) {
