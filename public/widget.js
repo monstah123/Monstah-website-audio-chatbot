@@ -17,7 +17,8 @@
 
   var iosMajor = getIOSSafariVersion();
   if (iosMajor !== null && iosMajor < 16) {
-    // Show a static fallback button — clean, on-brand, no iframe
+    // iOS 15 and below can't run this app at all (Next.js 16 requires Safari 16.4+).
+    // Show a purely static message — no link, no broken page.
     var fallback = document.createElement('div');
     fallback.style.cssText = [
       'position:fixed',
@@ -25,21 +26,20 @@
       'right:20px',
       'z-index:2147483647',
       'font-family:-apple-system,sans-serif',
-      'pointer-events:auto'
+      'background:#000',
+      'color:#44ff44',
+      'border:2px solid #44ff44',
+      'border-radius:16px',
+      'padding:12px 16px',
+      'font-size:13px',
+      'font-weight:600',
+      'max-width:220px',
+      'text-align:center',
+      'box-shadow:0 0 15px rgba(68,255,68,0.3)',
+      'pointer-events:none'
     ].join('!important;') + '!important';
 
-    fallback.innerHTML = '<a href="' + VERCEL_URL + '/widget?standalone=1" target="_blank" rel="noopener" style="' +
-      'display:flex;align-items:center;gap:10px;' +
-      'background:#000;color:#44ff44;' +
-      'border:2px solid #44ff44;border-radius:50px;' +
-      'padding:12px 20px;text-decoration:none;' +
-      'font-size:14px;font-weight:700;' +
-      'box-shadow:0 0 15px rgba(68,255,68,0.4);' +
-      '">' +
-      '<span style="font-size:20px;">🤖</span>' +
-      'Chat with AI' +
-      '</a>';
-
+    fallback.textContent = '🤖 AI Chat requires iOS 16 or newer. Please update your iPhone to use this feature.';
     (document.body || document.documentElement).appendChild(fallback);
     return; // Stop here — don't load the iframe
   }
