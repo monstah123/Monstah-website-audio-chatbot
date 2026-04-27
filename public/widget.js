@@ -1,6 +1,50 @@
 (function() {
   const VERCEL_URL = "https://monstah-website-audio-chatbot.vercel.app";
-  
+
+  // ── Browser Compatibility Check ──────────────────────────────────────────
+  // Next.js 16 requires Safari 16.4+. iPhone 7 (iOS 15) runs Safari 15 and
+  // will get a blank iframe. Detect this early and show a graceful fallback.
+  function getIOSSafariVersion() {
+    var ua = navigator.userAgent;
+    // Match iPhone/iPad running Safari (not Chrome/Firefox on iOS)
+    var iOSMatch = ua.match(/iP(?:hone|ad|od).+OS (\d+)_/);
+    var isSafari = /Safari\//.test(ua) && !/CriOS\//.test(ua) && !/FxiOS\//.test(ua);
+    if (iOSMatch && isSafari) {
+      return parseInt(iOSMatch[1], 10);
+    }
+    return null;
+  }
+
+  var iosMajor = getIOSSafariVersion();
+  if (iosMajor !== null && iosMajor < 16) {
+    // Show a static fallback button — clean, on-brand, no iframe
+    var fallback = document.createElement('div');
+    fallback.style.cssText = [
+      'position:fixed',
+      'bottom:20px',
+      'right:20px',
+      'z-index:2147483647',
+      'font-family:-apple-system,sans-serif',
+      'pointer-events:auto'
+    ].join('!important;') + '!important';
+
+    fallback.innerHTML = '<a href="' + VERCEL_URL + '/widget?standalone=1" target="_blank" rel="noopener" style="' +
+      'display:flex;align-items:center;gap:10px;' +
+      'background:#000;color:#44ff44;' +
+      'border:2px solid #44ff44;border-radius:50px;' +
+      'padding:12px 20px;text-decoration:none;' +
+      'font-size:14px;font-weight:700;' +
+      'box-shadow:0 0 15px rgba(68,255,68,0.4);' +
+      '">' +
+      '<span style="font-size:20px;">🤖</span>' +
+      'Chat with AI' +
+      '</a>';
+
+    (document.body || document.documentElement).appendChild(fallback);
+    return; // Stop here — don't load the iframe
+  }
+  // ── End Compatibility Check ───────────────────────────────────────────────
+
   const currentScript = document.currentScript;
   const position = 'right'; // FORCE TO RIGHT SIDE
   
