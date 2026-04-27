@@ -11,7 +11,7 @@ export default function VoiceChat({ uid }: { uid?: string }) {
   const [agentName, setAgentName] = useState("Monstah AI");
   const [firstMessage, setFirstMessage] = useState("Hey! I'm Monstah AI. Ask me anything about how I can help your business — or just say hi! 👋");
   const [themeColor, setThemeColor] = useState("green");
-  const [idleTimeout, setIdleTimeout] = useState(15);
+  const [idleTimeout, setIdleTimeout] = useState(20);
   const [brandName, setBrandName] = useState("Monstah AI");
   const [logoUrl, setLogoUrl] = useState("");
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
@@ -20,8 +20,8 @@ export default function VoiceChat({ uid }: { uid?: string }) {
   const [navigationLinks, setNavigationLinks] = useState<any[]>([]);
   const [quickLinks, setQuickLinks] = useState<{ label: string; action: string }[]>([]);
   const [noiseSuppression, setNoiseSuppression] = useState(true);
-  const [speechSensitivity, setSpeechSensitivity] = useState(1.5);
-  const speechSensitivityRef = useRef(1.5);
+  const [speechSensitivity, setSpeechSensitivity] = useState(20.0);
+  const speechSensitivityRef = useRef(20.0);
 
   useEffect(() => {
     // Fetch custom first message and agent name based on the widget uid
@@ -310,17 +310,60 @@ export default function VoiceChat({ uid }: { uid?: string }) {
       startIdleTimer();
       try { 
         if (!recognitionRef.current) {
-          throw new Error("Speech recognition not initialized. Please refresh the page.");
+          const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+          if (SR) {
+            recognitionRef.current = new SR();
+            recognitionRef.current.continuous = true;
+            recognitionRef.current.interimResults = true;
+            // Mirror the setup from useEffect
+            recognitionRef.current.onresult = (event: any) => {
+              if (isSpeakingRef.current) return; 
+              let interimTranscript = "";
+              for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                  const transcript = event.results[i][0].transcript.trim();
+                  if (transcript) speechBufferRef.current += (speechBufferRef.current ? " " : "") + transcript;
+                } else {
+                  interimTranscript += event.results[i][0].transcript;
+                }
+              }
+              const currentInput = (speechBufferRef.current + " " + interimTranscript).trim();
+              if (currentInput) {
+                setInput(currentInput);
+                resetIdleTimer();
+                if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
+                speechTimeoutRef.current = setTimeout(() => {
+                  if (!isListeningRef.current || isSpeakingRef.current) return;
+                  const finalSpeech = (speechBufferRef.current + " " + interimTranscript).trim();
+                  if (finalSpeech) {
+                    speechBufferRef.current = ""; 
+                    setInput(""); 
+                    handleSend(finalSpeech);
+                  }
+                }, speechSensitivityRef.current * 1000);
+              }
+            };
+            recognitionRef.current.onend = () => {
+              if (isListeningRef.current) {
+                try { recognitionRef.current.start(); } catch { 
+                  setIsListening(false);
+                  isListeningRef.current = false;
+                }
+              } else {
+                setIsListening(false);
+              }
+            };
+          } else {
+            throw new Error("Speech recognition not supported in this browser.");
+          }
         }
         recognitionRef.current.start(); 
         setMicError(null);
       } catch (err: any) {
         console.error("Mic start error:", err);
-        alert("Could not access the microphone. Please ensure permissions are granted.");
         setIsListening(false);
         isListeningRef.current = false;
         setMicError(err.message || "Failed to start microphone");
-        setShowPermissionModal(true);
       }
     }
   };

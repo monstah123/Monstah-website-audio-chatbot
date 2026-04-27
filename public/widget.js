@@ -50,7 +50,8 @@
       if (event.data.isOpen) {
         const isMobile = window.innerWidth < 600;
         wrapper.style.width = isMobile ? '100vw' : '440px';
-        wrapper.style.height = isMobile ? '80vh' : '690px';
+        wrapper.style.height = isMobile ? '80vh' : 'min(690px, 100vh)';
+        wrapper.style.maxHeight = '100vh';
       } else {
         wrapper.style.width = '280px'; 
         wrapper.style.height = '140px';
