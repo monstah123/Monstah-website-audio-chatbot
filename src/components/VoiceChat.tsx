@@ -912,10 +912,12 @@ export default function VoiceChat({ uid }: { uid?: string }) {
 
         .chat-messages-container {
           position: relative;
-          min-height: 0; /* THE SECRET: allows row to shrink */
+          min-height: 0;
           overflow: hidden;
           background: #0d0d0f;
           z-index: 1;
+          display: flex;
+          flex-direction: column;
         }
 
         .history-sidebar {
@@ -995,7 +997,7 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         .clear-all-btn:hover { background: rgba(255, 68, 68, 0.1); color: #ff4444; border-color: rgba(255, 68, 68, 0.3); }
 
         .chat-messages {
-          height: 100%;
+          flex: 1;
           padding: 20px;
           overflow-y: auto;
           display: flex;
