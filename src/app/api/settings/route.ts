@@ -36,6 +36,14 @@ export async function GET(req: Request) {
       data = { ...data, ...doc.data() };
     }
 
+    // Auto-migrate legacy timeout values to the new 20s default
+    if (data.speechSensitivity <= 5.0) {
+      data.speechSensitivity = 20.0;
+    }
+    if (data.idleTimeout <= 15) {
+      data.idleTimeout = 20;
+    }
+
     // Migrate legacy {name: url} object format → array format on the fly
     let navigationLinks: any[] = [];
     if (data.navigationLinks && !Array.isArray(data.navigationLinks)) {

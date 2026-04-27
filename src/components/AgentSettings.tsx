@@ -365,14 +365,14 @@ export default function AgentSettings() {
               How long to wait after you stop speaking before the AI answers. Increase this if the AI cuts you off mid-sentence.
             </span>
             <input 
-              type="range" min="0.5" max="5.0" step="0.1" 
+              type="range" min="1.0" max="30.0" step="1.0" 
               value={speechSensitivity} 
               onChange={(e) => setSpeechSensitivity(parseFloat(e.target.value))} 
               style={{ accentColor: 'var(--primary)', width: '100%' }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '5px' }}>
-              <span>Faster (0.5s)</span>
-              <span>Slower (3.0s)</span>
+              <span>Faster (1s)</span>
+              <span>Slower (30s)</span>
             </div>
           </div>
         </div>
