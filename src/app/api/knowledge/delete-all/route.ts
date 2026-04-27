@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       currentCount++;
       count++;
       
-      if (currentCount === 490) {
+      if (currentCount >= 50) {
         batches.push(currentBatch);
         currentBatch = db.batch();
         currentCount = 0;
