@@ -224,9 +224,12 @@ export default function AgentSettings() {
         ) : (
           <div className="logo-upload-container">
             {logoUrl && (
-              <div className="logo-preview">
-                <img src={logoUrl} alt="Logo Preview" />
-                <button onClick={() => setLogoUrl("")} className="remove-logo">Remove</button>
+              <div className="logo-preview-wrapper">
+                <div className="logo-preview">
+                  <img src={logoUrl} alt="Logo Preview" />
+                  <button onClick={() => setLogoUrl("")} className="remove-logo">Remove</button>
+                </div>
+                <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold' }}>✓ Preview Ready</span>
               </div>
             )}
             <div className="upload-btn-wrapper">
@@ -725,35 +728,46 @@ export default function AgentSettings() {
           background: rgba(0,0,0,0.4);
           border: 1px dashed rgba(255,255,255,0.2);
           border-radius: 12px;
+          padding: 30px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 15px;
+          color: rgba(255,255,255,0.5);
+          font-size: 0.9rem;
+          text-align: center;
+        }
+
+        .logo-upload-container {
+          background: rgba(0,0,0,0.3);
           padding: 20px;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 12px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 15px;
+        }
+
+        .logo-preview-wrapper {
           display: flex;
           flex-direction: column;
           align-items: center;
           gap: 10px;
-          color: rgba(255,255,255,0.5);
-          font-size: 0.9rem;
-        }
-
-        .logo-upload-container {
-          background: rgba(0,0,0,0.2);
-          padding: 15px;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          gap: 20px;
         }
 
         .logo-preview {
           position: relative;
-          width: 60px;
-          height: 60px;
+          width: 80px;
+          height: 80px;
           background: #000;
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 8px;
+          border: 2px solid var(--primary);
+          border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
           overflow: hidden;
+          box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
         }
 
         .logo-preview img {
@@ -776,6 +790,9 @@ export default function AgentSettings() {
           opacity: 0;
           cursor: pointer;
           transition: opacity 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .logo-preview:hover .remove-logo {
@@ -803,9 +820,14 @@ export default function AgentSettings() {
           transition: all 0.2s;
         }
 
-        .upload-btn:hover {
+        .upload-btn:hover:not(:disabled) {
           background: #323238;
           border-color: var(--primary);
+        }
+
+        .upload-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
 
         .upload-btn-wrapper input[type=file] {

@@ -871,6 +871,8 @@ export default function VoiceChat({ uid }: { uid?: string }) {
           gap: 8px;
           font-weight: 700;
           font-size: 0.85rem;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+          border: 1px solid rgba(255,255,255,0.1);
           white-space: nowrap; /* Prevent wrapping */
           transition: all 0.2s;
         }
@@ -1108,10 +1110,10 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         }
         .quick-links-row {
           display: flex;
+          flex-wrap: wrap;
           gap: 8px;
           padding: 0 16px 12px;
-          overflow-x: auto;
-          scrollbar-width: none;
+          overflow-y: hidden;
         }
 
         .quick-links-row::-webkit-scrollbar {
