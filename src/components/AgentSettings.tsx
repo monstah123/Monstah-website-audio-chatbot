@@ -245,20 +245,26 @@ export default function AgentSettings() {
                   const file = e.target.files?.[0];
                   if (!file) return;
                   
-                  if (file.size > 500 * 1024) { // 500KB limit
-                    setStatus({ type: "error", message: "Logo too large. Please use an image under 500KB." });
+                  console.log("File selected:", file.name, file.type, file.size);
+
+                  if (file.size > 800 * 1024) { 
+                    setStatus({ type: "error", message: "Logo too large. Please use an image under 800KB." });
                     return;
                   }
 
                   setIsUploading(true);
+                  setStatus({ type: "success", message: "Processing image..." });
+                  
                   const reader = new FileReader();
-                  reader.onloadend = () => {
+                  reader.onload = () => {
+                    console.log("File read success");
                     const base64String = reader.result as string;
                     setLogoUrl(base64String);
                     setIsUploading(false);
-                    setStatus({ type: "success", message: "Logo ready! Click Save Agent below." });
+                    setStatus({ type: "success", message: "Logo preview updated! CLICK SAVE AGENT AT THE BOTTOM TO FINISH." });
                   };
-                  reader.onerror = () => {
+                  reader.onerror = (err) => {
+                    console.error("FileReader error:", err);
                     setStatus({ type: "error", message: "Failed to read file." });
                     setIsUploading(false);
                   };
