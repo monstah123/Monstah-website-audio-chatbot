@@ -25,6 +25,8 @@ export async function GET(req: Request) {
       firstMessage: "Hi! How can I help you today?",
       themeColor: "green",
       idleTimeout: 15,
+      noiseSuppression: true,
+      speechSensitivity: 1.5,
       brandName: "Monstah AI",
       navigationLinks: []
     };
@@ -107,6 +109,8 @@ export async function POST(req: Request) {
     if (trainingSchedule !== undefined) updateData.trainingSchedule = trainingSchedule;
     if (lastTrainedUrl !== undefined) updateData.lastTrainedUrl = lastTrainedUrl;
     if (brandName !== undefined) updateData.brandName = brandName || "Monstah AI";
+    if (noiseSuppression !== undefined) updateData.noiseSuppression = noiseSuppression;
+    if (speechSensitivity !== undefined) updateData.speechSensitivity = speechSensitivity;
     
     let processedLinks = [];
     if (navigationLinks !== undefined) {

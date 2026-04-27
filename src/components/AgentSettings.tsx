@@ -10,6 +10,8 @@ export default function AgentSettings() {
   const [firstMessage, setFirstMessage] = useState("");
   const [themeColor, setThemeColor] = useState("#44ff44");
   const [idleTimeout, setIdleTimeout] = useState(3);
+  const [noiseSuppression, setNoiseSuppression] = useState(true);
+  const [speechSensitivity, setSpeechSensitivity] = useState(1.5);
   const [trainingSchedule, setTrainingSchedule] = useState("manual");
   const [brandName, setBrandName] = useState("");
   const [unlockCode, setUnlockCode] = useState("");
@@ -39,6 +41,8 @@ export default function AgentSettings() {
           setFirstMessage(data.firstMessage || "");
           setThemeColor(data.themeColor || "green");
           setIdleTimeout(data.idleTimeout || 3);
+          if (data.noiseSuppression !== undefined) setNoiseSuppression(data.noiseSuppression);
+          if (data.speechSensitivity !== undefined) setSpeechSensitivity(data.speechSensitivity);
           setTrainingSchedule(data.trainingSchedule || "manual");
           setBrandName(data.brandName || "");
           setIsBrandingUnlocked(!!data.brandName);
@@ -88,6 +92,8 @@ export default function AgentSettings() {
           firstMessage,
           themeColor,
           idleTimeout,
+          noiseSuppression,
+          speechSensitivity,
           trainingSchedule,
           brandName,
           // Send as array directly — no conversion needed
@@ -252,9 +258,57 @@ export default function AgentSettings() {
             type="range" min="1" max="10" step="1" 
             value={idleTimeout} 
             onChange={(e) => setIdleTimeout(parseInt(e.target.value))} 
-            style={{ accentColor: 'var(--primary)' }}
+            style={{ accentColor: 'var(--primary)', width: '100%' }}
           />
-          <span className="timeout-val" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{idleTimeout} min</span>
+          <div style={{ textAlign: 'center', marginTop: '10px' }}>
+            <span className="timeout-val" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{idleTimeout} min</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="input-group">
+        <label><Bot size={16} /> Voice Clarity Controls</label>
+        <p className="help-text">Fine-tune the microphone behavior if the AI cuts you off or picks up background noise.</p>
+        
+        <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          {/* Noise Suppression Toggle */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <strong style={{ color: 'white', display: 'block' }}>Noise Suppression</strong>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Filters out background noise and hums.</span>
+            </div>
+            <label className="switch">
+              <input 
+                type="checkbox" 
+                checked={noiseSuppression} 
+                onChange={(e) => setNoiseSuppression(e.target.checked)} 
+              />
+              <span className="slider round"></span>
+            </label>
+          </div>
+
+          <div style={{ width: '100%', height: '1px', background: 'rgba(255,255,255,0.1)' }} />
+
+          {/* End of Speech Sensitivity */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <strong style={{ color: 'white' }}>End of Speech Sensitivity</strong>
+              <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{speechSensitivity}s</span>
+            </div>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '10px' }}>
+              How long to wait after you stop speaking before the AI answers. Increase this if the AI cuts you off mid-sentence.
+            </span>
+            <input 
+              type="range" min="0.5" max="3.0" step="0.1" 
+              value={speechSensitivity} 
+              onChange={(e) => setSpeechSensitivity(parseFloat(e.target.value))} 
+              style={{ accentColor: 'var(--primary)', width: '100%' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '5px' }}>
+              <span>Faster (0.5s)</span>
+              <span>Slower (3.0s)</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -803,6 +857,62 @@ export default function AgentSettings() {
           cursor: pointer;
           transition: all 0.2s;
           margin-top: 4px;
+        }
+
+        /* Toggle Switch CSS */
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 50px;
+          height: 24px;
+        }
+
+        .switch input { 
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(255,255,255,0.2);
+          transition: .4s;
+        }
+
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 18px;
+          width: 18px;
+          left: 3px;
+          bottom: 3px;
+          background-color: white;
+          transition: .4s;
+        }
+
+        input:checked + .slider {
+          background-color: var(--primary);
+        }
+
+        input:focus + .slider {
+          box-shadow: 0 0 1px var(--primary);
+        }
+
+        input:checked + .slider:before {
+          transform: translateX(26px);
+        }
+
+        .slider.round {
+          border-radius: 24px;
+        }
+
+        .slider.round:before {
+          border-radius: 50%;
         }
 
         .btn-add-nav:hover {

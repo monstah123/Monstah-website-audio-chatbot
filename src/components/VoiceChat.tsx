@@ -18,6 +18,9 @@ export default function VoiceChat({ uid }: { uid?: string }) {
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [navigationLinks, setNavigationLinks] = useState<any[]>([]);
   const [quickLinks, setQuickLinks] = useState<{ label: string; action: string }[]>([]);
+  const [noiseSuppression, setNoiseSuppression] = useState(true);
+  const [speechSensitivity, setSpeechSensitivity] = useState(1.5);
+  const speechSensitivityRef = useRef(1.5);
 
   useEffect(() => {
     // Fetch custom first message and agent name based on the widget uid
@@ -40,6 +43,13 @@ export default function VoiceChat({ uid }: { uid?: string }) {
             }
             if (data.idleTimeout) {
               setIdleTimeout(data.idleTimeout);
+            }
+            if (data.noiseSuppression !== undefined) {
+              setNoiseSuppression(data.noiseSuppression);
+            }
+            if (data.speechSensitivity !== undefined) {
+              setSpeechSensitivity(data.speechSensitivity);
+              speechSensitivityRef.current = data.speechSensitivity;
             }
             if (data.brandName) {
               setBrandName(data.brandName);
@@ -138,6 +148,8 @@ export default function VoiceChat({ uid }: { uid?: string }) {
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isSpeakingRef = useRef(false);
   const isListeningRef = useRef(false);
+  const speechBufferRef = useRef<string>("");
+  const speechTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // ---- Idle Timer (configurable per tenant) ----
   const startIdleTimer = () => {
@@ -173,6 +185,8 @@ export default function VoiceChat({ uid }: { uid?: string }) {
     setIsListening(false);
     isListeningRef.current = false;
     isSpeakingRef.current = false;
+    if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
+    speechBufferRef.current = "";
   };
 
   const loadSession = (session: any) => {
@@ -214,9 +228,22 @@ export default function VoiceChat({ uid }: { uid?: string }) {
       const last = event.results[event.results.length - 1];
       if (last.isFinal) {
         resetIdleTimer();
-        const transcript = last[0].transcript;
-        setInput(transcript);
-        handleSend(transcript);
+        const transcript = last[0].transcript.trim();
+        if (transcript) {
+          speechBufferRef.current += (speechBufferRef.current ? " " : "") + transcript;
+          setInput(speechBufferRef.current);
+          
+          if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
+          
+          // Wait speechSensitivity seconds before committing to allow user to continue
+          speechTimeoutRef.current = setTimeout(() => {
+            const finalSpeech = speechBufferRef.current;
+            speechBufferRef.current = ""; // clear buffer
+            if (finalSpeech) {
+               handleSend(finalSpeech);
+            }
+          }, speechSensitivityRef.current * 1000);
+        }
       }
     };
 
@@ -298,6 +325,10 @@ export default function VoiceChat({ uid }: { uid?: string }) {
   // ---- Send Message ----
   const handleSend = async (text: string) => {
     if (!text.trim()) return;
+    
+    // Clear speech buffer if we manually sent or programmatically sent
+    if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
+    speechBufferRef.current = "";
     
     // Pause idle timer while AI thinks/speaks
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
