@@ -76,11 +76,8 @@ export async function POST(req: Request) {
           }
         });
 
-        // 2. VECTOR SIMILARITY SEARCH
-        const knowledgeSnapshot = await db.collection("knowledge")
-          .where("userId", "==", userId)
-          .limit(200)
-          .get();
+        // 2. VECTOR SIMILARITY SEARCH (reusing sitemapSnapshot which contains all docs)
+        const knowledgeSnapshot = sitemapSnapshot;
 
         const docs = knowledgeSnapshot.docs.map(doc => ({
           id: doc.id,
