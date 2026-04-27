@@ -220,30 +220,41 @@ export default function VoiceChat({ uid }: { uid?: string }) {
 
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SR();
-    recognition.continuous = true;       // STAY ALIVE between utterances
-    recognition.interimResults = false;
+    recognition.continuous = true;       
+    recognition.interimResults = true;
 
     recognition.onresult = (event: any) => {
-      if (isSpeakingRef.current) return; // ignore while AI speaks
-      const last = event.results[event.results.length - 1];
-      if (last.isFinal) {
-        resetIdleTimer();
-        const transcript = last[0].transcript.trim();
-        if (transcript) {
-          speechBufferRef.current += (speechBufferRef.current ? " " : "") + transcript;
-          setInput(speechBufferRef.current);
-          
-          if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
-          
-          // Wait speechSensitivity seconds before committing to allow user to continue
-          speechTimeoutRef.current = setTimeout(() => {
-            const finalSpeech = speechBufferRef.current;
-            speechBufferRef.current = ""; // clear buffer
-            if (finalSpeech) {
-               handleSend(finalSpeech);
-            }
-          }, speechSensitivityRef.current * 1000);
+      if (isSpeakingRef.current) return; 
+
+      let interimTranscript = "";
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          const transcript = event.results[i][0].transcript.trim();
+          if (transcript) {
+            speechBufferRef.current += (speechBufferRef.current ? " " : "") + transcript;
+          }
+        } else {
+          interimTranscript += event.results[i][0].transcript;
         }
+      }
+
+      // Show the combination of confirmed text + what they are currently saying
+      const currentInput = (speechBufferRef.current + " " + interimTranscript).trim();
+      if (currentInput) {
+        setInput(currentInput);
+        resetIdleTimer();
+
+        if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
+        
+        // Only trigger send if we have final results or it's been a second
+        speechTimeoutRef.current = setTimeout(() => {
+          if (!isListeningRef.current) return;
+          const finalSpeech = speechBufferRef.current || interimTranscript;
+          if (finalSpeech) {
+            speechBufferRef.current = ""; 
+            handleSend(finalSpeech);
+          }
+        }, speechSensitivityRef.current * 1000);
       }
     };
 
