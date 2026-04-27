@@ -163,6 +163,66 @@ export default function KnowledgeManager() {
         </button>
       </form>
 
+      {/* DANGER ZONE */}
+      <div className="danger-zone" style={{ marginTop: '40px', paddingTop: '30px', borderTop: '1px solid rgba(255,68,68,0.2)' }}>
+        <h3 style={{ color: '#ff4444', marginBottom: '10px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          ⚠️ Danger Zone
+        </h3>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '15px', fontSize: '0.9rem' }}>
+          Messed up your links or want to start fresh? This will permanently wipe your AI's ENTIRE memory, including all learned pages, documents, and navigation links.
+        </p>
+        <button 
+          onClick={async () => {
+            const code = prompt("This cannot be undone! Type 'DELETE' to confirm you want to wipe your entire AI database.");
+            if (code !== "DELETE") {
+              alert("Deletion cancelled.");
+              return;
+            }
+            
+            try {
+              setStatus({ type: "success", message: "Deleting database... please wait." });
+              const res = await fetch("/api/knowledge/delete-all", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: auth.currentUser?.uid })
+              });
+              
+              if (res.ok) {
+                const data = await res.json();
+                setStatus({ type: "success", message: `✅ Database wiped! (${data.message}). Refresh the page to see the clean slate.` });
+                setTimeout(() => window.location.reload(), 3000);
+              } else {
+                const err = await res.json();
+                setStatus({ type: "error", message: `❌ Failed to delete: ${err.error}` });
+              }
+            } catch (e: any) {
+              setStatus({ type: "error", message: "❌ Network error while deleting." });
+            }
+          }}
+          style={{
+            background: 'rgba(255, 68, 68, 0.1)',
+            color: '#ff4444',
+            border: '1px solid rgba(255, 68, 68, 0.3)',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            width: '100%',
+            transition: 'all 0.2s'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 68, 68, 0.2)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 68, 68, 0.1)';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          Purge Entire Knowledge Base
+        </button>
+      </div>
+
       <style jsx>{`
         .knowledge-manager {
           width: 100%;
