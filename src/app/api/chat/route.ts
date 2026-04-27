@@ -167,7 +167,7 @@ export async function POST(req: Request) {
     NAVIGATE_URL: https://monstahgymwear.com/product/nutrition-ebook/
     
     EXAMPLE — no valid URL anywhere:
-    We have the Monstah Heavy Duty Knee Wraps, great for heavy squat sessions!`;
+    We don't currently sell Monstah Protein Powder, but we have great apparel!`;
 
 
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
