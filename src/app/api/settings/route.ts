@@ -89,6 +89,8 @@ export async function POST(req: Request) {
       trainingSchedule,
       lastTrainedUrl,
       brandName,
+      noiseSuppression,
+      speechSensitivity,
       navigationLinks,   // expected as array: [{ name, url }]
       quickLinks,        // expected as array: [{ label, action }]
     } = await req.json();
