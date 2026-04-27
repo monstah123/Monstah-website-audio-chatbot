@@ -13,6 +13,7 @@ export default function VoiceChat({ uid }: { uid?: string }) {
   const [themeColor, setThemeColor] = useState("green");
   const [idleTimeout, setIdleTimeout] = useState(15);
   const [brandName, setBrandName] = useState("Monstah AI");
+  const [logoUrl, setLogoUrl] = useState("");
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [micError, setMicError] = useState<string | null>(null);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
@@ -51,9 +52,8 @@ export default function VoiceChat({ uid }: { uid?: string }) {
               setSpeechSensitivity(data.speechSensitivity);
               speechSensitivityRef.current = data.speechSensitivity;
             }
-            if (data.brandName) {
-              setBrandName(data.brandName);
-            }
+            if (data.brandName) setBrandName(data.brandName);
+            if (data.logoUrl) setLogoUrl(data.logoUrl);
             if (data.navigationLinks) {
               setNavigationLinks(data.navigationLinks);
             }
@@ -576,7 +576,11 @@ export default function VoiceChat({ uid }: { uid?: string }) {
             
             <div className="chat-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div className="status-dot" />
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Logo" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+                ) : (
+                  <div className="status-dot" />
+                )}
                 <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>{brandName.toUpperCase()}</h3>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

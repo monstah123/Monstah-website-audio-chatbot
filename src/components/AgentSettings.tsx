@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { auth } from "@/lib/firebase-client";
-import { Save, Loader2, Bot, MessageSquare, Lock, Unlock, RefreshCw } from "lucide-react";
+import { Save, Loader2, Bot, MessageSquare, Lock, Unlock, RefreshCw, Image, Upload } from "lucide-react";
 
 export default function AgentSettings() {
   const [agentName, setAgentName] = useState("");
@@ -14,6 +14,7 @@ export default function AgentSettings() {
   const [speechSensitivity, setSpeechSensitivity] = useState(1.5);
   const [trainingSchedule, setTrainingSchedule] = useState("manual");
   const [brandName, setBrandName] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
   const [unlockCode, setUnlockCode] = useState("");
   const [isBrandingUnlocked, setIsBrandingUnlocked] = useState(false);
   const [navigationLinks, setNavigationLinks] = useState<{ name: string; url: string }[]>([]);
@@ -45,6 +46,7 @@ export default function AgentSettings() {
           if (data.speechSensitivity !== undefined) setSpeechSensitivity(data.speechSensitivity);
           setTrainingSchedule(data.trainingSchedule || "manual");
           setBrandName(data.brandName || "");
+          setLogoUrl(data.logoUrl || "");
           setIsBrandingUnlocked(!!data.brandName);
           setQuickLinks(data.quickLinks || []);
           // Convert the saved {name: url} map back to array for the UI
@@ -96,7 +98,7 @@ export default function AgentSettings() {
           speechSensitivity,
           trainingSchedule,
           brandName,
-          // Send as array directly — no conversion needed
+          logoUrl,
           navigationLinks: navigationLinks.filter(l => l.name.trim() && l.url.trim()),
           quickLinks: quickLinks.filter(q => q.label.trim() && q.action.trim()),
         }),
@@ -207,6 +209,59 @@ export default function AgentSettings() {
             onChange={(e) => setBrandName(e.target.value)}
             placeholder="e.g. My Company AI"
           />
+        )}
+      </div>
+
+      <div className="input-group">
+        <label><Image size={16} /> Company Logo <span className="pro-badge">PRO</span></label>
+        <p className="help-text">Upload your company logo to display it in the top corner of the chat widget.</p>
+        {!isBrandingUnlocked ? (
+          <div className="pro-lock-overlay">
+            <Lock size={20} />
+            <span>Unlock White-label Branding to upload logo</span>
+          </div>
+        ) : (
+          <div className="logo-upload-container">
+            {logoUrl && (
+              <div className="logo-preview">
+                <img src={logoUrl} alt="Logo Preview" />
+                <button onClick={() => setLogoUrl("")} className="remove-logo">Remove</button>
+              </div>
+            )}
+            <div className="upload-btn-wrapper">
+              <button className="upload-btn">
+                <Upload size={16} /> {logoUrl ? "Change Logo" : "Upload Logo"}
+              </button>
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  
+                  const formData = new FormData();
+                  formData.append("file", file);
+                  formData.append("userId", auth.currentUser.uid);
+                  
+                  try {
+                    const res = await fetch("/api/settings/logo", {
+                      method: "POST",
+                      body: formData
+                    });
+                    const data = await res.json();
+                    if (data.logoUrl) {
+                      setLogoUrl(data.logoUrl);
+                      setStatus({ type: "success", message: "Logo uploaded successfully!" });
+                    } else {
+                      throw new Error(data.error);
+                    }
+                  } catch (err: any) {
+                    setStatus({ type: "error", message: err.message });
+                  }
+                }} 
+              />
+            </div>
+          </div>
         )}
       </div>
 
@@ -647,6 +702,117 @@ export default function AgentSettings() {
           color: var(--text-secondary);
           margin-bottom: 24px;
           font-size: 0.95rem;
+        }
+
+        .pro-badge {
+          background: var(--primary);
+          color: #000;
+          font-size: 0.65rem;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-weight: 800;
+          margin-left: 6px;
+          vertical-align: middle;
+        }
+
+        .pro-lock-overlay {
+          background: rgba(0,0,0,0.4);
+          border: 1px dashed rgba(255,255,255,0.2);
+          border-radius: 12px;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          color: rgba(255,255,255,0.5);
+          font-size: 0.9rem;
+        }
+
+        .logo-upload-container {
+          background: rgba(0,0,0,0.2);
+          padding: 15px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          gap: 20px;
+        }
+
+        .logo-preview {
+          position: relative;
+          width: 60px;
+          height: 60px;
+          background: #000;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
+
+        .logo-preview img {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+        }
+
+        .remove-logo {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(255,0,0,0.8);
+          color: white;
+          border: none;
+          font-size: 0.7rem;
+          font-weight: bold;
+          opacity: 0;
+          cursor: pointer;
+          transition: opacity 0.2s;
+        }
+
+        .logo-preview:hover .remove-logo {
+          opacity: 1;
+        }
+
+        .upload-btn-wrapper {
+          position: relative;
+          overflow: hidden;
+          display: inline-block;
+        }
+
+        .upload-btn {
+          background: #252529;
+          border: 1px solid rgba(255,255,255,0.2);
+          color: white;
+          padding: 10px 20px;
+          border-radius: 8px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: all 0.2s;
+        }
+
+        .upload-btn:hover {
+          background: #323238;
+          border-color: var(--primary);
+        }
+
+        .upload-btn-wrapper input[type=file] {
+          font-size: 100px;
+          position: absolute;
+          left: 0;
+          top: 0;
+          opacity: 0;
+          cursor: pointer;
+        }
+
+        .input-group label {
+          margin-bottom: 24px;
         }
 
         .input-group {

@@ -28,6 +28,7 @@ export async function GET(req: Request) {
       noiseSuppression: true,
       speechSensitivity: 1.5,
       brandName: "Monstah AI",
+      logoUrl: "",
       navigationLinks: []
     };
 
@@ -89,6 +90,7 @@ export async function POST(req: Request) {
       trainingSchedule,
       lastTrainedUrl,
       brandName,
+      logoUrl,
       noiseSuppression,
       speechSensitivity,
       navigationLinks,   // expected as array: [{ name, url }]
@@ -111,6 +113,7 @@ export async function POST(req: Request) {
     if (trainingSchedule !== undefined) updateData.trainingSchedule = trainingSchedule;
     if (lastTrainedUrl !== undefined) updateData.lastTrainedUrl = lastTrainedUrl;
     if (brandName !== undefined) updateData.brandName = brandName || "Monstah AI";
+    if (logoUrl !== undefined) updateData.logoUrl = logoUrl;
     if (noiseSuppression !== undefined) updateData.noiseSuppression = noiseSuppression;
     if (speechSensitivity !== undefined) updateData.speechSensitivity = speechSensitivity;
     
