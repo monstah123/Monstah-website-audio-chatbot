@@ -245,13 +245,15 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         resetIdleTimer();
 
         if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
-        
-        // Only trigger send if we have final results or it's been a second
+
         speechTimeoutRef.current = setTimeout(() => {
-          if (!isListeningRef.current) return;
-          const finalSpeech = speechBufferRef.current || interimTranscript;
+          if (!isListeningRef.current || isSpeakingRef.current) return;
+          
+          const finalSpeech = (speechBufferRef.current + " " + interimTranscript).trim();
           if (finalSpeech) {
+            console.log("Committing speech:", finalSpeech);
             speechBufferRef.current = ""; 
+            setInput(""); 
             handleSend(finalSpeech);
           }
         }, speechSensitivityRef.current * 1000);
