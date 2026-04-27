@@ -668,6 +668,27 @@ export default function VoiceChat({ uid }: { uid?: string }) {
                 )}
                 <div ref={messagesEndRef} />
               </div>
+              
+              {quickLinks && quickLinks.length > 0 && (
+                <div className="quick-links-row">
+                  {quickLinks.map((ql, i) => (
+                    <button 
+                      key={i} 
+                      className="quick-link-btn"
+                      onClick={() => {
+                        // If it's a direct URL, navigate to it, otherwise send as a chat message
+                        if (ql.action.startsWith('http') || ql.action.startsWith('/')) {
+                          window.open(ql.action, '_blank');
+                        } else {
+                          handleSend(ql.action);
+                        }
+                      }}
+                    >
+                      {ql.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="chat-input-area">
@@ -1078,6 +1099,35 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         .header-icon-btn.close-btn:hover {
           background: rgba(255, 0, 0, 0.1);
           border-color: #ff4444;
+        }
+        .quick-links-row {
+          display: flex;
+          gap: 8px;
+          padding: 0 16px 12px;
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+
+        .quick-links-row::-webkit-scrollbar {
+          display: none;
+        }
+
+        .quick-link-btn {
+          white-space: nowrap;
+          padding: 8px 14px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--theme-primary);
+          color: var(--theme-primary);
+          border-radius: 100px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .quick-link-btn:hover {
+          background: var(--theme-primary);
+          color: #000;
         }
 
         .mic-btn, .send-btn {
