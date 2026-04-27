@@ -509,12 +509,20 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         
         if (audioRef.current) {
           audioRef.current.src = audioUrl;
+          audioRef.current.onerror = () => {
+            console.error("Audio playback error");
+            isSpeakingRef.current = false;
+            if (wasListening) {
+              isListeningRef.current = true;
+              setTimeout(() => { try { recognitionRef.current?.start(); } catch(e) {} }, 800);
+            }
+            resolve();
+          };
+
           audioRef.current.onended = () => {
             isSpeakingRef.current = false;
             URL.revokeObjectURL(audioUrl);
             
-            // RE-ARM MIC — use setTimeout to give iOS time to release audio session
-            // iOS Safari rejects mic.start() if called in the same tick as audio.onended
             setTimeout(() => {
               if (wasListening) {
                 isListeningRef.current = true;
@@ -524,10 +532,9 @@ export default function VoiceChat({ uid }: { uid?: string }) {
                   console.error("Auto-restart error:", e);
                 }
               }
-              // Restart the idle countdown
               startIdleTimer();
               resolve();
-            }, 350); // 350ms gives iOS time to fully release the audio session
+            }, 800); 
           };
           await audioRef.current.play();
         } else {
