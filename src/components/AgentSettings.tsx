@@ -19,6 +19,7 @@ export default function AgentSettings() {
   const [isBrandingUnlocked, setIsBrandingUnlocked] = useState(false);
   const [navigationLinks, setNavigationLinks] = useState<{ name: string; url: string }[]>([]);
   const [quickLinks, setQuickLinks] = useState<{ label: string; action: string }[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -229,16 +230,19 @@ export default function AgentSettings() {
               </div>
             )}
             <div className="upload-btn-wrapper">
-              <button className="upload-btn">
-                <Upload size={16} /> {logoUrl ? "Change Logo" : "Upload Logo"}
+              <button className="upload-btn" disabled={isUploading}>
+                {isUploading ? <Loader2 className="spin" size={16} /> : <Upload size={16} />}
+                {isUploading ? "Uploading..." : (logoUrl ? "Change Logo" : "Upload Logo")}
               </button>
               <input 
                 type="file" 
                 accept="image/*" 
+                disabled={isUploading}
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
                   
+                  setIsUploading(true);
                   const formData = new FormData();
                   formData.append("file", file);
                   formData.append("userId", auth.currentUser.uid);
@@ -251,12 +255,14 @@ export default function AgentSettings() {
                     const data = await res.json();
                     if (data.logoUrl) {
                       setLogoUrl(data.logoUrl);
-                      setStatus({ type: "success", message: "Logo uploaded successfully!" });
+                      setStatus({ type: "success", message: "Logo uploaded! Remember to click Save Agent below." });
                     } else {
                       throw new Error(data.error);
                     }
                   } catch (err: any) {
                     setStatus({ type: "error", message: err.message });
+                  } finally {
+                    setIsUploading(false);
                   }
                 }} 
               />
