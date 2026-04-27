@@ -126,29 +126,32 @@ export async function POST(req: Request) {
     await db.collection("users").doc(userId).set(updateData, { merge: true });
 
     // AUTO-CLEANUP: Delete knowledge chunks for URLs that were removed from the UI
-    try {
-      const urlsToKeep = new Set(processedLinks.map((l: any) => l.url));
-      const knowledgeSnapshot = await db.collection("knowledge").where("userId", "==", userId).get();
-      
-      const batch = db.batch();
-      let deleteCount = 0;
-      
-      knowledgeSnapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.source && (data.source.startsWith("http://") || data.source.startsWith("https://"))) {
-          if (!urlsToKeep.has(data.source)) {
-            batch.delete(doc.ref);
-            deleteCount++;
+    // ONLY run cleanup if navigationLinks was explicitly provided in the payload
+    if (navigationLinks !== undefined) {
+      try {
+        const urlsToKeep = new Set(processedLinks.map((l: any) => l.url));
+        const knowledgeSnapshot = await db.collection("knowledge").where("userId", "==", userId).get();
+        
+        const batch = db.batch();
+        let deleteCount = 0;
+        
+        knowledgeSnapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.source && (data.source.startsWith("http://") || data.source.startsWith("https://"))) {
+            if (!urlsToKeep.has(data.source)) {
+              batch.delete(doc.ref);
+              deleteCount++;
+            }
           }
-        }
-      });
+        });
 
-      if (deleteCount > 0) {
-        await batch.commit();
-        console.log(`[Auto-Cleanup] Deleted ${deleteCount} chunks for removed URLs`);
+        if (deleteCount > 0) {
+          await batch.commit();
+          console.log(`[Auto-Cleanup] Deleted ${deleteCount} chunks for removed URLs`);
+        }
+      } catch (cleanupError) {
+        console.error("[Auto-Cleanup] Failed to delete orphaned chunks:", cleanupError);
       }
-    } catch (cleanupError) {
-      console.error("[Auto-Cleanup] Failed to delete orphaned chunks:", cleanupError);
     }
 
     // AUTO-TRAINING: Check if any new navigation links need training
