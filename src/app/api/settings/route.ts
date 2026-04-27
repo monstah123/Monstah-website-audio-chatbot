@@ -36,9 +36,9 @@ export async function GET(req: Request) {
       data = { ...data, ...doc.data() };
     }
 
-    // Auto-migrate legacy timeout values to the new 20s default
-    if (data.speechSensitivity <= 5.0) {
-      data.speechSensitivity = 20.0;
+    // Auto-migrate legacy timeout values to the new defaults
+    if (data.speechSensitivity > 5.0 || data.speechSensitivity <= 1.5) {
+      data.speechSensitivity = 2.5; // 2.5s is a generous pause but doesn't feel broken
     }
     if (data.idleTimeout <= 15) {
       data.idleTimeout = 20;

@@ -20,8 +20,8 @@ export default function VoiceChat({ uid }: { uid?: string }) {
   const [navigationLinks, setNavigationLinks] = useState<any[]>([]);
   const [quickLinks, setQuickLinks] = useState<{ label: string; action: string }[]>([]);
   const [noiseSuppression, setNoiseSuppression] = useState(true);
-  const [speechSensitivity, setSpeechSensitivity] = useState(20.0);
-  const speechSensitivityRef = useRef(20.0);
+  const [speechSensitivity, setSpeechSensitivity] = useState(2.5);
+  const speechSensitivityRef = useRef(2.5);
 
   useEffect(() => {
     // Fetch custom first message and agent name based on the widget uid
