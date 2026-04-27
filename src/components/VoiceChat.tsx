@@ -1126,11 +1126,16 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         }
 
         .chat-messages::-webkit-scrollbar {
-          width: 6px;
+          width: 8px;
+        }
+        .chat-messages::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
         }
         .chat-messages::-webkit-scrollbar-thumb {
-          background: #333;
+          background: var(--theme-primary);
           border-radius: 10px;
+          border: 2px solid #0d0d0f; /* Adds a bit of padding effect */
         }
 
         input {
@@ -1185,14 +1190,22 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         }
         .quick-links-row {
           display: flex;
-          flex-wrap: wrap;
+          flex-wrap: nowrap;
           gap: 8px;
           padding: 0 16px 12px;
-          overflow-y: hidden;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
         }
 
         .quick-links-row::-webkit-scrollbar {
-          display: none;
+          height: 4px;
+        }
+        .quick-links-row::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .quick-links-row::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 4px;
         }
 
         .quick-link-btn {
