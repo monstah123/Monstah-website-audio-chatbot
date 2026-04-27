@@ -309,14 +309,17 @@ export default function VoiceChat({ uid }: { uid?: string }) {
       isListeningRef.current = true;
       startIdleTimer();
       try { 
-        recognitionRef.current?.start(); 
-        setMicError(null);
-      } catch (e) {
-        console.error("Mic start error:", e);
-        // If it's already started, just ignore
-        if (e instanceof Error && e.message.includes("already started")) {
-          return;
+        if (!recognitionRef.current) {
+          throw new Error("Speech recognition not initialized. Please refresh the page.");
         }
+        recognitionRef.current.start(); 
+        setMicError(null);
+      } catch (err: any) {
+        console.error("Mic start error:", err);
+        alert("Could not access the microphone. Please ensure permissions are granted.");
+        setIsListening(false);
+        isListeningRef.current = false;
+        setMicError(err.message || "Failed to start microphone");
         setShowPermissionModal(true);
       }
     }
