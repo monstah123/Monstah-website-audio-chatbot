@@ -142,12 +142,18 @@ export default function Home() {
               className="step-card glass"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -10, scale: 1.02 }}
               transition={{ delay: i * 0.15, duration: 0.6 }}
               viewport={{ once: true }}
               onMouseEnter={playHoverSound}
             >
+              {/* Big ghost number watermark */}
+              <span className="step-watermark">{step.num}</span>
+
+              {/* Glowing icon pill */}
+              <div className="step-icon-wrap">{step.icon}</div>
+
               <div className="step-num">{step.num}</div>
-              <div className="step-icon">{step.icon}</div>
               <h3>{step.title}</h3>
               <p>{step.desc}</p>
             </motion.div>
@@ -402,40 +408,85 @@ export default function Home() {
           padding: 40px 32px;
           text-align: left;
           position: relative;
-          transition: border-color 0.3s, transform 0.3s;
+          overflow: hidden;
+          transition: border-color 0.35s, box-shadow 0.35s, background 0.35s;
+          cursor: default;
         }
 
         .step-card:hover {
-          border-color: var(--primary);
-          transform: translateY(-4px);
+          border-color: rgba(0, 242, 254, 0.6) !important;
+          box-shadow: 0 0 40px rgba(0, 242, 254, 0.12), 0 24px 48px rgba(0,0,0,0.5) !important;
+          background: linear-gradient(135deg, rgba(0, 242, 254, 0.04), rgba(0, 0, 0, 0)) !important;
+        }
+
+        /* Ghost watermark — large translucent step number */
+        .step-watermark {
+          position: absolute;
+          bottom: -12px;
+          right: 20px;
+          font-size: 7.5rem;
+          font-weight: 900;
+          line-height: 1;
+          letter-spacing: -0.05em;
+          color: rgba(0, 242, 254, 0.05);
+          pointer-events: none;
+          user-select: none;
+          transition: color 0.35s;
+        }
+
+        .step-card:hover .step-watermark {
+          color: rgba(0, 242, 254, 0.10);
+        }
+
+        /* Glowing icon container */
+        .step-icon-wrap {
+          width: 58px;
+          height: 58px;
+          background: linear-gradient(135deg, rgba(0,242,254,0.12), rgba(0,242,254,0.04));
+          border: 1px solid rgba(0,242,254,0.2);
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--primary);
+          margin-bottom: 24px;
+          transition: background 0.35s, box-shadow 0.35s, border-color 0.35s;
+        }
+
+        .step-card:hover .step-icon-wrap {
+          background: linear-gradient(135deg, rgba(0,242,254,0.22), rgba(0,242,254,0.08));
+          box-shadow: 0 0 24px rgba(0, 242, 254, 0.35);
+          border-color: rgba(0,242,254,0.55);
         }
 
         .step-num {
-          font-size: 0.75rem;
+          display: inline-flex;
+          align-items: center;
+          padding: 3px 10px;
+          background: rgba(0,242,254,0.07);
+          border: 1px solid rgba(0,242,254,0.18);
+          border-radius: 100px;
+          font-size: 0.68rem;
           font-weight: 800;
           color: var(--primary);
-          letter-spacing: 0.1em;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
           margin-bottom: 16px;
         }
 
-        .step-icon {
-          color: var(--primary);
-          margin-bottom: 20px;
-        }
-
         .step-card h3 {
-          font-size: 1.4rem;
-          font-weight: 700;
+          font-size: 1.45rem;
+          font-weight: 800;
           margin-bottom: 12px;
           color: white;
+          letter-spacing: -0.01em;
         }
 
         .step-card p {
           font-size: 0.95rem;
           color: var(--text-secondary);
           margin: 0;
-          line-height: 1.6;
+          line-height: 1.65;
         }
 
         /* ===== PERKS ===== */
