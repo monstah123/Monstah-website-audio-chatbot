@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import InstagramBanner from "@/components/InstagramBanner";
 
 export const metadata: Metadata = {
   title: "Monstah Voice AI | Premium Audio Chatbot",
@@ -15,7 +14,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <InstagramBanner />
         {children}
       </body>
     </html>
