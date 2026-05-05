@@ -4,6 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Send, X, Volume2, Loader2, RotateCcw, History, AlertCircle, ShieldCheck } from "lucide-react";
 
+// Detect Instagram / Facebook in-app browser — these block mic access entirely
+const isInstagramBrowser =
+  typeof navigator !== "undefined" &&
+  (/Instagram/i.test(navigator.userAgent) || /FBAN|FBAV/i.test(navigator.userAgent));
+
 export default function VoiceChat({ uid }: { uid?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -71,6 +76,9 @@ export default function VoiceChat({ uid }: { uid?: string }) {
 
   // ---- Auto-Open (Pop-up) Logic ----
   useEffect(() => {
+    // Skip auto-open entirely inside Instagram/Facebook browser — mic is blocked there
+    if (isInstagramBrowser) return;
+
     // Check if we've already auto-opened this session to avoid annoying the user
     const hasAutoOpened = sessionStorage.getItem("monstah_auto_opened");
     
@@ -777,13 +785,24 @@ export default function VoiceChat({ uid }: { uid?: string }) {
                 onKeyPress={(e) => e.key === "Enter" && handleSend(input)}
                 placeholder="Ask anything..."
               />
-              <button 
-                onClick={toggleListening} 
-                className={`mic-btn ${isListening ? "active" : ""} ${micError ? "error" : ""}`}
-                title={micError === "Permission denied" ? "Microphone blocked" : "Toggle microphone"}
-              >
-                {micError === "Permission denied" ? <MicOff size={18} /> : <Mic size={18} />}
-              </button>
+              {isInstagramBrowser ? (
+                <button
+                  disabled
+                  className="mic-btn error"
+                  title="Open in Safari or Chrome to use the mic"
+                  style={{ opacity: 0.5, cursor: 'not-allowed' }}
+                >
+                  <MicOff size={18} />
+                </button>
+              ) : (
+                <button 
+                  onClick={toggleListening} 
+                  className={`mic-btn ${isListening ? "active" : ""} ${micError ? "error" : ""}`}
+                  title={micError === "Permission denied" ? "Microphone blocked" : "Toggle microphone"}
+                >
+                  {micError === "Permission denied" ? <MicOff size={18} /> : <Mic size={18} />}
+                </button>
+              )}
               <button onClick={() => handleSend(input)} className="send-btn">
                 <Send size={18} />
               </button>
@@ -872,14 +891,31 @@ export default function VoiceChat({ uid }: { uid?: string }) {
             }}
           >
             <div className="cta-content">
-              <span className="cta-text">Need help?</span>
-              <div className="cta-bottom">
-                <div className="vortex-avatar" />
-                <div className="cta-button">
-                  <Volume2 size={16} fill="white" />
-                  <span>Talk to {agentName || "Monstah AI"}</span>
-                </div>
-              </div>
+              {isInstagramBrowser ? (
+                <span style={{
+                  display: 'block',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  color: '#333',
+                  textAlign: 'center',
+                  lineHeight: 1.4,
+                  maxWidth: '200px',
+                }}
+                >
+                  Tap <strong>···</strong> → <strong>Open in external browser</strong> to use voice AI
+                </span>
+              ) : (
+                <>
+                  <span className="cta-text">Need help?</span>
+                  <div className="cta-bottom">
+                    <div className="vortex-avatar" />
+                    <div className="cta-button">
+                      <Volume2 size={16} fill="white" />
+                      <span>Talk to {agentName || "Monstah AI"}</span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </motion.div>
         )}
