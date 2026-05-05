@@ -4,10 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Send, X, Volume2, Loader2, RotateCcw, History, AlertCircle, ShieldCheck } from "lucide-react";
 
-// Detect Instagram / Facebook in-app browser — these block mic access entirely
+// Detect Instagram's in-app browser — it silently blocks mic access with no OS prompt.
+// Facebook/Messenger (FBAN/FBAV) is intentionally excluded: Messenger's IAB does
+// pass mic permission prompts through to the OS, so it works fine.
 const isInstagramBrowser =
   typeof navigator !== "undefined" &&
-  (/Instagram/i.test(navigator.userAgent) || /FBAN|FBAV/i.test(navigator.userAgent));
+  /Instagram/i.test(navigator.userAgent);
 
 export default function VoiceChat({ uid }: { uid?: string }) {
   const [isOpen, setIsOpen] = useState(false);
