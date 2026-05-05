@@ -28,8 +28,8 @@ export default function Home() {
           </div>
           <h1>Give Your Website a <span className="gradient-text">Voice That Sells</span></h1>
           <p>
-            The most advanced audio-enabled AI chatbot for WordPress &amp; Shopify. 
-            Train on your products, documents, and web data in seconds. 
+            The most advanced audio-enabled AI chatbot for any website — WordPress, Shopify, or custom.
+            Train on your products, documents, and web data in seconds.
             Deploy with a single script tag.
           </p>
 
@@ -86,7 +86,7 @@ export default function Home() {
         {/* Feature cards */}
         <div className="features-grid">
           {[
-            { icon: <Mic size={24} />, title: "Voice First", desc: "Low-latency STT + realistic TTS. Your customers talk, the AI listens and responds instantly." },
+            { icon: <Mic size={24} />, title: "Voice First", desc: "Low-latency STT + realistic TTS. Works on desktop, mobile Safari, and Facebook Messenger. Your customers talk, the AI responds instantly." },
             { icon: <Brain size={24} />, title: "RAG Pipeline", desc: "Upload PDFs, CSVs, or paste a URL. The AI reads it all and answers with precision." },
             { icon: <Shield size={24} />, title: "Multi-Tenant Secure", desc: "Every user gets their own isolated knowledge vault. Zero data leakage across accounts." },
           ].map((f) => (
@@ -153,8 +153,10 @@ export default function Home() {
             "White-label brand name (Pro unlock)",
             "DeepSeek AI — near-zero cost per query",
             "OpenAI TTS — premium AI voice",
-            "Embeddable WordPress/Shopify widget",
+            "Embed on Any Site — WordPress, Shopify & more",
             "Fully managed cloud hosting included",
+            "Mobile & iOS Safari voice support",
+            "Facebook Messenger compatible",
           ].map((perk) => (
             <div className="perk-item" key={perk}>
               <CheckCircle size={16} color="#44ff44" />
