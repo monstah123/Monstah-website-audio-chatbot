@@ -5,6 +5,30 @@ import { motion } from "framer-motion";
 import { Mic, Zap, Shield, MessageSquare, Globe, Brain, Layers, ArrowRight, CheckCircle } from "lucide-react";
 import VoiceChat from "@/components/VoiceChat";
 
+// Singleton AudioContext — browsers limit simultaneous contexts
+let _hoverCtx: AudioContext | null = null;
+function playHoverSound() {
+  if (typeof window === "undefined") return;
+  try {
+    if (!_hoverCtx) {
+      _hoverCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    const ctx = _hoverCtx;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    // Descending pitch: 1100 Hz → 680 Hz over 55 ms — subtle digital "swish"
+    osc.frequency.setValueAtTime(1100, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(680, ctx.currentTime + 0.055);
+    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.055);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.055);
+  } catch { /* silently ignore if audio not available */ }
+}
+
 export default function Home() {
   const demoRef = useRef<HTMLDivElement>(null);
 
@@ -120,6 +144,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.15, duration: 0.6 }}
               viewport={{ once: true }}
+              onMouseEnter={playHoverSound}
             >
               <div className="step-num">{step.num}</div>
               <div className="step-icon">{step.icon}</div>
@@ -158,7 +183,7 @@ export default function Home() {
             "Mobile & iOS Safari voice support",
             "Facebook Messenger compatible",
           ].map((perk) => (
-            <div className="perk-item" key={perk}>
+            <div className="perk-item" key={perk} onMouseEnter={playHoverSound}>
               <CheckCircle size={16} color="#44ff44" />
               <span>{perk}</span>
             </div>
@@ -564,7 +589,7 @@ export default function Home() {
 
 function FeatureCard({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
   return (
-    <div className="feature-card glass">
+    <div className="feature-card glass" onMouseEnter={playHoverSound}>
       <div className="icon-wrapper">{icon}</div>
       <h3>{title}</h3>
       <p>{desc}</p>
