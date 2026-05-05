@@ -76,31 +76,9 @@ export default function VoiceChat({ uid }: { uid?: string }) {
     fetchSettings();
   }, []);
 
-  // ---- Auto-Open (Pop-up) Logic ----
-  useEffect(() => {
-    // Skip auto-open entirely inside Instagram/Facebook browser — mic is blocked there
-    if (isInstagramBrowser) return;
+  // Auto-open removed: tap-to-activate gives better UX and ensures iOS audio
+  // unlocks correctly via a real user gesture rather than a setTimeout.
 
-    // Check if we've already auto-opened this session to avoid annoying the user
-    const hasAutoOpened = sessionStorage.getItem("monstah_auto_opened");
-    
-    if (!hasAutoOpened) {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-        // Attempt to activate mic — will trigger permission prompt if needed
-        setIsListening(true);
-        isListeningRef.current = true;
-        try { 
-          recognitionRef.current?.start(); 
-          startIdleTimer();
-        } catch (e) {}
-        
-        sessionStorage.setItem("monstah_auto_opened", "true");
-      }, 3000); // 3 second delay for the pop-up
-      
-      return () => clearTimeout(timer);
-    }
-  }, []);
 
   // Set initial greeting only if we have no messages yet, or if firstMessage updates
   useEffect(() => {
@@ -379,8 +357,14 @@ export default function VoiceChat({ uid }: { uid?: string }) {
   };
 
   const handleCTAOpen = () => {
+    // Unlock iOS audio context synchronously within the tap gesture.
+    // This MUST be the first thing that happens so iOS allows audio playback
+    // when speak(firstMessage) fires shortly after via the isOpen useEffect.
+    if (audioRef.current) {
+      audioRef.current.play().catch(() => {});
+      audioRef.current.pause();
+    }
     setIsOpen(true);
-    // INSTANT ARM FOR CHROME
     setIsListening(true);
     isListeningRef.current = true;
     startIdleTimer();
