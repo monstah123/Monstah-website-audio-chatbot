@@ -25,8 +25,9 @@ export async function POST(req: Request) {
     });
     const queryVector = embeddingResponse.data[0].embedding;
 
-    const aiClient = deepseek || openai;
-    const modelName = deepseek ? "deepseek-chat" : "gpt-4o";
+    // Primary: DeepSeek if available, fallback to OpenAI
+    let aiClient = deepseek || openai;
+    let modelName = deepseek ? "deepseek-chat" : "gpt-4o";
 
     let customSystemPrompt = "You are a helpful and friendly customer service representative. Keep answers short and strictly based on the provided context.";
     let navigationLinks: { name: string; url: string }[] = [];
@@ -170,17 +171,40 @@ export async function POST(req: Request) {
     // 3. Limit conversation history for speed (Last 10 messages for better memory)
     const limitedMessages = messages.slice(-10);
 
-    const response = await aiClient.chat.completions.create({
-      model: modelName,
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        ...limitedMessages,
-      ],
-      stream: true,
-    });
+    let response;
+    try {
+      response = await aiClient.chat.completions.create({
+        model: modelName,
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          ...limitedMessages,
+        ],
+        stream: true,
+      });
+    } catch (aiErr: any) {
+      // If DeepSeek fails (e.g. 402 Insufficient Balance), fall back to OpenAI
+      if (aiClient !== openai) {
+        console.warn(`[Chat] ${modelName} failed (${aiErr?.status ?? aiErr?.message}), falling back to OpenAI gpt-4o`);
+        aiClient = openai;
+        modelName = "gpt-4o";
+        response = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: systemPrompt,
+            },
+            ...limitedMessages,
+          ],
+          stream: true,
+        });
+      } else {
+        throw aiErr; // Already on OpenAI, nothing more to try
+      }
+    }
 
     const stream = new ReadableStream({
       async start(controller) {
