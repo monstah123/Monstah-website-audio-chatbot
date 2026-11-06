@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { motion } from "framer-motion";
-import { Mic, Zap, Shield, MessageSquare, Globe, Brain, Layers, ArrowRight, CheckCircle } from "lucide-react";
+import { Mic, Zap, Shield, MessageSquare, Globe, Brain, Layers, ArrowRight, CheckCircle, ShoppingCart } from "lucide-react";
 import VoiceChat from "@/components/VoiceChat";
 
 // Singleton AudioContext — browsers limit simultaneous contexts
@@ -113,6 +113,7 @@ export default function Home() {
             { icon: <Mic size={24} />, title: "Voice First", desc: "Low-latency STT + realistic TTS. Works on desktop, mobile Safari, and Facebook Messenger. Your customers talk, the AI responds instantly." },
             { icon: <Brain size={24} />, title: "RAG Pipeline", desc: "Upload PDFs, CSVs, or paste a URL. The AI reads it all and answers with precision." },
             { icon: <Shield size={24} />, title: "Multi-Tenant Secure", desc: "Every user gets their own isolated knowledge vault. Zero data leakage across accounts." },
+            { icon: <ShoppingCart size={24} />, title: "WooCommerce Sales Attribution", desc: "See recent orders attributed to chatbot referrals in your dashboard. Track order references without collecting customer or payment details." },
           ].map((f) => (
             <FeatureCard key={f.title} icon={f.icon} title={f.title} desc={f.desc} />
           ))}
@@ -181,6 +182,7 @@ export default function Home() {
             "Customizable Voice Clarity Controls",
             "Intelligent Speech Debouncer Engine",
             "Page navigation URL integration",
+            "WooCommerce chatbot-referred order tracking",
             "White-label brand name (Pro unlock)",
             "DeepSeek AI — near-zero cost per query",
             "OpenAI TTS — premium AI voice",

@@ -11,9 +11,63 @@ const isInstagramBrowser =
   typeof navigator !== "undefined" &&
   /Instagram/i.test(navigator.userAgent);
 
+type WidgetEventType =
+  | "widget_loaded"
+  | "chat_opened"
+  | "chat_closed"
+  | "user_message"
+  | "assistant_response"
+  | "navigation"
+  | "conversion";
+
+function trackWidgetEvent(
+  type: WidgetEventType,
+  details: {
+    label?: string;
+    destination?: string;
+    eventId?: string;
+    sessionId?: string;
+    orderId?: string;
+  } = {},
+) {
+  const params = new URLSearchParams(window.location.search);
+  const tenantId = params.get("tenantId") || params.get("uid");
+  const widgetSessionId = params.get("sid");
+  if (!tenantId || !(details.sessionId || widgetSessionId)) return;
+
+  const eventId = details.eventId || (window.crypto?.randomUUID
+    ? window.crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const websiteOrigin = params.get("origin") || window.location.origin;
+  const pagePath = params.get("page") || "/";
+
+  void fetch("/api/events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      tenantId,
+      sessionId: details.sessionId || widgetSessionId,
+      eventId,
+      type,
+      websiteOrigin,
+      pagePath,
+      ...(details.label && { label: details.label }),
+      ...(details.destination && { destination: details.destination }),
+      ...(details.orderId && { orderId: details.orderId }),
+    }),
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Analytics event rejected (${response.status})`);
+    }
+  }).catch((error) => {
+    console.error("Failed to record chatbot analytics event:", error);
+  });
+}
+
 export default function VoiceChat({ uid }: { uid?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const previousOpenStateRef = useRef(false);
   
   const [agentName, setAgentName] = useState("Monstah AI");
   const [firstMessage, setFirstMessage] = useState("Hey! I'm Monstah AI. Ask me anything about how I can help your business — or just say hi! 👋");
@@ -139,6 +193,39 @@ export default function VoiceChat({ uid }: { uid?: string }) {
   const speechBufferRef = useRef<string>("");
   const speechTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    trackWidgetEvent("widget_loaded");
+
+    const params = new URLSearchParams(window.location.search);
+    const parentOrigin = params.get("origin");
+    const handleConversion = (event: MessageEvent) => {
+      if (
+        event.source !== window.parent ||
+        !parentOrigin ||
+        event.origin !== parentOrigin ||
+        event.data?.type !== "monstah-conversion"
+      ) {
+        return;
+      }
+
+      const label = typeof event.data.name === "string"
+        ? event.data.name.trim().slice(0, 80)
+        : "conversion";
+      trackWidgetEvent("conversion", {
+        label: label || "conversion",
+        ...(typeof event.data.eventId === "string" && { eventId: event.data.eventId }),
+        ...(typeof event.data.sessionId === "string" && { sessionId: event.data.sessionId }),
+        ...(typeof event.data.orderId === "string" && { orderId: event.data.orderId }),
+      });
+    };
+
+    window.addEventListener("message", handleConversion);
+    if (parentOrigin && window.parent !== window) {
+      window.parent.postMessage({ type: "monstah-widget-ready" }, parentOrigin);
+    }
+    return () => window.removeEventListener("message", handleConversion);
+  }, []);
+
   // ---- Idle Timer (configurable per tenant) ----
   const startIdleTimer = () => {
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
@@ -187,6 +274,11 @@ export default function VoiceChat({ uid }: { uid?: string }) {
   useEffect(() => {
     if (window.parent) {
       window.parent.postMessage({ type: 'toggle-chat', isOpen }, "*");
+    }
+
+    if (previousOpenStateRef.current !== isOpen) {
+      trackWidgetEvent(isOpen ? "chat_opened" : "chat_closed");
+      previousOpenStateRef.current = isOpen;
     }
     
     // Greet audibly when opened
@@ -387,6 +479,7 @@ export default function VoiceChat({ uid }: { uid?: string }) {
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
 
     const newMessages = [...messages, { role: "user", content: text }];
+    trackWidgetEvent("user_message");
     setMessages(newMessages);
     setInput("");
     setIsLoading(true);
@@ -424,6 +517,10 @@ export default function VoiceChat({ uid }: { uid?: string }) {
           const last = prev[prev.length - 1];
           return [...prev.slice(0, -1), { ...last, content: displayResponse }];
         });
+      }
+
+      if (aiResponse.trim()) {
+        trackWidgetEvent("assistant_response");
       }
 
       // Check for navigation command after stream is complete
@@ -511,6 +608,7 @@ export default function VoiceChat({ uid }: { uid?: string }) {
         }
 
         if (urlToRedirect) {
+          trackWidgetEvent("navigation", { destination: urlToRedirect });
           if (isEmbedded) {
             window.parent.postMessage({ type: 'redirect', url: urlToRedirect }, "*");
           } else {

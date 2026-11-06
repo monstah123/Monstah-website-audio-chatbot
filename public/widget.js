@@ -49,11 +49,25 @@
   const position = 'right'; // FORCE TO RIGHT SIDE
   
   let uid = '';
+  let sessionId = '';
   if (currentScript && currentScript.src) {
     try {
       const scriptUrl = new URL(currentScript.src);
-      uid = scriptUrl.searchParams.get('uid') || '';
+      uid = scriptUrl.searchParams.get('tenantId') || scriptUrl.searchParams.get('uid') || '';
     } catch (e) {}
+  }
+
+  try {
+    const storageKey = `monstah-session-${uid || 'anonymous'}`;
+    sessionId = sessionStorage.getItem(storageKey) || '';
+    if (!sessionId) {
+      sessionId = window.crypto?.randomUUID
+        ? window.crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      sessionStorage.setItem(storageKey, sessionId);
+    }
+  } catch (e) {
+    sessionId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   }
   
   const wrapper = document.createElement('div');
@@ -74,9 +88,69 @@
 
   // Pass the current page origin to the iframe so it can build absolute URLs correctly
   const pageOrigin = window.location.origin;
+  const pagePath = window.location.pathname;
 
   const iframe = document.createElement('iframe');
-  iframe.src = `${VERCEL_URL}/widget?pos=${position}&uid=${uid}&origin=${encodeURIComponent(pageOrigin)}&v=${Date.now()}`;
+  const pendingConversions = [];
+  let iframeReady = false;
+  const sendConversion = (conversion) => {
+    if (iframeReady && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(
+        { type: 'monstah-conversion', ...conversion },
+        VERCEL_URL
+      );
+    } else {
+      pendingConversions.push(conversion);
+    }
+  };
+  window.addEventListener('message', (event) => {
+    if (
+      event.origin === VERCEL_URL &&
+      event.source === iframe.contentWindow &&
+      event.data?.type === 'monstah-widget-ready'
+    ) {
+      iframeReady = true;
+      while (pendingConversions.length) {
+        sendConversion(pendingConversions.shift());
+      }
+    }
+  });
+  window.addEventListener('monstah:conversion', (event) => {
+    const name = event.detail && typeof event.detail.name === 'string'
+      ? event.detail.name.trim().slice(0, 80)
+      : 'conversion';
+    sendConversion({ name: name || 'conversion', sessionId });
+  });
+
+  // Keep the chatbot session for up to seven days so a later WooCommerce
+  // order-confirmation page can attribute the purchase to the chatbot referral.
+  const attributionKey = `monstah-attribution-${uid}`;
+  const orderMatch = window.location.pathname.match(/\/order-received\/(\d+)(?:\/|$)/);
+  if (uid && orderMatch) {
+    try {
+      const attribution = JSON.parse(localStorage.getItem(attributionKey) || 'null');
+      if (
+        attribution &&
+        typeof attribution.sessionId === 'string' &&
+        /^[A-Za-z0-9_-]{1,128}$/.test(attribution.sessionId) &&
+        Number.isFinite(attribution.timestamp) &&
+        Date.now() >= attribution.timestamp &&
+        Date.now() - attribution.timestamp <= 7 * 24 * 60 * 60 * 1000
+      ) {
+        sendConversion({
+          name: 'woocommerce_purchase',
+          eventId: `woocommerce_order_${orderMatch[1]}`,
+          sessionId: attribution.sessionId,
+          orderId: orderMatch[1],
+        });
+      } else if (attribution) {
+        localStorage.removeItem(attributionKey);
+      }
+    } catch (error) {
+      console.error('Unable to read chatbot purchase attribution:', error);
+    }
+  }
+  iframe.src = `${VERCEL_URL}/widget?pos=${position}&uid=${encodeURIComponent(uid)}&tenantId=${encodeURIComponent(uid)}&sid=${encodeURIComponent(sessionId)}&origin=${encodeURIComponent(pageOrigin)}&page=${encodeURIComponent(pagePath)}&v=${Date.now()}`;
   iframe.style.cssText = `
     width: 100% !important;
     height: 100% !important;
@@ -108,6 +182,17 @@
         url = window.location.origin + (url.startsWith('/') ? '' : '/') + url;
       }
       if (url) {
+        try {
+          const destination = new URL(url, window.location.href);
+          if (destination.origin === window.location.origin && uid) {
+            localStorage.setItem(attributionKey, JSON.stringify({
+              sessionId,
+              timestamp: Date.now(),
+            }));
+          }
+        } catch (error) {
+          console.error('Unable to save chatbot purchase attribution:', error);
+        }
         window.location.href = url;
       }
     }
