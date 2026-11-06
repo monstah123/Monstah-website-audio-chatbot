@@ -86,7 +86,7 @@ export default function DashboardPage() {
   }, [router]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.uid !== OWNER_UID) return;
 
     let cancelled = false;
     let timeout: ReturnType<typeof setTimeout>;
@@ -171,6 +171,7 @@ export default function DashboardPage() {
           <p>Train your AI and grab your custom installation snippet below.</p>
         </motion.div>
 
+        {isOwner && (
         <section className="analytics-card glass" aria-labelledby="analytics-title">
           <div className="analytics-heading">
             <div>
@@ -263,6 +264,7 @@ export default function DashboardPage() {
             )}
           </div>
         </section>
+        )}
 
         <div className="dashboard-grid">
           {/* Left Column: Knowledge Manager */}
