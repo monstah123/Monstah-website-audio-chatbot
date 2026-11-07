@@ -7,6 +7,7 @@ import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { OWNER_UID } from "@/lib/owner";
 import KnowledgeManager from "@/components/KnowledgeManager";
 import AgentSettings from "@/components/AgentSettings";
+import WooCommerceReports from "@/components/WooCommerceReports";
 import {
   LogOut,
   Copy,
@@ -293,6 +294,7 @@ export default function DashboardPage() {
             <AgentSettings />
           </div>
         </div>
+        {user && <WooCommerceReports isOwner={isOwner} />}
       </main>
 
       <style jsx>{`
