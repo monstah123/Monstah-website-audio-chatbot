@@ -30,7 +30,7 @@ This browser-based integration counts an order reaching the WooCommerce confirma
 
 ### Verified WooCommerce order reporting
 
-Each signed-in account can optionally connect its own WooCommerce store from the dashboard. Generate a webhook secret there, then in WordPress go to **WooCommerce → Settings → Advanced → Webhooks**, create an active webhook with the **Order updated** topic, and enter the displayed delivery URL and secret. No WordPress plugin or custom site code is required. The webhook endpoint verifies WooCommerce's HMAC-SHA256 signature before processing an order.
+Each signed-in account can optionally connect its own WooCommerce store from the dashboard. Generate a webhook secret there, then in WordPress go to **WooCommerce → Settings → Advanced → Webhooks** and create two active webhooks using the same displayed delivery URL and secret: one with the **Order created** topic and one with **Order updated**. The first captures new orders; the second records later status or refund changes. No WordPress plugin or custom site code is required. The webhook endpoint verifies WooCommerce's HMAC-SHA256 signature before processing an order.
 
 The report stores the order ID/number, order status, totals, currency, refund total, and timestamps; customer and payment details are not stored. Orders in WooCommerce's `processing` or `completed` states contribute to those status totals and net sales; refunds adjust net sales, and fully refunded orders are counted separately. Updates are idempotent and reports refresh every 15 seconds. The owner can see cross-tenant totals; each client can see only their own store's report.
 

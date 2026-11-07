@@ -79,7 +79,7 @@ export async function POST(
 
   const signature = request.headers.get("x-wc-webhook-signature");
   const topic = request.headers.get("x-wc-webhook-topic");
-  if (!signature || topic !== "order.updated") {
+  if (!signature || !["order.created", "order.updated"].includes(topic ?? "")) {
     return NextResponse.json({ error: "Invalid WooCommerce webhook headers" }, { status: 400 });
   }
 

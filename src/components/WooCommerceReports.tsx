@@ -166,7 +166,7 @@ export default function WooCommerceReports({ isOwner }: { isOwner: boolean }) {
         <ol>
           <li>Generate a webhook secret below and copy the URL and secret.</li>
           <li>In WordPress, open <strong>WooCommerce → Settings → Advanced → Webhooks</strong> and add a webhook.</li>
-          <li>Choose <strong>Order updated</strong>, paste the URL and secret, then set the status to Active.</li>
+          <li>Create two active webhooks using the same URL and secret: one with the <strong>Order created</strong> topic and one with <strong>Order updated</strong>.</li>
         </ol>
         <button className="setup-button" type="button" onClick={() => void createWebhookSecret()} disabled={saving}>
           {saving ? "Generating..." : configured ? "Rotate webhook secret" : "Generate webhook secret"}
