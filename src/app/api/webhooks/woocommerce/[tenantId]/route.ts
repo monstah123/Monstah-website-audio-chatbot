@@ -11,6 +11,7 @@ const PAID_STATUSES = new Set(["processing", "completed"]);
 
 type WooRefund = { total?: unknown };
 type WooOrder = {
+  action?: unknown;
   id?: unknown;
   status?: unknown;
   total?: unknown;
@@ -106,6 +107,10 @@ export async function POST(
       order = parsed as WooOrder;
     } catch {
       return NextResponse.json({ error: "Invalid webhook JSON" }, { status: 400 });
+    }
+
+    if (order.action === "woocommerce_webhook_test") {
+      return NextResponse.json({ accepted: true, test: true });
     }
 
     if (
