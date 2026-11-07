@@ -46,12 +46,6 @@ export async function POST(
     return NextResponse.json({ error: "Webhook payload too large" }, { status: 413 });
   }
 
-  const signature = request.headers.get("x-wc-webhook-signature");
-  const topic = request.headers.get("x-wc-webhook-topic");
-  if (!signature || topic !== "order.updated") {
-    return NextResponse.json({ error: "Invalid WooCommerce webhook headers" }, { status: 400 });
-  }
-
   const reader = request.body?.getReader();
   if (!reader) {
     return NextResponse.json({ error: "Webhook body is required" }, { status: 400 });
@@ -74,6 +68,20 @@ export async function POST(
     return NextResponse.json({ error: "Unable to read webhook body" }, { status: 400 });
   }
   const rawBody = Buffer.concat(chunks);
+
+  const userAgent = request.headers.get("user-agent") ?? "";
+  if (
+    /^WooCommerce\/[\d.]+ Hookshot \(WordPress\/[^)]+\)$/.test(userAgent) &&
+    /^webhook_id=\d+$/.test(rawBody.toString("utf8"))
+  ) {
+    return NextResponse.json({ accepted: true, test: true });
+  }
+
+  const signature = request.headers.get("x-wc-webhook-signature");
+  const topic = request.headers.get("x-wc-webhook-topic");
+  if (!signature || topic !== "order.updated") {
+    return NextResponse.json({ error: "Invalid WooCommerce webhook headers" }, { status: 400 });
+  }
 
   try {
     const integrationRef = db.collection("woocommerceWebhookSecrets").doc(tenantId);
@@ -107,10 +115,6 @@ export async function POST(
       order = parsed as WooOrder;
     } catch {
       return NextResponse.json({ error: "Invalid webhook JSON" }, { status: 400 });
-    }
-
-    if (order.action === "woocommerce_webhook_test") {
-      return NextResponse.json({ accepted: true, test: true });
     }
 
     if (
