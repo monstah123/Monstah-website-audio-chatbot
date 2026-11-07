@@ -8,6 +8,7 @@ import { OWNER_UID } from "@/lib/owner";
 import KnowledgeManager from "@/components/KnowledgeManager";
 import AgentSettings from "@/components/AgentSettings";
 import WooCommerceReports from "@/components/WooCommerceReports";
+import ShopifyReports from "@/components/ShopifyReports";
 import {
   LogOut,
   Copy,
@@ -295,6 +296,7 @@ export default function DashboardPage() {
           </div>
         </div>
         {user && <WooCommerceReports isOwner={isOwner} />}
+        {user && <ShopifyReports isOwner={isOwner} />}
       </main>
 
       <style jsx>{`

@@ -36,6 +36,29 @@ The report stores the order ID/number, order status, totals, currency, refund to
 
 The signed webhook confirms that the status came from the configured WooCommerce store; it does not independently confirm card settlement. In particular, a store may move a cash-on-delivery order to `processing` before collecting cash. These are not chatbot-attributed sales: a store can receive orders that did not come from the chatbot. The browser-based attribution report above remains separate and does not verify settlement or refunds. Webhook secrets are encrypted server-side using the Firebase service-account private key before being saved; keep the `woocommerceWebhookSecrets` Firestore collection inaccessible to client SDKs as well.
 
+### Shopify order reporting
+
+The dashboard also includes a separate Shopify connection. You do not need to own or configure a Shopify store to develop this integration. Each client enters their `*.myshopify.com` domain and authorizes the app; the app then registers `ORDERS_CREATE` and `ORDERS_UPDATED` webhooks for that tenant and reports their orders. Order IDs, statuses, totals, currency, refunds, and timestamps are stored without customer details. Shopify order status is not chatbot attribution or independent proof of payment collection.
+
+To enable client connections, register the app for distribution to client stores in the Shopify Dev Dashboard (use public distribution for unrelated client stores). Configure the app's allowed redirect URL as `https://<app-domain>/api/shopify/callback` and request the `read_orders` scope. Before App Store review, configure the mandatory compliance webhook URL as `https://<app-domain>/api/webhooks/shopify/compliance` for `customers/data_request`, `customers/redact`, and `shop/redact`. The app stores no customer details; shop redaction removes that shop's stored orders and connection. In the app's webhook configuration, subscribe to the compliance topics at that URL, for example:
+
+```toml
+[webhooks]
+api_version = "2026-10"
+
+[[webhooks.subscriptions]]
+compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
+uri = "https://<app-domain>/api/webhooks/shopify/compliance"
+```
+
+Set these server-side Vercel environment variables:
+
+- `SHOPIFY_API_KEY` — the app's client ID.
+- `SHOPIFY_API_SECRET` — the app's client secret; keep it private.
+- `SHOPIFY_APP_URL` — the deployed app origin, such as `https://<app-domain>` (no path).
+
+After adding or changing these variables, redeploy. Each merchant must approve the requested access for their own store. New orders/status updates are reported after connection; historical orders aren't imported. New public-app installs use expiring offline access tokens; the app encrypts both tokens at rest and refreshes access tokens server-side.
+
 To record a client-site conversion such as a completed purchase or signup, dispatch this browser event after the conversion succeeds:
 
 ```js
